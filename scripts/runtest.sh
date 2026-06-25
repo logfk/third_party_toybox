@@ -99,6 +99,13 @@ skipnot()
   [ $? -eq 0 ] || { ((++SKIP)); return 1; }
 }
 
+# Skip this test (rest of command line) when not running OHOS-adapted build.
+ohosonly()
+{
+  [ -n "$OHOS_TEST" ] || ((++SKIP))
+  "$@"
+}
+
 # Skip this test (rest of command line) when not running toybox.
 toyonly()
 {
