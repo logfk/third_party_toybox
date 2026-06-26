@@ -77,7 +77,7 @@ export OHOS_TEST=1
 export SHOWSKIP=SKIP
 export FAILCOUNT=0
 
-# ====== 重写 testing()：bash 逻辑本地执行，命令通过 hdc 在主板执行 ======
+# ====== 重写 testing()：bash 逻辑本地执行，命令通过 hdc 在主板直接执行 ======
 testing() {
   wrong_args "$@"
   [ -z "$1" ] && NAME="$2" || NAME="$1"
@@ -89,54 +89,39 @@ testing() {
     ((--SKIP)); return 0
   fi
 
-  # 创建临时目录
   local TESTDIR="$TOP/_test/${CMDNAME}_$$"
-  mkdir -p "$TESTDIR/testdir"
-  cd "$TESTDIR/testdir" || return 1
+  mkdir -p "$TESTDIR"
 
-  # 写入期望结果
+  # 写入期望结果和 input 文件（保持原 cwd，与原始 testing() 行为一致）
   echo -ne "$3" > "$TESTDIR/expected"
+  [ -n "$4" ] && echo -ne "$4" > input || rm -f input
 
-  # 写入 input 文件
-  [ -n "$4" ] && echo -ne "$4" > input
-
-  # 构建远程命令: 将 $C 替换为板端命令
+  # 构建远程命令：替换 $C 为板端 toybox 路径
   REMOTE_CMD="$2"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
-  # 本地写脚本文件，再通过 hdc file send 传送到板端
-  # 避免命令行引用问题 (&&, |, > 以及 $2 中可能含有的引号)
-  {
-    printf '%s\n' "cd $BOARD_DIR"
-    printf '%s\n' "$REMOTE_CMD"
-  } > "$TESTDIR/run.sh"
+  # 将测试创建的数据文件和 input 同步到板端
+  for f in *; do
+    [ -f "$f" ] && "$HDC" file send "$f" "$BOARD_DIR/$f" >/dev/null 2>&1
+  done
 
-  "$HDC" file send "$TESTDIR/run.sh" "$BOARD_DIR/run.sh" >/dev/null 2>&1
-
-  # 推送 stdin (如有)
+  # 推送 stdin 文件（如有）
   if [ -n "$5" ]; then
     printf '%s' "$5" > "$TESTDIR/stdin"
     "$HDC" file send "$TESTDIR/stdin" "$BOARD_DIR/stdin" >/dev/null 2>&1
   fi
 
-  # 同步 input 及测试目录中的其他数据文件到板端
-  for f in *; do
-    [ "$f" = "." ] || [ "$f" = ".." ] && continue
-    [ -f "$f" ] && "$HDC" file send "$f" "$BOARD_DIR/$f" >/dev/null 2>&1
-  done
-
-  # 在板端执行脚本
+  # 直接在板端执行命令（无需生成 run.sh）
   if [ -n "$5" ]; then
-    ACTUAL=$("$HDC" shell "sh $BOARD_DIR/run.sh < $BOARD_DIR/stdin" 2>/dev/null)
+    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < $BOARD_DIR/stdin" 2>/dev/null)
   else
-    ACTUAL=$("$HDC" shell "sh $BOARD_DIR/run.sh" 2>/dev/null)
+    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" 2>/dev/null)
   fi
   RETVAL=$?
 
   echo -ne "$ACTUAL" > "$TESTDIR/actual"
   [ $RETVAL -gt 128 ] && echo "exited with signal (or returned $RETVAL)" >> "$TESTDIR/actual"
 
-  # diff 比对
   DIFF="$(cd "$TESTDIR"; diff -au expected actual 2>&1)"
   [ -z "$DIFF" ] && do_pass || { VERBOSE=all do_fail; }
 
@@ -146,8 +131,8 @@ testing() {
     [ -n "$DIFF" ] && printf "%s\n" "$DIFF"
   fi
 
-  [ -n "$DIFF" ] && ! verbose_has all && { cd "$TOP"; return 1; }
-  rm -f input "$TESTDIR/../expected" "$TESTDIR/../actual"
+  [ -n "$DIFF" ] && ! verbose_has all && exit 1
+  rm -f input
   rm -rf "$TESTDIR"
   [ -n "$DEBUG" ] && set +x
   return 0
