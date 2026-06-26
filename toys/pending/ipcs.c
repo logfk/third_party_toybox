@@ -4,12 +4,12 @@
  *
  * see http://pubs.opengroup.org/onlinepubs/9699919799/utilities/ipcs.html
 
-#ifdef TOYBOX_OH_ADAPT
-//delete 'ipcs -s' fail problem: kernel is not configured for semaphores
+// TODO: toybox NEWTOY scanner is not #ifdef-aware, so we can only have one
+// NEWTOY line. Under TOYBOX_OH_ADAPT we omit 's' (semaphores) from flags.
+// The build system always defines TOYBOX_OH_ADAPT for OHOS builds.
+// If semaphore support is needed, add 's' back to the flag string and guard
+// the semaphore-display code at runtime (check /proc/sysvipc/sem existence).
 USE_IPCS(NEWTOY(ipcs, "acptulqmi#", TOYFLAG_USR|TOYFLAG_BIN))
-#else
-USE_IPCS(NEWTOY(ipcs, "acptulsqmi#", TOYFLAG_USR|TOYFLAG_BIN))
-#endif
 
 config IPCS
   bool "ipcs"

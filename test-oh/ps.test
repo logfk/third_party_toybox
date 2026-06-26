@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Test OHOS ps adaptations:
+# 1. %CPU sort with epsilon comparison (ps -eo pid,cmd,%cpu --sort=-%cpu)
+# 2. Thread ordering by (pid, tid) tuple
+
+[ -f testing.sh ] && . testing.sh
+
+# ps -e (list all processes)
+ohosonly testing "ps -e" \
+  '$C -e 2>/dev/null | head -1 | grep -q "PID" && echo ok' "ok\n" "" ""
+
+# ps -eo pid,cmd,%cpu --sort=-%cpu
+ohosonly testing "ps sort by %CPU" \
+  '$C -eo pid,cmd,%cpu --sort=-%cpu 2>/dev/null | head -3 | grep -q PID && echo ok' "ok\n" "" ""
+
+# ps -T (thread display)
+ohosonly testing "ps -T" \
+  '$C -T 2>/dev/null | head -1 | grep -q "PID" && echo ok' "ok\n" "" ""

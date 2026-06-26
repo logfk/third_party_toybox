@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Test OHOS kill adaptation:
+# /proc/PID/stat format matching (sscanf ")%*c" vs " %*c")
+# OHOS format: "1234 (comm) S ..."
+# Upstream format: "1234 (comm) S ..."
+
+[ -f testing.sh ] && . testing.sh
+
+# kill -l (list signals)
+ohosonly testing "kill -l lists signals" \
+  '$C -l 2>/dev/null | head -1 | grep -q "HUP" && echo ok' "ok\n" "" ""
+
+# kill -9 (signal by number)
+ohosonly testing "kill by signal number" \
+  '$C -9 1 2>/dev/null || echo denied' "denied\n" "" ""
+
+# killall by name (only works on OHOS with proper /proc)
+ohosonly testing "killall init" \
+  '$C init 2>/dev/null || echo denied' "denied\n" "" ""

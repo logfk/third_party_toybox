@@ -10,6 +10,11 @@ export OHOS_TEST=1
 export SHOWSKIP="SKIP"
 export FAILCOUNT=0
 
+# Must use host compiler for local tests; clear any cross-compile env vars
+# before sourcing portability.sh (which checks $CROSS_COMPILE$CC existence).
+unset CROSS_COMPILE
+export CC=cc
+
 source "$TOPDIR/scripts/runtest.sh"
 source "$TOPDIR/scripts/portability.sh"
 
@@ -31,9 +36,11 @@ do
 
   echo "=== $CMDNAME ==="
 
-  # Build the command with TOYBOX_OH_ADAPT (must run from TOPDIR for relative paths)
+  # Build the command with TOYBOX_OH_ADAPT using local host compiler
+  # (clear cross-compile env vars so tests run on the build host)
   cd "$TOPDIR"
-  export PREFIX="$TESTDIR/"
+  unset CROSS_COMPILE
+  export CC=cc PREFIX="$TESTDIR/"
   CFLAGS="-DTOYBOX_OH_ADAPT" "$TOPDIR/scripts/single.sh" "$CMDNAME" 2>/dev/null || {
     echo "$SHOWSKIP: $CMDNAME build failed"
     continue

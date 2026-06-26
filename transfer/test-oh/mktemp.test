@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Test OHOS mktemp fixes:
+# 1. -q suppresses error when -p + absolute template conflict
+# 2. Template must end with XXXXXX (not XXX)
+
+[ -f testing.sh ] && . testing.sh
+
+# -q with -p + absolute template: should silently fail (exit 1, no error msg)
+ohosonly testcmd "-q with -p + /template" \
+  '-q -p /tmp /template.XXXXXX 2>/dev/null && echo ok || echo fail' \
+  "fail\n" "" ""
+
+# -q with invalid template (too few X's): should silently fail
+ohosonly testcmd "-q with bad template" \
+  '-q helloXX 2>/dev/null && echo ok || echo fail' \
+  "fail\n" "" ""
+
+# Needs XXXXXX (not XXX): without -q should error
+ohosonly testcmd "needs XXXXXX" \
+  '-u helloXXX 2>/dev/null || echo error' \
+  "error\n" "" ""
+
+# Valid XXXXXX template works (suppress template output, check exit code)
+ohosonly testing "XXXXXX template" \
+  'TMPDIR=. $C -u hello.XXXXXX >/dev/null 2>/dev/null && echo yes' \
+  "yes\n" "" ""
+
+# Without -q, -p + /template should error
+ohosonly testcmd "-p + /template errors without -q" \
+  '-p /tmp /template.XXXXXX 2>/dev/null || echo error' \
+  "error\n" "" ""

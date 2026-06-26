@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Test OHOS id adaptations:
+# dlopen of libaccount_posix_adapter.z.so for user/group resolution
+# Falls back to standard libc calls if adapter not available
+
+[ -f testing.sh ] && . testing.sh
+
+# id basic output
+ohosonly testing "id basic" \
+  '$C 2>/dev/null | grep -q "uid=" && echo ok' "ok\n" "" ""
+
+# id -u (user id)
+ohosonly testing "id -u" \
+  '$C -u 2>/dev/null | grep -q "[0-9]" && echo ok' "ok\n" "" ""
+
+# id -g (group id)
+ohosonly testing "id -g" \
+  '$C -g 2>/dev/null | grep -q "[0-9]" && echo ok' "ok\n" "" ""
+
+# id -un (user name)
+ohosonly testing "id -un" \
+  '$C -un 2>/dev/null | grep -q . && echo ok' "ok\n" "" ""
+
+# id -gn (group name)
+ohosonly testing "id -gn" \
+  '$C -gn 2>/dev/null | grep -q . && echo ok' "ok\n" "" ""
+
+# id with specific user (if exists)
+ohosonly testing "id root user" \
+  '$C root 2>/dev/null | grep -q "uid=" && echo ok || echo skip' "ok\n" "" ""

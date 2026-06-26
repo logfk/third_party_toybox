@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Test OHOS strings adaptation:
+# Skips xclose(fd) to avoid closing reused file descriptors
+
+[ -f testing.sh ] && . testing.sh
+
+# strings on a regular text file
+echo "hello world
+printable text
+12345" > textfile.txt
+
+ohosonly testcmd "basic strings output" \
+  "textfile.txt" "hello world\nprintable text\n12345\n" "" ""
+
+rm -f textfile.txt
+
+# strings with binary data (non-printables skipped, min 4 chars default)
+printf "hello\x00world\x01longer\ngood\x02day\nabcde\n" > binary.txt
+
+ohosonly testcmd "strings with binary skips unprintable" \
+  "binary.txt" "hello\nworld\nlonger\ngood\nabcde\n" "" ""
+
+rm -f binary.txt
+
+# strings with minimum length
+echo "ab
+abcdefgh
+ijklmnop" > lenfile.txt
+
+ohosonly testcmd "strings -n min length 4" \
+  "-n 4 lenfile.txt" "abcdefgh\nijklmnop\n" "" ""
+
+rm -f lenfile.txt

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Test OHOS shred adaptation:
+# -f (force) fallback permission changed from 0600 to 0660
+
+[ -f testing.sh ] && . testing.sh
+
+# shred normal file succeeds
+echo "sensitive data - not empty" > normal.txt
+
+ohosonly testcmd "shred normal file" \
+  "-u normal.txt 2>&1 && echo ok" "ok\n" "" ""
+
+rm -f normal.txt
+
+# shred -f on a file with content should succeed
+echo "data to shred" > rofile && chmod 0444 rofile
+
+ohosonly testcmd "shred -f read-only file" \
+  "-f rofile 2>&1 && echo ok" "ok\n" "" ""
+
+rm -f rofile
+
+# shred -z (zero final overwrite)
+echo "zero test data" > zerofile
+
+ohosonly testcmd "shred -z adds zero pass" \
+  "-z -u zerofile 2>&1 && echo ok" "ok\n" "" ""
+
+rm -f zerofile

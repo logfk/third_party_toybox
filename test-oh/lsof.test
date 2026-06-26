@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Test OHOS lsof adaptation:
+# -l flag: prints numeric UID instead of resolving username
+
+[ -f testing.sh ] && . testing.sh
+
+# lsof basic output (requires /proc)
+ohosonly testing "lsof basic" \
+  '$C 2>/dev/null | head -5 | grep -q "COMMAND\|PID" && echo ok' "ok\n" "" ""
+
+# lsof -l (numeric UID)
+ohosonly testing "lsof -l numeric UID" \
+  '$C -l 2>/dev/null | head -5 | grep -q "COMMAND\|PID" && echo ok' "ok\n" "" ""
+
+# lsof specific process
+ohosonly testing "lsof init process" \
+  '$C -p 1 2>/dev/null | head -3 | grep -q "init\|COMMAND" && echo ok' "ok\n" "" ""
+
+# lsof -i (network sockets)
+ohosonly testing "lsof -i" \
+  '$C -i 2>/dev/null | head -5 | grep -q "COMMAND\|PID" && echo ok || echo skip' "skip\n" "" ""

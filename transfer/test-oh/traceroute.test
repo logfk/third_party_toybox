@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Test OHOS traceroute adaptation:
+# Fixes traceroute -s (source address) by setting
+# sin_family = AF_INET / sin6_family = AF_INET6 before bind()
+
+[ -f testing.sh ] && . testing.sh
+
+# traceroute help
+ohosonly testing "traceroute help" \
+  '$C --help 2>&1 | head -1 | grep -q "usage\|Usage\|traceroute" && echo ok' "ok\n" "" ""
+
+# traceroute -s with source address (requires network, root)
+ohosonly testing "traceroute -s" \
+  '$C -s 127.0.0.1 127.0.0.1 2>&1 | head -1 | grep -q "traceroute\|127" && echo ok || echo skip' "ok\n" "" ""
+
+# traceroute -4 (IPv4)
+ohosonly testing "traceroute -4" \
+  '$C -4 -s 127.0.0.1 127.0.0.1 2>&1 | head -1 | grep -q "traceroute\|127" && echo ok || echo skip' "ok\n" "" ""

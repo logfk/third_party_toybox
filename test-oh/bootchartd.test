@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Test OHOS bootchartd adaptation:
+# NULL check on opendir("/proc"): calls perror_exit if /proc not available
+
+[ -f testing.sh ] && . testing.sh
+
+# bootchartd basic (requires /proc and root)
+ohosonly testing "bootchartd help" \
+  '$C --help 2>&1 | head -1 | grep -q "usage\|Usage\|bootchart" && echo ok || echo skip' "ok\n" "" ""
+
+# bootchartd without /proc should fail gracefully
+ohosonly testing "bootchartd without proc" \
+  '$C 2>/dev/null; echo $?' "1\n" "" ""

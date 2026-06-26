@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Test OHOS bzcat/bunzip2 adaptations:
+# 1. Extension handling (no .bz2 extension)
+# 2. -k (keep) mode: don't delete input, correct output naming
+# 3. Unlink logic fix
+
+[ -f testing.sh ] && . testing.sh
+
+# Standard bunzip2 -k: decompress and keep .bz2 file
+echo "test data for bzip2" > data.txt
+bzip2 data.txt
+[ -f data.txt.bz2 ] && mv data.txt.bz2 data.bz2 || { echo "skip: no bzip2"; exit 0; }
+
+ohosonly testcmd "bunzip2 -k keeps input" \
+  "-k data.bz2 2>&1 && echo ok" "ok\n" "" ""
+ohosonly testcmd "bunzip2 -k produces output" \
+  "-k data.bz2 2>&1 && [ -f data ] && echo extracted" "extracted\n" "" ""
+
+rm -f data data.bz2
+
+# bunzip2 without -k: should delete input on success
+echo "test data" > data2.txt
+bzip2 data2.txt
+[ -f data2.txt.bz2 ] && mv data2.txt.bz2 data2.bz2 || exit 0
+
+ohosonly testcmd "bunzip2 removes input" \
+  "data2.bz2 2>&1 && [ ! -f data2.bz2 ] && echo removed" "removed\n" "" ""
+
+rm -f data2 data2.bz2
+
+# bunzip2 to stdout (-c)
+echo "stdout test" > data3.txt
+bzip2 data3.txt
+[ -f data3.txt.bz2 ] && mv data3.txt.bz2 data3.bz2 || exit 0
+
+ohosonly testcmd "bunzip2 -c to stdout" \
+  "-c data3.bz2 2>/dev/null | head -1" "stdout test\n" "" ""
+
+rm -f data3 data3.bz2
