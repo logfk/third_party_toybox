@@ -96,8 +96,12 @@ testing() {
   echo -ne "$3" > "$TESTDIR/expected"
   [ -n "$4" ] && echo -ne "$4" > input || rm -f input
 
-  # 构建远程命令：替换 $C 为板端 toybox 路径
+  # 构建远程命令：
+  #   1. testcmd 调用 testing 时传的是 "\"$C\" args"，$2 含有引号
+  #      这会在 Windows 命令行上被 hdc.exe 误解析，先去掉
+  #   2. 替换 $C 为板端 toybox 路径
   REMOTE_CMD="$2"
+  REMOTE_CMD="${REMOTE_CMD//\"$TOYBOX_CMD $CMDNAME\"/$TOYBOX_CMD $CMDNAME}"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
   # 将测试创建的数据文件和 input 同步到板端
