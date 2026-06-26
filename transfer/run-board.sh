@@ -116,16 +116,16 @@ testing() {
   REMOTE_CMD="$2"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
-  # 将命令写入脚本推送到板端执行，避免 Windows hdc.exe 错误解析 && | 等 shell 符号
-  # 用 printf 而非 heredoc，防止 REMOTE_CMD 内的 $? 等被本地 shell 二次展开
-  printf '%s\n' "cd $BOARD_DIR" "$REMOTE_CMD" > "$TESTDIR/run.sh"
-  "$HDC" file send "$TESTDIR/run.sh" "$BOARD_DIR/run.sh" >/dev/null 2>&1
-  "$HDC" shell "chmod +x $BOARD_DIR/run.sh" >/dev/null 2>&1
-
+  # 通过管道传递脚本内容到板端 shell，避免 Windows hdc.exe 错误解析 && | 等符号
+  # 无 $5 (stdin) 时: 管道传给 sh -s，脚本在板端 sh 中解释执行
+  # 有 $5 (stdin) 时: 先写脚本再执行，确保 stdin 重定向可用
   if [ -n "$5" ]; then
+    printf '%s\n' "cd $BOARD_DIR" "$REMOTE_CMD" | \
+      "$HDC" shell "cat > $BOARD_DIR/run.sh" 2>/dev/null
     ACTUAL=$("$HDC" shell "cd $BOARD_DIR && sh run.sh < stdin" 2>/dev/null)
   else
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && sh run.sh" 2>/dev/null)
+    ACTUAL=$(printf '%s\n' "cd $BOARD_DIR" "$REMOTE_CMD" | \
+      "$HDC" shell "sh -s" 2>/dev/null)
   fi
   RETVAL=$?
 
