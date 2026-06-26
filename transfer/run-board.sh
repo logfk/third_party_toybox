@@ -106,31 +106,23 @@ testing() {
     [ -f "$f" ] && "$HDC" file send "$f" "$BOARD_DIR/$f" >/dev/null 2>&1
   done
 
-  # 推送 stdin
-  if [ -n "$5" ]; then
-    printf '%s' "$5" | "$HDC" shell "cat > $BOARD_DIR/stdin" 2>/dev/null
-  fi
-
   # 构建远程命令: 将 $C 替换为板端命令
   REMOTE_CMD="$2"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
-  # 构建脚本内容
-  SCRIPT="cd $BOARD_DIR
-$REMOTE_CMD"
-
-  # Base64 编码脚本，通过简单参数传给 hdc shell，避免 && | 等符号被 Windows 破坏
-  # base64 输出仅含 A-Za-z0-9+/=，不含特殊字符，安全嵌入命令行
-  SCRIPT_B64=$(printf '%s' "$SCRIPT" | base64 -w0 2>/dev/null)
-
+  # 推送 stdin (如有)
   if [ -n "$5" ]; then
-    # 有 stdin: 先推送 stdin 文件，再写入脚本并执行
     printf '%s' "$5" | "$HDC" shell "cat > $BOARD_DIR/stdin" 2>/dev/null
-    "$HDC" shell "printf '%s' $SCRIPT_B64 | base64 -d > $BOARD_DIR/run.sh" 2>/dev/null
+  fi
+
+  # 用 printf 写脚本到板端文件，每行作为单独单引号参数传给 printf
+  # && | > 在单引号内不会被 hdc.exe 或 Windows cmd 破坏
+  # 写完后直接执行脚本文件，不经过管道传递 stdin，避免卡死
+  "$HDC" shell "printf '%s\n' 'cd $BOARD_DIR' '$REMOTE_CMD' > $BOARD_DIR/run.sh" 2>/dev/null
+  if [ -n "$5" ]; then
     ACTUAL=$("$HDC" shell "sh $BOARD_DIR/run.sh < $BOARD_DIR/stdin" 2>/dev/null)
   else
-    # 无 stdin: 一行命令完成解码和执行
-    ACTUAL=$("$HDC" shell "printf '%s' $SCRIPT_B64 | base64 -d | sh" 2>/dev/null)
+    ACTUAL=$("$HDC" shell "sh $BOARD_DIR/run.sh" 2>/dev/null)
   fi
   RETVAL=$?
 
