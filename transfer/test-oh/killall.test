@@ -15,6 +15,6 @@ ohosonly testing "kill -l lists signals" \
 ohosonly testing "kill by signal number" \
   '$C -9 1 2>/dev/null || echo denied' "denied\n" "" ""
 
-# killall by name (only works on OHOS with proper /proc)
-ohosonly testing "killall init" \
-  '$C init 2>/dev/null || echo denied' "denied\n" "" ""
+# killall by name (kill a safe process: sleep in background)
+ohosonly testing "killall by name" \
+  'sh -c "sleep 30 & sleep 1 && killall sleep && echo ok || echo fail"' "ok\n" "" ""
