@@ -100,25 +100,32 @@ testing() {
   # 写入 input 文件
   [ -n "$4" ] && echo -ne "$4" > input
 
-  # 同步本地文件到板端
-  for f in * .*; do
-    [ "$f" = "." ] || [ "$f" = ".." ] && continue
-    [ -f "$f" ] && "$HDC" file send "$f" "$BOARD_DIR/$f" >/dev/null 2>&1
-  done
-
   # 构建远程命令: 将 $C 替换为板端命令
   REMOTE_CMD="$2"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
+  # 本地写脚本文件，再通过 hdc file send 传送到板端
+  # 避免命令行引用问题 (&&, |, > 以及 $2 中可能含有的引号)
+  {
+    printf '%s\n' "cd $BOARD_DIR"
+    printf '%s\n' "$REMOTE_CMD"
+  } > "$TESTDIR/run.sh"
+
+  "$HDC" file send "$TESTDIR/run.sh" "$BOARD_DIR/run.sh" >/dev/null 2>&1
+
   # 推送 stdin (如有)
   if [ -n "$5" ]; then
-    printf '%s' "$5" | "$HDC" shell "cat > $BOARD_DIR/stdin" 2>/dev/null
+    printf '%s' "$5" > "$TESTDIR/stdin"
+    "$HDC" file send "$TESTDIR/stdin" "$BOARD_DIR/stdin" >/dev/null 2>&1
   fi
 
-  # 用 printf 写脚本到板端文件，每行作为单独单引号参数传给 printf
-  # && | > 在单引号内不会被 hdc.exe 或 Windows cmd 破坏
-  # 写完后直接执行脚本文件，不经过管道传递 stdin，避免卡死
-  "$HDC" shell "printf '%s\n' 'cd $BOARD_DIR' '$REMOTE_CMD' > $BOARD_DIR/run.sh" 2>/dev/null
+  # 同步 input 及测试目录中的其他数据文件到板端
+  for f in *; do
+    [ "$f" = "." ] || [ "$f" = ".." ] && continue
+    [ -f "$f" ] && "$HDC" file send "$f" "$BOARD_DIR/$f" >/dev/null 2>&1
+  done
+
+  # 在板端执行脚本
   if [ -n "$5" ]; then
     ACTUAL=$("$HDC" shell "sh $BOARD_DIR/run.sh < $BOARD_DIR/stdin" 2>/dev/null)
   else
