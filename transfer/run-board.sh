@@ -112,20 +112,25 @@ testing() {
   fi
 
   # 构建远程命令: 将 $C 替换为板端命令
-  # $C 在这里是 "toybox <cmdname>" 或 "/system/bin/toybox <cmdname>"
   REMOTE_CMD="$2"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
-  # 通过管道传递脚本内容到板端 shell，避免 Windows hdc.exe 错误解析 && | 等符号
-  # 无 $5 (stdin) 时: 管道传给 sh -s，脚本在板端 sh 中解释执行
-  # 有 $5 (stdin) 时: 先写脚本再执行，确保 stdin 重定向可用
+  # 构建脚本内容
+  SCRIPT="cd $BOARD_DIR
+$REMOTE_CMD"
+
+  # Base64 编码脚本，通过简单参数传给 hdc shell，避免 && | 等符号被 Windows 破坏
+  # base64 输出仅含 A-Za-z0-9+/=，不含特殊字符，安全嵌入命令行
+  SCRIPT_B64=$(printf '%s' "$SCRIPT" | base64 -w0 2>/dev/null)
+
   if [ -n "$5" ]; then
-    printf '%s\n' "cd $BOARD_DIR" "$REMOTE_CMD" | \
-      "$HDC" shell "cat > $BOARD_DIR/run.sh" 2>/dev/null
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && sh run.sh < stdin" 2>/dev/null)
+    # 有 stdin: 先推送 stdin 文件，再写入脚本并执行
+    printf '%s' "$5" | "$HDC" shell "cat > $BOARD_DIR/stdin" 2>/dev/null
+    "$HDC" shell "printf '%s' $SCRIPT_B64 | base64 -d > $BOARD_DIR/run.sh" 2>/dev/null
+    ACTUAL=$("$HDC" shell "sh $BOARD_DIR/run.sh < $BOARD_DIR/stdin" 2>/dev/null)
   else
-    ACTUAL=$(printf '%s\n' "cd $BOARD_DIR" "$REMOTE_CMD" | \
-      "$HDC" shell "sh -s" 2>/dev/null)
+    # 无 stdin: 一行命令完成解码和执行
+    ACTUAL=$("$HDC" shell "printf '%s' $SCRIPT_B64 | base64 -d | sh" 2>/dev/null)
   fi
   RETVAL=$?
 
