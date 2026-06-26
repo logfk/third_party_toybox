@@ -105,16 +105,20 @@ testing() {
   REMOTE_CMD="${REMOTE_CMD//\"$TOYBOX_CMD $CMDNAME\"/$TOYBOX_CMD $CMDNAME}"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
-  # 将测试创建的数据文件和 input 同步到板端
-  # 使用 $PWD/ 绝对路径，避免 hdc.exe 在 Windows 上以错误 cwd 解析相对路径
+  # 将数据文件通过 base64 写入板端（避免 hdc file send 的路径翻译问题）
   for f in *; do
-    [ -f "$f" ] && "$HDC" file send "$PWD/$f" "$BOARD_DIR/$f" >/dev/null 2>&1
+    [ -f "$f" ] || continue
+    local b64
+    b64=$(base64 -w0 "$f" 2>/dev/null) || continue
+    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/$f" 2>/dev/null
   done
 
   # 推送 stdin 文件（如有）
   if [ -n "$5" ]; then
     printf '%s' "$5" > "$TESTDIR/stdin"
-    "$HDC" file send "$TESTDIR/stdin" "$BOARD_DIR/stdin" >/dev/null 2>&1
+    local b64
+    b64=$(base64 -w0 "$TESTDIR/stdin" 2>/dev/null)
+    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/stdin" 2>/dev/null
   fi
 
   # 直接在板端执行命令（无需生成 run.sh）
