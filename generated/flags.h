@@ -1861,7 +1861,7 @@
 #undef FLAG_t
 #endif
 
-// login >1f:ph: >1f:ph:
+// login   >1f:ph:
 #undef OPTSTR_login
 #define OPTSTR_login ">1f:ph:"
 #ifdef CLEANUP_login
@@ -2255,7 +2255,7 @@
 #undef FLAG_r
 #endif
 
-// netcat ^tElLw#<1W#<1p#<1>65535q#<1O:o:s:f:46uUnz[!tlL][!Lw][!Lu][!46U][!oO] ^tElLw#<1W#<1p#<1>65535q#<1O:o:s:f:46uUnz[!tlL][!Lw][!Lu][!46U][!oO]
+// netcat   ^tElLw#<1W#<1p#<1>65535q#<1O:o:s:f:46uUnz[!tlL][!Lw][!Lu][!46U][!oO]
 #undef OPTSTR_netcat
 #define OPTSTR_netcat "^tElLw#<1W#<1p#<1>65535q#<1O:o:s:f:46uUnz[!tlL][!Lw][!Lu][!46U][!oO]"
 #ifdef CLEANUP_netcat
@@ -2485,7 +2485,7 @@
 #undef FLAG_s
 #endif
 
-// ping <1>1m#t#<0>255=64c#<0=3s#<0>4064=56i%W#<0=3w#<0qf46I:[-46] <1>1m#t#<0>255=64c#<0=3s#<0>4064=56i%W#<0=3w#<0qf46I:[-46]
+// ping   <1>1m#t#<0>255=64c#<0=3s#<0>4064=56i%W#<0=3w#<0qf46I:[-46]
 #undef OPTSTR_ping
 #define OPTSTR_ping "<1>1m#t#<0>255=64c#<0=3s#<0>4064=56i%W#<0=3w#<0qf46I:[-46]"
 #ifdef CLEANUP_ping
@@ -3700,7 +3700,7 @@
 #undef FLAG_f
 #endif
 
-// uptime >0ps >0ps
+// uptime   >0ps
 #undef OPTSTR_uptime
 #define OPTSTR_uptime ">0ps"
 #ifdef CLEANUP_uptime
@@ -3872,7 +3872,7 @@
 #undef FLAG_a
 #endif
 
-// who a a
+// who   a
 #undef OPTSTR_who
 #define OPTSTR_who "a"
 #ifdef CLEANUP_who
@@ -5664,9 +5664,9 @@
 #ifndef TT
 #define TT this.login
 #endif
-#define FLAG_h (1LL<<0)
-#define FLAG_p (1LL<<1)
-#define FLAG_f (1LL<<2)
+#define FLAG_h (FORCED_FLAG<<0)
+#define FLAG_p (FORCED_FLAG<<1)
+#define FLAG_f (FORCED_FLAG<<2)
 #endif
 
 #ifdef FOR_logname
@@ -6026,24 +6026,24 @@
 #ifndef TT
 #define TT this.netcat
 #endif
-#define FLAG_z (1LL<<0)
-#define FLAG_n (1LL<<1)
-#define FLAG_U (1LL<<2)
-#define FLAG_u (1LL<<3)
-#define FLAG_6 (1LL<<4)
-#define FLAG_4 (1LL<<5)
-#define FLAG_f (1LL<<6)
-#define FLAG_s (1LL<<7)
-#define FLAG_o (1LL<<8)
-#define FLAG_O (1LL<<9)
-#define FLAG_q (1LL<<10)
-#define FLAG_p (1LL<<11)
-#define FLAG_W (1LL<<12)
-#define FLAG_w (1LL<<13)
-#define FLAG_L (1LL<<14)
-#define FLAG_l (1LL<<15)
-#define FLAG_E (1LL<<16)
-#define FLAG_t (1LL<<17)
+#define FLAG_z (FORCED_FLAG<<0)
+#define FLAG_n (FORCED_FLAG<<1)
+#define FLAG_U (FORCED_FLAG<<2)
+#define FLAG_u (FORCED_FLAG<<3)
+#define FLAG_6 (FORCED_FLAG<<4)
+#define FLAG_4 (FORCED_FLAG<<5)
+#define FLAG_f (FORCED_FLAG<<6)
+#define FLAG_s (FORCED_FLAG<<7)
+#define FLAG_o (FORCED_FLAG<<8)
+#define FLAG_O (FORCED_FLAG<<9)
+#define FLAG_q (FORCED_FLAG<<10)
+#define FLAG_p (FORCED_FLAG<<11)
+#define FLAG_W (FORCED_FLAG<<12)
+#define FLAG_w (FORCED_FLAG<<13)
+#define FLAG_L (FORCED_FLAG<<14)
+#define FLAG_l (FORCED_FLAG<<15)
+#define FLAG_E (FORCED_FLAG<<16)
+#define FLAG_t (FORCED_FLAG<<17)
 #endif
 
 #ifdef FOR_netstat
@@ -6240,18 +6240,18 @@
 #ifndef TT
 #define TT this.ping
 #endif
-#define FLAG_I (1LL<<0)
-#define FLAG_6 (1LL<<1)
-#define FLAG_4 (1LL<<2)
-#define FLAG_f (1LL<<3)
-#define FLAG_q (1LL<<4)
-#define FLAG_w (1LL<<5)
-#define FLAG_W (1LL<<6)
-#define FLAG_i (1LL<<7)
-#define FLAG_s (1LL<<8)
-#define FLAG_c (1LL<<9)
-#define FLAG_t (1LL<<10)
-#define FLAG_m (1LL<<11)
+#define FLAG_I (FORCED_FLAG<<0)
+#define FLAG_6 (FORCED_FLAG<<1)
+#define FLAG_4 (FORCED_FLAG<<2)
+#define FLAG_f (FORCED_FLAG<<3)
+#define FLAG_q (FORCED_FLAG<<4)
+#define FLAG_w (FORCED_FLAG<<5)
+#define FLAG_W (FORCED_FLAG<<6)
+#define FLAG_i (FORCED_FLAG<<7)
+#define FLAG_s (FORCED_FLAG<<8)
+#define FLAG_c (FORCED_FLAG<<9)
+#define FLAG_t (FORCED_FLAG<<10)
+#define FLAG_m (FORCED_FLAG<<11)
 #endif
 
 #ifdef FOR_pivot_root
@@ -7363,8 +7363,8 @@
 #ifndef TT
 #define TT this.uptime
 #endif
-#define FLAG_s (1LL<<0)
-#define FLAG_p (1LL<<1)
+#define FLAG_s (FORCED_FLAG<<0)
+#define FLAG_p (FORCED_FLAG<<1)
 #endif
 
 #ifdef FOR_useradd
@@ -7518,7 +7518,7 @@
 #ifndef TT
 #define TT this.who
 #endif
-#define FLAG_a (1LL<<0)
+#define FLAG_a (FORCED_FLAG<<0)
 #endif
 
 #ifdef FOR_xargs

@@ -81,26 +81,9 @@ struct microcom_data {
   struct termios old_stdin, old_fd;
 };
 
-struct netcat_data {
-  char *f, *s, *o, *O;
-  long q, p, W, w;
-
-  unsigned ofd, olast, opos, ocount[2];
-  char obuf[16];
-};
-
 struct netstat_data {
   struct num_cache *inodes;
   int wpad;
-};
-
-struct ping_data {
-  char *I;
-  long w, W, i, s, c, t, m;
-
-  struct sockaddr *sa;
-  int sock;
-  unsigned long sent, recv, fugit, min, max;
 };
 
 struct sntp_data {
@@ -193,12 +176,6 @@ struct i2cdetect_data {
 
 struct ionice_data {
   long p, n, c;
-};
-
-struct login_data {
-  char *h, *f;
-
-  int login_timeout, login_fail_timeout;
 };
 
 struct losetup_data {
@@ -719,9 +696,7 @@ extern union global_union {
 	struct ftpget_data ftpget;
 	struct ifconfig_data ifconfig;
 	struct microcom_data microcom;
-	struct netcat_data netcat;
 	struct netstat_data netstat;
-	struct ping_data ping;
 	struct sntp_data sntp;
 	struct tunctl_data tunctl;
 	struct wget_data wget;
@@ -739,7 +714,6 @@ extern union global_union {
 	struct hwclock_data hwclock;
 	struct i2cdetect_data i2cdetect;
 	struct ionice_data ionice;
-	struct login_data login;
 	struct losetup_data losetup;
 	struct lspci_data lspci;
 	struct makedevs_data makedevs;

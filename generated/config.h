@@ -178,8 +178,8 @@
 #define USE_UUENCODE(...) __VA_ARGS__
 #define CFG_WC 1
 #define USE_WC(...) __VA_ARGS__
-#define CFG_WHO 1
-#define USE_WHO(...) __VA_ARGS__
+#define CFG_WHO 0
+#define USE_WHO(...)
 #define CFG_XARGS 1
 #define USE_XARGS(...) __VA_ARGS__
 #define CFG_ARP 0
@@ -428,8 +428,8 @@
 #define USE_IORENICE(...) __VA_ARGS__
 #define CFG_LINUX32 0
 #define USE_LINUX32(...)
-#define CFG_LOGIN 1
-#define USE_LOGIN(...) __VA_ARGS__
+#define CFG_LOGIN 0
+#define USE_LOGIN(...)
 #define CFG_LOSETUP 1
 #define USE_LOSETUP(...) __VA_ARGS__
 #define CFG_LSATTR 1
@@ -540,8 +540,8 @@
 #define USE_TS(...)
 #define CFG_UCLAMPSET 0
 #define USE_UCLAMPSET(...)
-#define CFG_UPTIME 1
-#define USE_UPTIME(...) __VA_ARGS__
+#define CFG_UPTIME 0
+#define USE_UPTIME(...)
 #define CFG_USLEEP 1
 #define USE_USLEEP(...) __VA_ARGS__
 #define CFG_UUIDGEN 1
@@ -550,8 +550,8 @@
 #define USE_VCONFIG(...) __VA_ARGS__
 #define CFG_VMSTAT 1
 #define USE_VMSTAT(...) __VA_ARGS__
-#define CFG_W 1
-#define USE_W(...) __VA_ARGS__
+#define CFG_W 0
+#define USE_W(...)
 #define CFG_WATCH 1
 #define USE_WATCH(...) __VA_ARGS__
 #define CFG_WATCHDOG 0
@@ -574,12 +574,12 @@
 #define USE_IFCONFIG(...) __VA_ARGS__
 #define CFG_MICROCOM 1
 #define USE_MICROCOM(...) __VA_ARGS__
-#define CFG_NETCAT 1
-#define USE_NETCAT(...) __VA_ARGS__
+#define CFG_NETCAT 0
+#define USE_NETCAT(...)
 #define CFG_NETSTAT 1
 #define USE_NETSTAT(...) __VA_ARGS__
-#define CFG_PING 1
-#define USE_PING(...) __VA_ARGS__
+#define CFG_PING 0
+#define USE_PING(...)
 #define CFG_RFKILL 1
 #define USE_RFKILL(...) __VA_ARGS__
 #define CFG_SNTP 1
