@@ -68,9 +68,7 @@
 
 #define HELP_sync "usage: sync\n\nWrite pending cached data to disk (synchronize), blocking until done."
 
-#ifdef OHOS_LITE
 #define HELP_su "usage: su [-lp] [-u UID] [-g GID,...] [-s SHELL] [-c CMD] [USER [COMMAND...]]\n\nSwitch user, prompting for password of new user when not run as root.\n\nWith one argument, switch to USER and run user's shell from /etc/passwd.\nWith no arguments, USER is root. If COMMAND line provided after USER,\nexec() it as new USER (bypassing shell). If -u or -g specified, first\nargument (if any) isn't USER (it's COMMAND).\n\nfirst argument is USER name to switch to (which must exist).\nNon-root users are prompted for new user's password.\n\n-s	Shell to use (default is user's shell from /etc/passwd)\n-c	Command line to pass to -s shell (ala sh -c \"CMD\")\n-l	Reset environment as if new login.\n-u	Switch to UID instead of USER\n-g	Switch to GID (only root allowed, can be comma separated list)\n-p	Preserve environment (except for $PATH and $IFS)"
-#endif
 
 #define HELP_seq "usage: seq [-w|-f fmt_str] [-s sep_str] [first] [increment] last\n\nCount from first to last, by increment. Omitted arguments default\nto 1. Two arguments are used as first and last. Arguments can be\nnegative or floating point.\n\n-f	Use fmt_str as a printf-style floating point format string\n-s	Use sep_str as separator, default is a newline character\n-w	Pad to equal width with leading zeroes"
 
@@ -82,12 +80,7 @@
 
 #define HELP_mount "usage: mount [-afFrsvw] [-t TYPE] [-o OPTION,] [[DEVICE] DIR]\n\nMount new filesystem(s) on directories. With no arguments, display existing\nmounts.\n\n-a	Mount all entries in /etc/fstab (with -t, only entries of that TYPE)\n-O	Only mount -a entries that have this option\n-f	Fake it (don't actually mount)\n-r	Read only (same as -o ro)\n-w	Read/write (default, same as -o rw)\n-t	Specify filesystem type\n-v	Verbose\n\nOPTIONS is a comma separated list of options, which can also be supplied\nas --longopts.\n\nAutodetects loopback mounts (a file on a directory) and bind mounts (file\non file, directory on directory), so you don't need to say --bind or --loop.\nYou can also \"mount -a /path\" to mount everything in /etc/fstab under /path,\neven if it's noauto. DEVICE starting with UUID= is identified by blkid -U,\nand DEVICE starting with LABEL= is identified by blkid -L."
 
-#ifdef TOYBOX_OH_ADAPT
-/* fix "mktemp tmp.XXX" create fail problem*/
-#define HELP_mktemp "usage: mktemp [-dqu] [-p DIR] [TEMPLATE]\n\nSafely create a new file \"DIR/TEMPLATE\" and print its name.\n\n-d	Create directory instead of file (--directory)\n-p	Put new file in DIR (--tmpdir)\n-q	Quiet, no error messages\n-t	Prefer $TMPDIR > DIR > /tmp (default DIR > $TMPDIR > /tmp)\n-u	Don't create anything, just print what would be created\n\nEach X in TEMPLATE is replaced with a random printable character. The\ndefault TEMPLATE is tmp.XXXXXXXXXX. The number of X needs to be no less than 6."
-#else
 #define HELP_mktemp "usage: mktemp [-dqtu] [-p DIR] [TEMPLATE]\n\nSafely create a new file \"DIR/TEMPLATE\" and print its name.\n\n-d	Create directory instead of file (--directory)\n-p	Put new file in DIR (--tmpdir)\n-q	Quiet, no error messages\n-t	Prefer $TMPDIR > DIR > /tmp (default DIR > $TMPDIR > /tmp)\n-u	Don't create anything, just print what would be created\n\nEach X in TEMPLATE is replaced with a random printable character. The\ndefault TEMPLATE is tmp.XXXXXXXXXX."
-#endif
 
 #define HELP_mknod_z "usage: mknod [-Z CONTEXT] ...\n\n-Z	Set security context to created file"
 
@@ -129,20 +122,11 @@
 
 #define HELP_rfkill "usage: rfkill COMMAND [DEVICE]\n\nEnable/disable wireless devices.\n\nCommands:\nlist [DEVICE]   List current state\nblock DEVICE    Disable device\nunblock DEVICE  Enable device\n\nDEVICE is an index number, or one of:\nall, wlan(wifi), bluetooth, uwb(ultrawideband), wimax, wwan, gps, fm."
 
-#ifdef TOYBOX_OH_ADAPT
-#define HELP_ping "usage: ping/ping6 [OPTIONS] HOST\n\nCheck network connectivity by sending packets to a host and reporting\nits response.\n\nSend ICMP ECHO_REQUEST packets to ipv4 or ipv6 addresses and prints each\necho it receives back, with round trip time. Returns true if host alive.\n\nOptions:\n-4, -6		Force IPv4 or IPv6\n-c CNT		Send CNT many packets (default 3, 0 = infinite)\n-f		Flood (print . and \\b to show drops, default -c 15 -i 0.2)\n-i TIME		Interval between packets (default 1, need root for < 0.2)\n-I IFACE/IP	Source interface or address\n-m MARK		Tag outgoing packets using SO_MARK\n-q		Quiet (stops after one returns true if host is alive)\n-s SIZE		Data SIZE in bytes (default 56)\n-t TTL		Set Time To Live (number of hops)\n-W SEC		Seconds to wait for response after last -c packet (default 3)\n-w SEC		Exit after this many seconds"
-#else
 #define HELP_ping "usage: ping [OPTIONS] HOST\n\nCheck network connectivity by sending packets to a host and reporting\nits response.\n\nSend ICMP ECHO_REQUEST packets to ipv4 or ipv6 addresses and prints each\necho it receives back, with round trip time. Returns true if host alive.\n\nOptions:\n-4, -6		Force IPv4 or IPv6\n-c CNT		Send CNT many packets (default 3, 0 = infinite)\n-f		Flood (print . and \\b to show drops, default -c 15 -i 0.2)\n-i TIME		Interval between packets (default 1, need root for < 0.2)\n-I IFACE/IP	Source interface or address\n-m MARK		Tag outgoing packets using SO_MARK\n-q		Quiet (stops after one returns true if host is alive)\n-s SIZE		Data SIZE in bytes (default 56)\n-t TTL		Set Time To Live (number of hops)\n-W SEC		Seconds to wait for response after last -c packet (default 3)\n-w SEC		Exit after this many seconds"
-#endif
 
 #define HELP_netstat "usage: netstat [-pWrxwutneal]\n\nDisplay networking information. Default is netstat -tuwx\n\n-r	Routing table\n-a	All sockets (not just connected)\n-l	Listening server sockets\n-t	TCP sockets\n-u	UDP sockets\n-w	Raw sockets\n-x	Unix sockets\n-e	Extended info\n-n	Don't resolve names\n-W	Wide display\n-p	Show PID/program name of sockets"
 
-#ifdef TOYBOX_OH_ADAPT
-/* Remove unsupported -f and -t option */
-#define HELP_netcat "usage: netcat [-46ELlnUu] [-pqWw #] [-s addr] [-o FILE] {IPADDR PORTNUM|COMMAND...}\n\nForward stdin/stdout to a file or network connection.\n\n-4	Force IPv4\n-6	Force IPv6\n-E	Forward stderr\n-L	Listen and background each incoming connection (server mode)\n-l	Listen for one incoming connection, then exit\n-n	No DNS lookup\n-o	Hex dump to FILE (show packets, -o- writes hex only to stdout)\n-O	Hex dump to FILE (streaming mode)\n-p	Local port number\n-q	Quit SECONDS after EOF on stdin, even if stdout hasn't closed yet\n-s	Local source address\n-u	Use UDP\n-U	Use a UNIX domain socket\n-W	SECONDS timeout for more data on an idle connection\n-w	SECONDS timeout to establish connection\n-z	zero-I/O mode [used for scanning]\n\nWhen listening the COMMAND line is executed as a child process to handle\nan incoming connection. With no COMMAND -l forwards the connection\nto stdin/stdout. If no -p specified, -l prints the port it bound to and\nbackgrounds itself (returning immediately).\n\nFor a quick-and-dirty server, try something like:\nnetcat -s 127.0.0.1 -p 1234 L sh -l"
-#else
 #define HELP_netcat "usage: netcat [-46ELlntUu] [-pqWw #] [-s addr] [-o FILE] {IPADDR PORTNUM|-f FILENAME|COMMAND...}\n\nForward stdin/stdout to a file or network connection.\n\n-4	Force IPv4\n-6	Force IPv6\n-E	Forward stderr\n-f	Use FILENAME (ala /dev/ttyS0) instead of network\n-L	Listen and background each incoming connection (server mode)\n-l	Listen for one incoming connection, then exit\n-n	No DNS lookup\n-o	Hex dump to FILE (show packets, -o- writes hex only to stdout)\n-O	Hex dump to FILE (streaming mode)\n-p	Local port number\n-q	Quit SECONDS after EOF on stdin, even if stdout hasn't closed yet\n-s	Local source address\n-t	Allocate tty\n-u	Use UDP\n-U	Use a UNIX domain socket\n-W	SECONDS timeout for more data on an idle connection\n-w	SECONDS timeout to establish connection\n-z	zero-I/O mode [used for scanning]\n\nWhen listening the COMMAND line is executed as a child process to handle\nan incoming connection. With no COMMAND -l forwards the connection\nto stdin/stdout. If no -p specified, -l prints the port it bound to and\nbackgrounds itself (returning immediately).\n\nFor a quick-and-dirty server, try something like:\nnetcat -s 127.0.0.1 -p 1234 -tL sh -l\n\nOr use \"stty 115200 -F /dev/ttyS0 && stty raw -echo -ctlecho\" with\nnetcat -f to connect to a serial port."
-#endif
 
 #define HELP_microcom "usage: microcom [-s SPEED] [-X] DEVICE\n\nSimple serial console. Hit CTRL-] for menu.\n\n-s	Set baud rate to SPEED\n-X	Ignore ^] menu escape"
 
@@ -154,11 +138,7 @@
 
 #define HELP_ftpput "An ftpget that defaults to -s instead of -g"
 
-#ifdef TOYBOX_OH_ADAPT
-#define HELP_ftpget "usage: ftpget/ftpput [-cvgslLmMdD] [-p PORT] [-P PASSWORD] [-u USER] HOST [LOCAL] REMOTE\n\nTalk to ftp server. By default get REMOTE file via passive anonymous\ntransfer, optionally saving under a LOCAL name. Can also send, list, etc.\n\n-c	Continue partial transfer\n-p	Use PORT instead of \"21\"\n-P	Use PASSWORD instead of \"ftpget@\"\n-u	Use USER instead of \"anonymous\"\n-v	Verbose\n\nWays to interact with FTP server:\n-d	Delete file\n-D	Remove directory\n-g	Get file (default)\n-l	List directory\n-L	List (filenames only)\n-m	Move file on server from LOCAL to REMOTE\n-M	mkdir\n-s	Send file"
-#else
 #define HELP_ftpget "usage: ftpget [-cvgslLmMdD] [-P PORT] [-p PASSWORD] [-u USER] HOST [LOCAL] REMOTE\n\nTalk to ftp server. By default get REMOTE file via passive anonymous\ntransfer, optionally saving under a LOCAL name. Can also send, list, etc.\n\n-c	Continue partial transfer\n-p	Use PORT instead of \"21\"\n-P	Use PASSWORD instead of \"ftpget@\"\n-u	Use USER instead of \"anonymous\"\n-v	Verbose\n\nWays to interact with FTP server:\n-d	Delete file\n-D	Remove directory\n-g	Get file (default)\n-l	List directory\n-L	List (filenames only)\n-m	Move file on server from LOCAL to REMOTE\n-M	mkdir\n-s	Send file"
-#endif
 
 #define HELP_yes "usage: yes [args...]\n\nRepeatedly output line until killed. If no args, output 'y'."
 
@@ -268,7 +248,7 @@
 
 #define HELP_mkswap "usage: mkswap [-L LABEL] DEVICE\n\nSet up a Linux swap area on a device or file."
 
-#define HELP_mkpasswd "usage: mkpasswd [-P FD] [-m TYPE] [-S SALT] [PASSWORD] [SALT]\n\nEncrypt PASSWORD using crypt(3), with either random or provided SALT.\n\n-P FD	Read password from file descriptor FD\n-m TYPE	Encryption method (des, md5, sha256, or sha512; default is des)\n-S SALT"
+#define HELP_mkpasswd "usage: mkpasswd [-P FD] [-m TYPE] [-S SALT] [PASSWORD] [SALT]\n\nEncrypt PASSWORD using crypt(3), with either random or provided SALT.\n\n-P FD	Read password from file descriptor FD\n-m TYPE	Encryption method (des, md5, sha256, or sha512; default is des)"
 
 #define HELP_mix "usage: mix [-d DEV] [-c CHANNEL] [-l VOL] [-r RIGHT]\n\nList OSS sound channels (module snd-mixer-oss), or set volume(s).\n\n-c CHANNEL	Set/show volume of CHANNEL (default first channel found)\n-d DEV		Device node (default /dev/mixer)\n-l VOL		Volume level\n-r RIGHT	Volume of right stereo channel (with -r, -l sets left volume)"
 
@@ -356,7 +336,7 @@
 
 #define HELP_count "usage: count [-l]\n\n-l	Long output (total bytes, human readable, transfer rate, elapsed time)\n\nCopy stdin to stdout, displaying simple progress indicator to stderr."
 
-#define HELP_clear "usage: clear\n\nClear the screen."
+#define HELP_clear "Clear the screen."
 
 #define HELP_chrt "usage: chrt [-Rmofrbi] {-p PID [PRIORITY] | [PRIORITY COMMAND...]}\n\nGet/set a process' real-time scheduling policy and priority.\n\n-p	Set/query given pid (instead of running COMMAND)\n-R	Set SCHED_RESET_ON_FORK\n-m	Show min/max priorities available\n\nSet policy (default -r):\n\n  -o  SCHED_OTHER    -f  SCHED_FIFO    -r  SCHED_RR\n  -b  SCHED_BATCH    -i  SCHED_IDLE"
 
@@ -394,11 +374,7 @@
 
 #define HELP_useradd "usage: useradd [-SDH] [-h DIR] [-s SHELL] [-G GRP] [-g NAME] [-u UID] USER [GROUP]\n\nCreate new user, or add USER to GROUP\n\n-D       Don't assign a password\n-g NAME  Real name\n-G GRP   Add user to existing group\n-h DIR   Home directory\n-H       Don't create home directory\n-s SHELL Login shell\n-S       Create a system user\n-u UID   User id"
 
-#ifdef TOYBOX_OH_ADAPT
-#define HELP_traceroute "usage: traceroute [-46FUIldnvr] [-f 1ST_TTL] [-m MAXTTL] [-p PORT] [-q PROBES]\n[-s SRC_IP] [-t TOS] [-w WAIT_SEC] [-g GATEWAY] [-i IFACE] [-z PAUSE_MSEC] HOST [BYTES]\n\nusage: traceroute6 [-dnrv] [-m MAXTTL] [-p PORT] [-q PROBES][-s SRC_IP] [-t TOS] [-w WAIT_SEC]\n  [-i IFACE] HOST [BYTES]\n\nTrace the route to HOST\n\n-4,-6 Force IP or IPv6 name resolution\n-F    Set the don't fragment bit (supports IPV4 only)\n-U    Use UDP datagrams instead of ICMP ECHO (supports IPV4 only)\n-I    Use ICMP ECHO instead of UDP datagrams (supports IPV4 only)\n-l    Display the TTL value of the returned packet (supports IPV4 only)\n-d    Set SO_DEBUG options to socket\n-n    Print numeric addresses\n-v    verbose\n-r    Bypass routing tables, send directly to HOST\n-m    Max time-to-live (max number of hops)(RANGE 1 to 255)\n-p    Base UDP port number used in probes(default 33434)(RANGE 1 to 65535)\n-q    Number of probes per TTL (default 3)(RANGE 1 to 255)\n-s    IP address to use as the source address\n-t    Type-of-service in probe packets (default 0)(RANGE 0 to 255)\n-w    Time in seconds to wait for a response (default 3)(RANGE 0 to 86400)\n-g    Loose source route gateway (8 max) (supports IPV4 only)\n-z    Pause Time in ms (default 0)(RANGE 0 to 86400) (supports IPV4 only)\n-f    Start from the 1ST_TTL hop (instead from 1)(RANGE 1 to 255) (supports IPV4 only)\n-i    Specify a network interface to operate with"
-#else
 #define HELP_traceroute "usage: traceroute [-46FUIldnvr] [-f 1ST_TTL] [-m MAXTTL] [-p PORT] [-q PROBES]\n[-s SRC_IP] [-t TOS] [-w WAIT_SEC] [-g GATEWAY] [-i IFACE] [-z PAUSE_MSEC] HOST [BYTES]\n\ntraceroute6 [-dnrv] [-m MAXTTL] [-p PORT] [-q PROBES][-s SRC_IP] [-t TOS] [-w WAIT_SEC]\n  [-i IFACE] HOST [BYTES]\n\nTrace the route to HOST\n\n-4,-6 Force IP or IPv6 name resolution\n-F    Set the don't fragment bit (supports IPV4 only)\n-U    Use UDP datagrams instead of ICMP ECHO (supports IPV4 only)\n-I    Use ICMP ECHO instead of UDP datagrams (supports IPV4 only)\n-l    Display the TTL value of the returned packet (supports IPV4 only)\n-d    Set SO_DEBUG options to socket\n-n    Print numeric addresses\n-v    verbose\n-r    Bypass routing tables, send directly to HOST\n-m    Max time-to-live (max number of hops)(RANGE 1 to 255)\n-p    Base UDP port number used in probes(default 33434)(RANGE 1 to 65535)\n-q    Number of probes per TTL (default 3)(RANGE 1 to 255)\n-s    IP address to use as the source address\n-t    Type-of-service in probe packets (default 0)(RANGE 0 to 255)\n-w    Time in seconds to wait for a response (default 3)(RANGE 0 to 86400)\n-g    Loose source route gateway (8 max) (supports IPV4 only)\n-z    Pause Time in ms (default 0)(RANGE 0 to 86400) (supports IPV4 only)\n-f    Start from the 1ST_TTL hop (instead from 1)(RANGE 1 to 255) (supports IPV4 only)\n-i    Specify a network interface to operate with"
-#endif
 
 #define HELP_tr "usage: tr [-cdst] SET1 [SET2]\n\nTranslate, squeeze, or delete characters from stdin, writing to stdout\n\n-c/-C  Take complement of SET1\n-d     Delete input characters coded SET1\n-s     Squeeze multiple output characters of SET2 into one character\n-t     Truncate SET1 to length of SET2"
 
@@ -454,7 +430,7 @@
 
 #define HELP_sh "usage: sh [-c command] [script]\n\nCommand shell.  Runs a shell script, or reads input interactively\nand responds to it. Roughly compatible with \"bash\". Run \"help\" for\nlist of built-in commands.\n\n-c	command line to execute\n-i	interactive mode (default when STDIN is a tty)\n-s	don't run script (args set $* parameters but read commands from stdin)\n\nCommand shells parse each line of input (prompting when interactive), perform\nvariable expansion and redirection, execute commands (spawning child processes\nand background jobs), and perform flow control based on the return code.\n\nParsing:\n  syntax errors\n\nInteractive prompts:\n  line continuation\n\nVariable expansion:\n  Note: can cause syntax errors at runtime\n\nRedirection:\n  HERE documents (parsing)\n  Pipelines (flow control and job control)\n\nRunning commands:\n  process state\n  builtins\n    cd [[ ]] (( ))\n    ! : [ # TODO: help for these?\n    true false help echo kill printf pwd test\n  child processes\n\nJob control:\n  &    Background process\n  Ctrl-C kill process\n  Ctrl-Z suspend process\n  bg fg jobs kill\n\nFlow control:\n;    End statement (same as newline)\n&    Background process (returns true unless syntax error)\n&&   If this fails, next command fails without running\n||   If this succeeds, next command succeeds without running\n|    Pipelines! (Can of worms...)\nfor {name [in...]}|((;;)) do; BODY; done\nif TEST; then BODY; fi\nwhile TEST; do BODY; done\ncase a in X);; esac\n[[ TEST ]]\n((MATH))\n\nJob control:\n&    Background process\nCtrl-C kill process\nCtrl-Z suspend process\nbg fg jobs kill"
 
-#define HELP_route "usage: route [-ne] [-A [inet|inet6]] [add|del TARGET [OPTIONS]]\n\nDisplay, add or delete network routes in the \"Forwarding Information Base\",\nwhich send packets out a network interface to an address.\n\n-n	Show numerical addresses (no DNS lookups)\n-e	display netstat fields\n\nAssigning an address to an interface automatically creates an appropriate\nnetwork route (\"ifconfig eth0 10.0.2.15/8\" does \"route add 10.0.0.0/8 eth0\"\nfor you), although some devices (such as loopback) won't show it in the\ntable. For machines more than one hop away, you need to specify a gateway\n(ala \"route add default gw 10.0.2.2\").\n\nThe address \"default\" is a wildcard address (0.0.0.0/0) matching all\npackets without a more specific route.\n\nAvailable OPTIONS include:\nreject   - blocking route (force match failure)\ndev NAME - force matching packets out this interface (ala \"eth0\")\nnetmask  - old way of saying things like ADDR/24\ngw ADDR  - forward packets to gateway ADDR"
+#define HELP_route "usage: route [-ne] [-A [46]] [add|del TARGET [OPTIONS]]\n\nDisplay, add or delete network routes in the \"Forwarding Information Base\".\n\n-n	Show numerical addresses (no DNS lookups)\n-e	display netstat fields\n\nRouting means sending packets out a network interface to an address.\nThe kernel can tell where to send packets one hop away by examining each\ninterface's address and netmask, so the most common use of this command\nis to identify a \"gateway\" that forwards other traffic.\n\nAssigning an address to an interface automatically creates an appropriate\nnetwork route (\"ifconfig eth0 10.0.2.15/8\" does \"route add 10.0.0.0/8 eth0\"\nfor you), although some devices (such as loopback) won't show it in the\ntable. For machines more than one hop away, you need to specify a gateway\n(ala \"route add default gw 10.0.2.2\").\n\nThe address \"default\" is a wildcard address (0.0.0.0/0) matching all\npackets without a more specific route.\n\nAvailable OPTIONS include:\nreject   - blocking route (force match failure)\ndev NAME - force matching packets out this interface (ala \"eth0\")\nnetmask  - old way of saying things like ADDR/24\ngw ADDR  - forward packets to gateway ADDR"
 
 #define HELP_more "usage: more [FILE...]\n\nView FILE(s) (or stdin) one screenfull at a time."
 
@@ -472,12 +448,7 @@
 
 #define HELP_klogd "usage: klogd [-n] [-c PRIORITY]\n\nForward messages from the kernel ring buffer (read by dmesg) to syslogd.\n\n-c	Print to console messages more urgent than PRIORITY (1-8)\n-n	Run in foreground\n-s	Use syscall instead of /proc"
 
-#ifdef TOYBOX_OH_ADAPT
-//delete 'ipcs -s' fail problem: kernel is not configured for semaphores
-#define HELP_ipcs "usage: ipcs [[-mq] -i shmid] | [[-amq] [-tcplu]]\n\n-i Show specific resource\nResource specification:\n-a All (default)\n-m Shared memory segments\n-q Message queues\nOutput format:\n-c Creator\n-l Limits\n-p Pid\n-t Time\n-u Summary"
-#else
 #define HELP_ipcs "usage: ipcs [[-smq] -i shmid] | [[-asmq] [-tcplu]]\n\n-i Show specific resource\nResource specification:\n-a All (default)\n-m Shared memory segments\n-q Message queues\n-s Semaphore arrays\nOutput format:\n-c Creator\n-l Limits\n-p Pid\n-t Time\n-u Summary"
-#endif
 
 #define HELP_ipcrm "usage: ipcrm [ [-q msqid] [-m shmid] [-s semid]\n          [-Q msgkey] [-M shmkey] [-S semkey] ... ]\n\n-mM Remove memory segment after last detach\n-qQ Remove message queue\n-sS Remove semaphore"
 
@@ -563,11 +534,7 @@
 
 #define HELP_arch "usage: arch\n\nPrint machine (hardware) name, same as uname -m."
 
-#ifdef TOYBOX_OH_ADAPT
-#define HELP_ulimit "usage: ulimit/prlimit [-P PID] [-SHRacdefilmnpqrstuv] [LIMIT]\n\nPrint or set resource limits for process number PID. If no LIMIT specified\n(or read-only -ap selected) display current value (sizes in bytes).\nDefault is ulimit -P $PPID -Sf\" (show soft filesize of your shell).\n\n-P  PID to affect (default $PPID)  -a  Show all limits\n-S  Set/show soft limit            -H  Set/show hard (maximum) limit\n\n-c  Core file size (blocks)        -d  Process data segment (KiB)\n-e  Max scheduling priority        -f  File size (KiB)\n-i  Pending signal count           -l  Locked memory (KiB)\n-m  Resident Set Size (KiB)        -n  Number of open files\n-p  Pipe buffer (512 bytes)        -q  POSIX message queues\n-r  Max realtime priority          -R  Realtime latency (us)\n-s  Stack size (KiB)               -t  Total CPU time (s)\n-u  Maximum processes (this UID)   -v  Virtual memory size (KiB)"
-#else
 #define HELP_ulimit "usage: ulimit [-P PID] [-SHRacdefilmnpqrstuv] [LIMIT]\n\nPrint or set resource limits for process number PID. If no LIMIT specified\n(or read-only -ap selected) display current value (sizes in bytes).\nDefault is ulimit -P $PPID -Sf\" (show soft filesize of your shell).\n\n-P  PID to affect (default $PPID)  -a  Show all limits\n-S  Set/show soft limit            -H  Set/show hard (maximum) limit\n\n-c  Core file size (blocks)        -d  Process data segment (KiB)\n-e  Max scheduling priority        -f  File size (KiB)\n-i  Pending signal count           -l  Locked memory (KiB)\n-m  Resident Set Size (KiB)        -n  Number of open files\n-p  Pipe buffer (512 bytes)        -q  POSIX message queues\n-r  Max realtime priority          -R  Realtime latency (us)\n-s  Stack size (KiB)               -t  Total CPU time (s)\n-u  Maximum processes (this UID)   -v  Virtual memory size (KiB)"
-#endif
 
 #define HELP_tty "usage: tty [-s]\n\nShow filename of terminal connected to stdin. If none print \"not a tty\"\nand exit with nonzero status.\n\n-s	Silent, exit code only"
 
@@ -651,11 +618,7 @@
 
 #define HELP_whoami "usage: whoami\n\nPrint the current user name."
 
-#ifdef TOYBOX_OH_ADAPT
-#define HELP_logname "usage: logname/whoami\n\nPrint the current user name."
-#else
 #define HELP_logname "usage: logname\n\nPrint the current user name."
-#endif
 
 #define HELP_groups "usage: groups [user]\n\nPrint the groups a user is in."
 
@@ -667,11 +630,7 @@
 
 #define HELP_head "usage: head [-cn NUM] [-qv] [FILE...]\n\nCopy first lines from files to stdout. If no files listed, copy from\nstdin. Filename \"-\" is a synonym for stdin.\n\n-n	Number of lines to copy\n-c	Number of bytes to copy\n-q	Never print headers\n-v	Always print headers"
 
-#ifdef TOYBOX_OH_ADAPT
-#define HELP_grep "usage: grep/egrep/fgrep [-EFrivwcloqsHbhn] [-ABC NUM] [-m MAX] [-e REGEX]... [-MS PATTERN]... [-f REGFILE] [FILE]...\n\nShow lines matching regular expressions. If no -e, first argument is\nregular expression to match. With no files (or \"-\" filename) read stdin.\nReturns 0 if matched, 1 if no match found, 2 for command errors.\n\n-e  Regex to match. (May be repeated.)\n-f  File listing regular expressions to match.\n\nfile search:\n-r  Recurse into subdirectories (defaults FILE to \".\")\n-R  Recurse into subdirectories and symlinks to directories\n-M  Match filename pattern (--include)\n-S  Skip filename pattern (--exclude)\n--exclude-dir=PATTERN  Skip directory pattern\n-I  Ignore binary files\n\nmatch type:\n-A  Show NUM lines after     -B  Show NUM lines before match\n-C  NUM lines context (A+B)  -E  extended regex syntax\n-F  fixed (literal match)    -a  always text (not binary)\n-i  case insensitive         -m  match MAX many lines\n-v  invert match             -w  whole word (implies -E)\n-x  whole line               -z  input NUL terminated\n\ndisplay modes: (default: matched line)\n-L  filenames with no match  -Z  output is NUL terminated\n-c  count of matching lines  -l  filenames with a match\n-o  only matching part       -q  quiet (errors only)\n-s  silent (no error msg)\n\noutput prefix (default: filename if checking more than 1 file)\n-H  force filename           -b  byte offset of match\n-h  hide filename            -n  line number of match"
-#else
 #define HELP_grep "usage: grep [-abcEFHhIiLlnoqrsvwxZz] [-ABC NUM] [-m MAX] [-e REGEX]... [-MS PATTERN]... [-f REGFILE]... [FILE]...\n\nShow lines matching regular expressions. If no -e, first argument is\nregular expression to match. With no files (or \"-\" filename) read stdin.\nReturns 0 if matched, 1 if no match found, 2 for command errors.\n\n-e  Regex(es) to match.       -f  File(s) of regexes to match (1 per line).\n\nfile search:\n-r  Recurse into subdirs     -R  Recurse following symlinks\n-M  Match files (--include)  -S  Skip files (--exclude)\n-I  Ignore binary files      --exclude-dir=PATTERN  Skip directories\n\nmatch type:\n-A  Show NUM lines after     -B  Show NUM lines before match\n-C  NUM lines context (A+B)  -E  extended regex syntax\n-F  fixed (literal match)    -a  always text (not binary)\n-i  case insensitive         -m  match MAX many lines\n-v  invert match             -w  whole word (implies -E)\n-x  whole line               -z  input NUL terminated\n\ndisplay modes: (default: matched line)\n-L  filenames with no match  -Z  output is NUL terminated\n-c  count of matching lines  -l  filenames with a match\n-o  only matching part       -q  quiet (errors only)\n-s  silent (no error msg)\n\noutput prefix (default: filename if checking more than 1 file)\n-H  force filename           -b  byte offset of match\n-h  hide filename            -n  line number of match"
-#endif
 
 #define HELP_getconf "usage: getconf -a [PATH] | -l | NAME [PATH]\n\nGet system configuration values. Values from pathconf(3) require a path.\n\n-a	Show all (defaults to \"/\" if no path given)\n-l	List available value names (grouped by source)"
 
@@ -717,12 +676,7 @@
 
 #define HELP_cksum "usage: cksum [-HIPLN] [FILE...]\n\nFor each file, output crc32 checksum value, length and name of file.\nIf no files listed, copy from stdin.  Filename \"-\" is a synonym for stdin.\n\n-H	Hexadecimal checksum (defaults to decimal)\n-I	Skip post-inversion\n-P	Pre-inversion\n-L	Little endian (defaults to big endian)\n-N	Do not include length in CRC calculation (or output)"
 
-#ifdef TOYBOX_OH_ADAPT
-/* fix "chmod +w A.txt and chmod a+w A.txt inconsistent" problem*/
-#define HELP_chmod "usage: chmod [-R] MODE FILE...\n\nChange mode of listed file[s] (recursively with -R).\n\nMODE can be (comma-separated) stanzas: [ugoa][+-=][rwxstXugo]\n\nStanzas are applied in order: For each category (u = user,\ng = group, o = other, a = all three, if none specified default is a, but honoring umask),\nset (+), clear (-), or copy (=), r = read, w = write, x = execute.\ns = u+s = suid, g+s = sgid, o+s = sticky. (+t is an alias for o+s).\nsuid/sgid: execute as the user/group who owns the file.\nsticky: can't delete files you don't own out of this directory\nX = x for directories or if any category already has x set.\n\nOr MODE can be an octal value up to 7777	ug uuugggooo	top +\nbit 1 = o+x, bit 1<<8 = u+w, 1<<11 = g+1	sstrwxrwxrwx	bottom\n\nExamples:\nchmod u+w file - allow owner of \"file\" to write to it.\nchmod 744 file - user can read/write/execute, everyone else read only"
-#else
 #define HELP_chmod "usage: chmod [-R] MODE FILE...\n\nChange mode of listed file[s] (recursively with -R).\n\nMODE can be (comma-separated) stanzas: [ugoa][+-=][rwxstXugo]\n\nStanzas are applied in order: For each category (u = user,\ng = group, o = other, a = all three, if none specified default is a),\nset (+), clear (-), or copy (=), r = read, w = write, x = execute.\ns = u+s = suid, g+s = sgid, +t = sticky. (o+s ignored so a+s doesn't set +t)\nsuid/sgid: execute as the user/group who owns the file.\nsticky: can't delete files you don't own out of this directory\nX = x for directories or if any category already has x set.\n\nOr MODE can be an octal value up to 7777	ug uuugggooo	top +\nbit 1 = o+x, bit 1<<8 = u+w, 1<<11 = g+1	sstrwxrwxrwx	bottom\n\nExamples:\nchmod u+w file - allow owner of \"file\" to write to it.\nchmod 744 file - user can read/write/execute, everyone else read only"
-#endif
 
 #define HELP_chown "see: chgrp"
 

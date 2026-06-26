@@ -6,5 +6,5 @@ syntax: glob
 /kconfig/mconf
 /kconfig/conf
 /kconfig/*.c
-/toybox
 /toybox_unstripped
+/.vscode
