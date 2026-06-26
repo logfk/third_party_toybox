@@ -53,8 +53,9 @@ else
 fi
 echo "toybox 路径: $TOYBOX_CMD"
 
-# 清理并创建板端工作目录
-"$HDC" shell "rm -rf $BOARD_DIR && mkdir -p $BOARD_DIR" 2>/dev/null
+# 清理并创建板端工作目录（分两步，避免 && 被 hdc.exe 吞掉）
+"$HDC" shell "rm -rf $BOARD_DIR" 2>/dev/null
+"$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
 # 检查主板上的 toybox 是否支持各命令
 echo ""
@@ -105,8 +106,9 @@ testing() {
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
   # 将测试创建的数据文件和 input 同步到板端
+  # 使用 $PWD/ 绝对路径，避免 hdc.exe 在 Windows 上以错误 cwd 解析相对路径
   for f in *; do
-    [ -f "$f" ] && "$HDC" file send "$f" "$BOARD_DIR/$f" >/dev/null 2>&1
+    [ -f "$f" ] && "$HDC" file send "$PWD/$f" "$BOARD_DIR/$f" >/dev/null 2>&1
   done
 
   # 推送 stdin 文件（如有）
