@@ -7,4 +7,4 @@ syntax: glob
 /kconfig/conf
 /kconfig/*.c
 /toybox_unstripped
-/.vscode
+/.vscodetransfer.tar.gz
