@@ -45,22 +45,20 @@ echo "主板连接正常"
 
 # ==== hdc 帮助函数 ====
 # hdc.exe 在 Windows 上不传播远程退出码（永远返回 0），
-# 所以不能依赖 $?，需要捕获输出检查错误信息。
-# hdc_works: 直接捕获 hdc shell 输出，检查是否包含 shell 级错误
+# 所以不能依赖 $?。写文件判空 + grep 查 shell 错误
 hdc_works() {
-  local out
-  out=$("$HDC" shell "$1" 2>&1) || return 1
-  case "$out" in
-    "" ) return 1 ;;
-    *"sh: "*"inaccessible"*) return 1 ;;
-    *"sh: "*"not found"*) return 1 ;;
-  esac
-  return 0
+  local tmp="$TOP/_test/hdc_ck.txt"
+  rm -f "$tmp"
+  "$HDC" shell "$1" > "$tmp" 2>&1
+  [ -s "$tmp" ] || return 1
+  grep -q "sh:.*not found\|sh:.*inaccessible" "$tmp" && return 1 || return 0
 }
 # hdc_cleanup: 清理板端测试内容，保留推送的 toybox 二进制
 hdc_cleanup() {
   "$HDC" shell "cd $BOARD_DIR && ls -a 2>/dev/null | while read f; do case \"\$f\" in .|..|toybox) continue ;; esac; rm -rf \"\$f\"; done" 2>/dev/null
 }
+
+mkdir -p "$TOP/_test" 2>/dev/null
 
 # 检查主板上 toybox 路径：优先用板端推送的（带 TOYBOX_OH_ADAPT）
 if hdc_works "$BOARD_DIR/toybox --help"; then
