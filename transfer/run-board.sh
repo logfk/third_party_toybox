@@ -106,14 +106,13 @@ testing() {
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
   # 同步测试创建的文件和目录到板端
+  # Windows 上 echo > file 会产生 CRLF，板端 cut 等命令的 -s 会输出
+  # 被抑制行的 \r\n，导致最终对比出现空行。发送前 strip \r。
   for f in *; do
     [ -d "$f" ] && "$HDC" shell "mkdir -p $BOARD_DIR/$f" 2>/dev/null
     [ -f "$f" ] || continue
-    local content
-    content=$(cat "$f")
-    # shell 单引号内转义：' -> '\'' ；base64 不需要转义
     local b64
-    b64=$(base64 -w0 "$f" 2>/dev/null) || continue
+    b64=$(tr -d '\r' < "$f" | base64 -w0 2>/dev/null) || continue
     "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/$f" 2>/dev/null
   done
 
@@ -121,7 +120,7 @@ testing() {
   if [ -n "$5" ]; then
     printf '%s' "$5" > "$TESTDIR/stdin"
     local b64
-    b64=$(base64 -w0 "$TESTDIR/stdin" 2>/dev/null)
+    b64=$(tr -d '\r' < "$TESTDIR/stdin" | base64 -w0 2>/dev/null)
     "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/stdin" 2>/dev/null
   fi
 
