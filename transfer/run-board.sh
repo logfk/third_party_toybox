@@ -44,12 +44,14 @@ fi
 echo "主板连接正常"
 
 # ==== hdc 帮助函数 ====
-# hdc.exe 在 Windows 上不传播远程退出码（永远返回 0），
-# 所以不能依赖 $?。写文件判空 + grep 查 shell 错误
+# hdc.exe 在 Windows 上可能不支持整串参数，需要分单词传
+# 写文件判空 + grep 查 shell 错误
 hdc_works() {
   local tmp="$TOP/_test/hdc_ck.txt"
   rm -f "$tmp"
-  "$HDC" shell "$1" > "$tmp" 2>&1
+  # 不加引号，让 bash 把 $1 拆成多个参数传给 hdc.exe
+  # shellcheck disable=SC2086
+  "$HDC" shell $1 > "$tmp" 2>&1
   [ -s "$tmp" ] || return 1
   grep -q "sh:.*not found\|sh:.*inaccessible" "$tmp" && return 1 || return 0
 }
