@@ -123,13 +123,13 @@ testing() {
 
   # 直接在板端执行命令（无需生成 run.sh）
   if [ -n "$5" ]; then
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < $BOARD_DIR/stdin" 2>/dev/null)
+    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < $BOARD_DIR/stdin" 2>/dev/null | tr -d '\r')
   else
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" 2>/dev/null)
+    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" 2>/dev/null | tr -d '\r')
   fi
   RETVAL=$?
 
-  echo -ne "$ACTUAL" > "$TESTDIR/actual"
+  printf '%s' "$ACTUAL" > "$TESTDIR/actual"
   [ $RETVAL -gt 128 ] && echo "exited with signal (or returned $RETVAL)" >> "$TESTDIR/actual"
 
   DIFF="$(cd "$TESTDIR"; diff -au expected actual 2>&1)"
