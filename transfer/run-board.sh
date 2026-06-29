@@ -48,15 +48,17 @@ echo "主板连接正常"
 # 所以不能依赖 $?，需要捕获输出检查错误信息。
 # hdc_run CMD 返回 CMD 的执行输出（去掉末尾空行）
 hdc_out() {
-  "$HDC" shell "$@" 2>/dev/null | sed '$ { /^[[:space:]]*$/ d }'
+  "$HDC" shell "$@" 2>&1 | sed '$ { /^[[:space:]]*$/ d }'
 }
 # hdc_works: 命令输出中无错误信息即视为成功
 hdc_works() {
   local out
   out=$(hdc_out "$1") || return 1
+  # 只匹配 shell 级错误（/bin/sh: ... not found），不匹配 hdc 自身诊断
   case "$out" in
-    *"inaccessible"*|*"not found"*|*"No such file"*) return 1 ;;
-    "") return 1 ;;
+    *"sh: "*"inaccessible"*) return 1 ;;
+    *"sh: "*"not found"*) return 1 ;;
+    "" ) return 1 ;;
   esac
   return 0
 }
