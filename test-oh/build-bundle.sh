@@ -100,9 +100,20 @@ for f in "$BIN_DIR"/*; do
   [ -f "$f" ] || continue
   CMDNAME="$(basename "$f")"
   echo "  [推送] $CMDNAME"
-  local b64
+  # 分块传输，避免单条 hdc 命令行超长
   b64=$(base64 -w0 "$f" 2>/dev/null) || continue
-  "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/$CMDNAME" 2>/dev/null
+  first=1
+  while [ -n "$b64" ]; do
+    chunk="${b64:0:8000}"
+    b64="${b64:8000}"
+    if [ -n "$first" ]; then
+      "$HDC" shell "printf '%s' '$chunk' > /tmp/${CMDNAME}.b64" 2>/dev/null
+      first=
+    else
+      "$HDC" shell "printf '%s' '$chunk' >> /tmp/${CMDNAME}.b64" 2>/dev/null
+    fi
+  done
+  "$HDC" shell "$SYS_TOYBOX base64 -d < /tmp/${CMDNAME}.b64 > $BOARD_DIR/$CMDNAME" 2>/dev/null
   "$HDC" shell "chmod +x $BOARD_DIR/$CMDNAME" 2>/dev/null
   ((BIN_COUNT++))
 done
@@ -232,15 +243,26 @@ for testfile in "$@"; do
   "$HDC" shell "rm -rf $BOARD_DIR" 2>/dev/null
   "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
-  # 恢复二进制
-  for f in "$BIN_DIR"/*; do
-    [ -f "$f" ] || continue
-    CMDNAME="$(basename "$f")"
-    local b64
-    b64=$(base64 -w0 "$f" 2>/dev/null) || continue
-    "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/$CMDNAME" 2>/dev/null
-    "$HDC" shell "chmod +x $BOARD_DIR/$CMDNAME" 2>/dev/null
-  done
+  # 恢复当前命令的二进制
+  cmd_bin="$BIN_DIR/$CMDNAME"
+  if [ -f "$cmd_bin" ]; then
+    b64=$(base64 -w0 "$cmd_bin" 2>/dev/null) || true
+    if [ -n "$b64" ]; then
+      first=1
+      while [ -n "$b64" ]; do
+        chunk="${b64:0:8000}"
+        b64="${b64:8000}"
+        if [ -n "$first" ]; then
+          "$HDC" shell "printf '%s' '$chunk' > /tmp/${CMDNAME}.b64" 2>/dev/null
+          first=
+        else
+          "$HDC" shell "printf '%s' '$chunk' >> /tmp/${CMDNAME}.b64" 2>/dev/null
+        fi
+      done
+      "$HDC" shell "$SYS_TOYBOX base64 -d < /tmp/${CMDNAME}.b64 > $BOARD_DIR/$CMDNAME" 2>/dev/null
+      "$HDC" shell "chmod +x $BOARD_DIR/$CMDNAME" 2>/dev/null
+    fi
+  fi
 done
 
 echo ""
