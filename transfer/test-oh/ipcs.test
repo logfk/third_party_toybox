@@ -21,4 +21,4 @@ ohosonly testing "ipcs -m" \
 
 # ipcs -s (semaphores) - under OHOS should either error or show no data
 ohosonly testing "ipcs -s no semaphores" \
-  '$C -s 2>/dev/null | head -5 | grep -c "semaphore\|Semaphore" || echo nosem' "nosem\n" "" ""
+  '$C -s 2>/dev/null | head -5 | grep -c "semaphore\|Semaphore" >/dev/null || echo nosem' "nosem\n" "" ""
