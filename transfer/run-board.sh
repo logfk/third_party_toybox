@@ -44,14 +44,17 @@ if ! "$HDC" list targets 2>&1 | grep -q "."; then
 fi
 echo "主板连接正常"
 
-# 检查主板上 toybox 是否存在
-if ! "$HDC" shell "[ -f $TOYBOX_PATH/toybox ]" 2>/dev/null; then
-  echo "警告: 主板上 $TOYBOX_PATH/toybox 不存在，尝试直接使用 toybox (需在 PATH 中)"
-  TOYBOX_CMD="toybox"
-else
+# 检查主板上 toybox 路径：优先用板端推送的（带 TOYBOX_OH_ADAPT）
+if "$HDC" shell "[ -f $BOARD_DIR/toybox ]" 2>/dev/null; then
+  TOYBOX_CMD="$BOARD_DIR/toybox"
+  echo "toybox 路径: $TOYBOX_CMD (推送版本)"
+elif "$HDC" shell "[ -f $TOYBOX_PATH/toybox ]" 2>/dev/null; then
   TOYBOX_CMD="$TOYBOX_PATH/toybox"
+  echo "toybox 路径: $TOYBOX_CMD (系统版本)"
+else
+  echo "警告: 主板上未找到 toybox，尝试直接使用 (需在 PATH 中)"
+  TOYBOX_CMD="toybox"
 fi
-echo "toybox 路径: $TOYBOX_CMD"
 
 # 清理并创建板端工作目录（分两步，避免 && 被 hdc.exe 吞掉）
 "$HDC" shell "rm -rf $BOARD_DIR" 2>/dev/null
