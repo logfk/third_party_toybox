@@ -106,17 +106,23 @@ testing() {
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
   # 同步测试创建的文件和目录到板端
-  # 文件：cat > file 通过 stdin 管道传输（避免 base64 编码问题）
-  # 目录：mkdir -p 创建
   for f in *; do
     [ -d "$f" ] && "$HDC" shell "mkdir -p $BOARD_DIR/$f" 2>/dev/null
-    [ -f "$f" ] && "$HDC" shell "cat > $BOARD_DIR/$f" < "$f" 2>/dev/null
+    [ -f "$f" ] || continue
+    local content
+    content=$(cat "$f")
+    # shell 单引号内转义：' -> '\'' ；base64 不需要转义
+    local b64
+    b64=$(base64 -w0 "$f" 2>/dev/null) || continue
+    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/$f" 2>/dev/null
   done
 
   # 推送 stdin 文件（如有）
   if [ -n "$5" ]; then
     printf '%s' "$5" > "$TESTDIR/stdin"
-    "$HDC" shell "cat > $BOARD_DIR/stdin" < "$TESTDIR/stdin" 2>/dev/null
+    local b64
+    b64=$(base64 -w0 "$TESTDIR/stdin" 2>/dev/null)
+    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/stdin" 2>/dev/null
   fi
 
   # 直接在板端执行命令（保留末尾换行，$() 会吃掉，所以重定向到临时文件）
