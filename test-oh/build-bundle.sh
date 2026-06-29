@@ -74,6 +74,9 @@ BOARD_DIR=/data/toybox-test
 # hdc 路径 - 用户需根据实际位置设置
 HDC="${HDC:-hdc}"
 
+# 板端系统 toybox 路径（用于 base64 解码等基础工具）
+SYS_TOYBOX="${SYS_TOYBOX:-/system/bin/toybox}"
+
 echo "===== 板端测试运行器 ====="
 echo "  HDC:       $HDC"
 echo "  BOARD_DIR: $BOARD_DIR"
@@ -86,18 +89,21 @@ echo "  测试数:    $# 个"
   exit 1
 }
 
-echo "===== 清理主板旧文件 ====="
-"$HDC" shell "rm -rf $BOARD_DIR && mkdir -p $BOARD_DIR"
+# 分两步清理，避免 && 被 hdc.exe 吞掉
+"$HDC" shell "rm -rf $BOARD_DIR" 2>/dev/null
+"$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
-# 推送全部预编译二进制
+# 推送全部预编译二进制（用 base64 传输，避免 hdc file send 路径问题）
 echo "===== 推送二进制到主板 ====="
 BIN_COUNT=0
 for f in "$BIN_DIR"/*; do
   [ -f "$f" ] || continue
   CMDNAME="$(basename "$f")"
   echo "  [推送] $CMDNAME"
-  "$HDC" file send "$f" "$BOARD_DIR/$CMDNAME" >/dev/null 2>&1
-  "$HDC" shell "chmod +x $BOARD_DIR/$CMDNAME"
+  local b64
+  b64=$(base64 -w0 "$f" 2>/dev/null) || continue
+  "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/$CMDNAME" 2>/dev/null
+  "$HDC" shell "chmod +x $BOARD_DIR/$CMDNAME" 2>/dev/null
   ((BIN_COUNT++))
 done
 echo "  共推送 $BIN_COUNT 个命令"
@@ -131,39 +137,48 @@ testing() {
   fi
 
   local TESTDIR="$TOPDIR/_test/${CMDNAME}_$$"
-  mkdir -p "$TESTDIR/testdir"
-  cd "$TESTDIR/testdir" || return 1
+  mkdir -p "$TESTDIR"
 
   # 写入期望结果
   echo -ne "$3" > "$TESTDIR/expected"
+  [ -n "$4" ] && echo -ne "$4" > input || rm -f input
 
-  # 写入 input 文件
-  [ -n "$4" ] && echo -ne "$4" > input
+  # 构建远程命令：去掉 testcmd 加的引号，替换 $C
+  REMOTE_CMD="$2"
+  REMOTE_CMD="${REMOTE_CMD//\"$BOARD_DIR\/$CMDNAME\"/$BOARD_DIR\/$CMDNAME}"
+  REMOTE_CMD="${REMOTE_CMD//\$C/$BOARD_DIR\/$CMDNAME}"
 
-  # 同步本地文件到板端
-  for f in * .*; do
-    [ "$f" = "." ] || [ "$f" = ".." ] && continue
-    [ -f "$f" ] && "$HDC" file send "$f" "$BOARD_DIR/$f" >/dev/null 2>&1
+  # 同步测试创建的文件到板端（base64 传输）
+  for f in *; do
+    [ -d "$f" ] && "$HDC" shell "mkdir -p $BOARD_DIR/$f" 2>/dev/null
+    [ -f "$f" ] || continue
+    local b64
+    # 二进制文件（含 NUL 字节）原样发送，文本文件 strip \r
+    if od -A n -t x1 "$f" 2>/dev/null | grep -q ' 00'; then
+      b64=$(base64 -w0 "$f" 2>/dev/null) || continue
+    else
+      b64=$(tr -d '\r' < "$f" | base64 -w0 2>/dev/null) || continue
+    fi
+    "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/$f" 2>/dev/null
   done
 
-  # 推送 stdin
+  # 推送 stdin（base64 传输，避免 hdc.exe 的 stdin pipe hang）
   if [ -n "$5" ]; then
-    printf '%s' "$5" | "$HDC" shell "cat > $BOARD_DIR/stdin" 2>/dev/null
+    printf '%s' "$5" > "$TESTDIR/stdin"
+    local b64
+    b64=$(base64 -w0 "$TESTDIR/stdin" 2>/dev/null)
+    "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/stdin" 2>/dev/null
   fi
 
-  # 构建远程命令：将 $C 替换为板端路径
-  REMOTE_CMD="$2"
-  REMOTE_CMD="${REMOTE_CMD//\$C/$BOARD_DIR/$CMDNAME}"
-
-  # 在板端执行
+  # 在板端执行（重定向到文件，保留末尾换行）
   if [ -n "$5" ]; then
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < stdin" 2>/dev/null)
+    "$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < $BOARD_DIR/stdin" > "$TESTDIR/actual.raw" 2>/dev/null
   else
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" 2>/dev/null)
+    "$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" > "$TESTDIR/actual.raw" 2>/dev/null
   fi
   RETVAL=$?
-
-  echo -ne "$ACTUAL" > "$TESTDIR/actual"
+  # strip \r 处理板端 CRLF
+  tr -d '\r' < "$TESTDIR/actual.raw" > "$TESTDIR/actual"
   [ $RETVAL -gt 128 ] && echo "exited with signal (or returned $RETVAL)" >> "$TESTDIR/actual"
 
   # 比对
@@ -176,8 +191,8 @@ testing() {
     [ -n "$DIFF" ] && printf "%s\n" "$DIFF"
   fi
 
-  [ -n "$DIFF" ] && ! verbose_has all && { cd "$TOP"; return 1; }
-  rm -f input "$TESTDIR/../expected" "$TESTDIR/../actual"
+  [ -n "$DIFF" ] && ! verbose_has all && exit 1
+  rm -f input
   rm -rf "$TESTDIR"
   [ -n "$DEBUG" ] && set +x
   return 0
@@ -186,7 +201,6 @@ testing() {
 # ====== 遍历执行测试 ======
 for testfile in "$@"; do
   CMDNAME="$(basename "${testfile%.test}")"
-  BOARD_CMD="$BOARD_DIR/$CMDNAME"
   echo ""
   echo "=========================================="
   echo "  测试: $CMDNAME"
@@ -198,28 +212,35 @@ for testfile in "$@"; do
     continue
   }
 
-  # 在顶层 TOP 目录下加载 .test
+  # 在干净的工作目录中运行测试
   C="$BOARD_DIR/$CMDNAME"
+  WORKDIR="$TOPDIR/_test/${CMDNAME}_work"
+  rm -rf "$WORKDIR"
+  mkdir -p "$WORKDIR"
   (
-    cd "$TOP"
+    cd "$WORKDIR"
     source "$TEST_OH_DIR/$CMDNAME.test"
-    echo "$FAILCOUNT" > "$TOP/_test/${CMDNAME}_continue"
+    echo "$FAILCOUNT" > "$TOPDIR/_test/${CMDNAME}_continue"
   ) || true
 
-  if [ -f "$TOP/_test/${CMDNAME}_continue" ]; then
-    FAILCOUNT=$(($(cat "$TOP/_test/${CMDNAME}_continue") + FAILCOUNT))
-    rm -f "$TOP/_test/${CMDNAME}_continue"
+  if [ -f "$TOPDIR/_test/${CMDNAME}_continue" ]; then
+    FAILCOUNT=$(($(cat "$TOPDIR/_test/${CMDNAME}_continue") + FAILCOUNT))
+    rm -f "$TOPDIR/_test/${CMDNAME}_continue"
   fi
 
-  # 清理板端
-  "$HDC" shell "rm -rf $BOARD_DIR/*" 2>/dev/null
-done
+  # 清理板端（分两步，避免 && 被吞）
+  "$HDC" shell "rm -rf $BOARD_DIR" 2>/dev/null
+  "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
-# 恢复二进制（清理时删掉了所有，重新推送一次以便后续测试）
-for f in "$BIN_DIR"/*; do
-  [ -f "$f" ] || continue
-  "$HDC" file send "$f" "$BOARD_DIR/$(basename "$f")" >/dev/null 2>&1
-  "$HDC" shell "chmod +x $BOARD_DIR/$(basename "$f")" 2>/dev/null
+  # 恢复二进制
+  for f in "$BIN_DIR"/*; do
+    [ -f "$f" ] || continue
+    CMDNAME="$(basename "$f")"
+    local b64
+    b64=$(base64 -w0 "$f" 2>/dev/null) || continue
+    "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/$CMDNAME" 2>/dev/null
+    "$HDC" shell "chmod +x $BOARD_DIR/$CMDNAME" 2>/dev/null
+  done
 done
 
 echo ""
