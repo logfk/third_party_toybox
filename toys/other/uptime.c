@@ -28,8 +28,10 @@ void uptime_main(void)
   time_t t;
   struct tm *tm;
   unsigned int weeks, days, hours, minutes;
+#ifndef TOYBOX_OH_ADAPT
   struct utmpx *entry;
   int users = 0;
+#endif
 
   // Obtain the data we need.
   sysinfo(&info);
@@ -75,11 +77,13 @@ void uptime_main(void)
     if (hours) xprintf("%2d:%02d, ", hours, minutes);
     else printf("%d min, ", minutes);
 
-    // Obtain info about logged on users
+#ifndef TOYBOX_OH_ADAPT
+    // Obtain info about logged on users (OHOS: no utmp)
     setutxent();
     while ((entry = getutxent())) if (entry->ut_type == USER_PROCESS) users++;
     endutxent();
     printf(" %d user%s, ", users, (users!=1) ? "s" : "");
+#endif
 #ifdef TOYBOX_OH_ADAPT
     printf(" load average: %.02f, %.02f, %.02f\n", info.loads[0]/65536.0,
       info.loads[1]/65536.0, info.loads[2]/65536.0);

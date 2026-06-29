@@ -101,14 +101,6 @@ static void do_id_init()
   oh_getpwuid_r_func = (oh_getpwuid_r_)dlsym(dlopen_handle, "oh_getpwuid_r");
 }
 
-static struct passwd *oh_getpwuid(uid_t uid)
-{
-  struct passwd *pw = getpwuid(uid);
-  if (pw) return pw;
-  if (!oh_getpwuid_func) return NULL;
-  return oh_getpwuid_func(uid);
-}
-
 static struct passwd *oh_xgetpwuid(uid_t uid)
 {
   struct passwd *pw = getpwuid(uid);
