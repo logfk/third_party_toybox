@@ -552,8 +552,8 @@
 #define USE_VMSTAT(...)
 #define CFG_W 0
 #define USE_W(...)
-#define CFG_WATCH 0
-#define USE_WATCH(...)
+#define CFG_WATCH 1
+#define USE_WATCH(...) __VA_ARGS__
 #define CFG_WATCHDOG 0
 #define USE_WATCHDOG(...)
 #define CFG_WHICH 0
@@ -590,8 +590,8 @@
 #define USE_WGET(...)
 #define CFG_WGET_LIBTLS 0
 #define USE_WGET_LIBTLS(...)
-#define CFG_DMESG 1
-#define USE_DMESG(...) __VA_ARGS__
+#define CFG_DMESG 0
+#define USE_DMESG(...)
 #define CFG_GZIP 0
 #define USE_GZIP(...)
 #define CFG_GUNZIP 0

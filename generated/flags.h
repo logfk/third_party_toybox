@@ -782,7 +782,7 @@
 #undef FOR_dirname
 #endif
 
-// dmesg w(follow)W(follow-new)CSTtrs#<1n#c[!Ttr][!Cc][!SWw] w(follow)W(follow-new)CSTtrs#<1n#c[!Ttr][!Cc][!SWw]
+// dmesg   w(follow)W(follow-new)CSTtrs#<1n#c[!Ttr][!Cc][!SWw]
 #undef OPTSTR_dmesg
 #define OPTSTR_dmesg "w(follow)W(follow-new)CSTtrs#<1n#c[!Ttr][!Cc][!SWw]"
 #ifdef CLEANUP_dmesg
@@ -3796,7 +3796,7 @@
 #undef FLAG_n
 #endif
 
-// watch   ^<1n%<100=2000tebx
+// watch ^<1n%<100=2000tebx ^<1n%<100=2000tebx
 #undef OPTSTR_watch
 #define OPTSTR_watch "^<1n%<100=2000tebx"
 #ifdef CLEANUP_watch
@@ -4660,16 +4660,16 @@
 #ifndef TT
 #define TT this.dmesg
 #endif
-#define FLAG_c (1LL<<0)
-#define FLAG_n (1LL<<1)
-#define FLAG_s (1LL<<2)
-#define FLAG_r (1LL<<3)
-#define FLAG_t (1LL<<4)
-#define FLAG_T (1LL<<5)
-#define FLAG_S (1LL<<6)
-#define FLAG_C (1LL<<7)
-#define FLAG_W (1LL<<8)
-#define FLAG_w (1LL<<9)
+#define FLAG_c (FORCED_FLAG<<0)
+#define FLAG_n (FORCED_FLAG<<1)
+#define FLAG_s (FORCED_FLAG<<2)
+#define FLAG_r (FORCED_FLAG<<3)
+#define FLAG_t (FORCED_FLAG<<4)
+#define FLAG_T (FORCED_FLAG<<5)
+#define FLAG_S (FORCED_FLAG<<6)
+#define FLAG_C (FORCED_FLAG<<7)
+#define FLAG_W (FORCED_FLAG<<8)
+#define FLAG_w (FORCED_FLAG<<9)
 #endif
 
 #ifdef FOR_dnsdomainname
@@ -7430,11 +7430,11 @@
 #ifndef TT
 #define TT this.watch
 #endif
-#define FLAG_x (FORCED_FLAG<<0)
-#define FLAG_b (FORCED_FLAG<<1)
-#define FLAG_e (FORCED_FLAG<<2)
-#define FLAG_t (FORCED_FLAG<<3)
-#define FLAG_n (FORCED_FLAG<<4)
+#define FLAG_x (1LL<<0)
+#define FLAG_b (1LL<<1)
+#define FLAG_e (1LL<<2)
+#define FLAG_t (1LL<<3)
+#define FLAG_n (1LL<<4)
 #endif
 
 #ifdef FOR_watchdog

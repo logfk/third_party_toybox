@@ -1,9 +1,8 @@
-struct dmesg_data {
-  long n, s;
+struct watch_data {
+  int n;
 
-  int use_color;
-  time_t tea;
+  pid_t pid, oldpid;
 };
 extern union global_union {
-	struct dmesg_data dmesg;
+	struct watch_data watch;
 } this;
