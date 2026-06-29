@@ -1689,7 +1689,7 @@
 #undef FLAG_m
 #endif
 
-// ipcs acptulqmi# acptulqmi#
+// ipcs   acptulqmi#
 #undef OPTSTR_ipcs
 #define OPTSTR_ipcs "acptulqmi#"
 #ifdef CLEANUP_ipcs
@@ -1957,7 +1957,7 @@
 #undef FOR_lsmod
 #endif
 
-// lsof lp*t lp*t
+// lsof   lp*t
 #undef OPTSTR_lsof
 #define OPTSTR_lsof "lp*t"
 #ifdef CLEANUP_lsof
@@ -3682,7 +3682,7 @@
 #undef FLAG_f
 #endif
 
-// uptime   >0ps
+// uptime >0ps >0ps
 #undef OPTSTR_uptime
 #define OPTSTR_uptime ">0ps"
 #ifdef CLEANUP_uptime
@@ -5489,15 +5489,15 @@
 #ifndef TT
 #define TT this.ipcs
 #endif
-#define FLAG_i (1LL<<0)
-#define FLAG_m (1LL<<1)
-#define FLAG_q (1LL<<2)
-#define FLAG_l (1LL<<3)
-#define FLAG_u (1LL<<4)
-#define FLAG_t (1LL<<5)
-#define FLAG_p (1LL<<6)
-#define FLAG_c (1LL<<7)
-#define FLAG_a (1LL<<8)
+#define FLAG_i (FORCED_FLAG<<0)
+#define FLAG_m (FORCED_FLAG<<1)
+#define FLAG_q (FORCED_FLAG<<2)
+#define FLAG_l (FORCED_FLAG<<3)
+#define FLAG_u (FORCED_FLAG<<4)
+#define FLAG_t (FORCED_FLAG<<5)
+#define FLAG_p (FORCED_FLAG<<6)
+#define FLAG_c (FORCED_FLAG<<7)
+#define FLAG_a (FORCED_FLAG<<8)
 #endif
 
 #ifdef FOR_jobs
@@ -5736,9 +5736,9 @@
 #ifndef TT
 #define TT this.lsof
 #endif
-#define FLAG_t (1LL<<0)
-#define FLAG_p (1LL<<1)
-#define FLAG_l (1LL<<2)
+#define FLAG_t (FORCED_FLAG<<0)
+#define FLAG_p (FORCED_FLAG<<1)
+#define FLAG_l (FORCED_FLAG<<2)
 #endif
 
 #ifdef FOR_lspci
@@ -7328,8 +7328,8 @@
 #ifndef TT
 #define TT this.uptime
 #endif
-#define FLAG_s (FORCED_FLAG<<0)
-#define FLAG_p (FORCED_FLAG<<1)
+#define FLAG_s (1LL<<0)
+#define FLAG_p (1LL<<1)
 #endif
 
 #ifdef FOR_useradd

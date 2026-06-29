@@ -311,18 +311,6 @@ struct xxd_data {
   long s, g, o, l, c;
 };
 
-struct ipcs_data {
-  int id;
-};
-
-struct lsof_data {
-  struct arg_list *p;
-
-  struct stat *sought_files;
-  struct double_list *all_sockets, *files;
-  int last_shown_pid, shown_header;
-};
-
 struct basename_data {
   char *s;
 };
@@ -750,8 +738,6 @@ extern union global_union {
 	struct truncate_data truncate;
 	struct watch_data watch;
 	struct xxd_data xxd;
-	struct ipcs_data ipcs;
-	struct lsof_data lsof;
 	struct basename_data basename;
 	struct cal_data cal;
 	struct chgrp_data chgrp;

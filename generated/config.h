@@ -250,14 +250,14 @@
 #define USE_IP(...)
 #define CFG_IPCRM 0
 #define USE_IPCRM(...)
-#define CFG_IPCS 1
-#define USE_IPCS(...) __VA_ARGS__
+#define CFG_IPCS 0
+#define USE_IPCS(...)
 #define CFG_KLOGD 0
 #define USE_KLOGD(...)
 #define CFG_LAST 0
 #define USE_LAST(...)
-#define CFG_LSOF 1
-#define USE_LSOF(...) __VA_ARGS__
+#define CFG_LSOF 0
+#define USE_LSOF(...)
 #define CFG_MAN 0
 #define USE_MAN(...)
 #define CFG_MDEV 0
@@ -540,8 +540,8 @@
 #define USE_TS(...)
 #define CFG_UCLAMPSET 0
 #define USE_UCLAMPSET(...)
-#define CFG_UPTIME 0
-#define USE_UPTIME(...)
+#define CFG_UPTIME 1
+#define USE_UPTIME(...) __VA_ARGS__
 #define CFG_USLEEP 1
 #define USE_USLEEP(...) __VA_ARGS__
 #define CFG_UUIDGEN 1
