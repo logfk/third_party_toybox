@@ -9,11 +9,11 @@
 
 # kill -l lists signal names
 testcmd "kill -l lists HUP" \
-  "$C -l 2>&1 | tr ' ' '\n' | grep -q 'HUP' && echo ok" "ok\n" "" ""
+  "$C -l 2>&1 | grep -q 'HUP' && echo ok" "ok\n" "" ""
 
 # killall5 -l lists signal names (safe, no signals sent)
 testcmd "killall5 -l lists TERM" \
-  "$C killall5 -l 2>&1 | tr ' ' '\n' | grep -q 'TERM' && echo ok" "ok\n" "" ""
+  "$C killall5 -l 2>&1 | grep -q 'TERM' && echo ok" "ok\n" "" ""
 
 # killall5 -0: signal 0 to all procs (no-op, doesn't actually signal)
 ohosonly testcmd "killall5 -0 safe" \
