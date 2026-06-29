@@ -46,19 +46,14 @@ echo "主板连接正常"
 # ==== hdc 帮助函数 ====
 # hdc.exe 在 Windows 上不传播远程退出码（永远返回 0），
 # 所以不能依赖 $?，需要捕获输出检查错误信息。
-# hdc_run CMD 返回 CMD 的执行输出（去掉末尾空行）
-hdc_out() {
-  "$HDC" shell "$@" 2>&1 | sed '$ { /^[[:space:]]*$/ d }'
-}
-# hdc_works: 命令输出中无错误信息即视为成功
+# hdc_works: 直接捕获 hdc shell 输出，检查是否包含 shell 级错误
 hdc_works() {
   local out
-  out=$(hdc_out "$1") || return 1
-  # 只匹配 shell 级错误（/bin/sh: ... not found），不匹配 hdc 自身诊断
+  out=$("$HDC" shell "$1" 2>&1) || return 1
   case "$out" in
+    "" ) return 1 ;;
     *"sh: "*"inaccessible"*) return 1 ;;
     *"sh: "*"not found"*) return 1 ;;
-    "" ) return 1 ;;
   esac
   return 0
 }
