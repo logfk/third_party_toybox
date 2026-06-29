@@ -45,10 +45,10 @@ fi
 echo "主板连接正常"
 
 # 检查主板上 toybox 路径：优先用板端推送的（带 TOYBOX_OH_ADAPT）
-if "$HDC" shell "[ -f $BOARD_DIR/toybox ]" 2>/dev/null; then
+if "$HDC" shell "$BOARD_DIR/toybox --help >/dev/null 2>&1"; then
   TOYBOX_CMD="$BOARD_DIR/toybox"
   echo "toybox 路径: $TOYBOX_CMD (推送版本)"
-elif "$HDC" shell "[ -f $TOYBOX_PATH/toybox ]" 2>/dev/null; then
+elif "$HDC" shell "$TOYBOX_PATH/toybox --help >/dev/null 2>&1"; then
   TOYBOX_CMD="$TOYBOX_PATH/toybox"
   echo "toybox 路径: $TOYBOX_CMD (系统版本)"
 else
