@@ -8,3 +8,4 @@ syntax: glob
 /kconfig/*.c
 /toybox_unstripped
 /.vscode
+/transfer/_test/
