@@ -121,15 +121,14 @@ testing() {
     "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/stdin" 2>/dev/null
   fi
 
-  # 直接在板端执行命令（无需生成 run.sh）
+  # 直接在板端执行命令（保留末尾换行，$() 会吃掉，所以重定向到临时文件）
   if [ -n "$5" ]; then
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < $BOARD_DIR/stdin" 2>/dev/null | tr -d '\r')
+    "$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < $BOARD_DIR/stdin" > "$TESTDIR/actual.raw" 2>/dev/null
   else
-    ACTUAL=$("$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" 2>/dev/null | tr -d '\r')
+    "$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" > "$TESTDIR/actual.raw" 2>/dev/null
   fi
   RETVAL=$?
-
-  printf '%s' "$ACTUAL" > "$TESTDIR/actual"
+  tr -d '\r' < "$TESTDIR/actual.raw" > "$TESTDIR/actual"
   [ $RETVAL -gt 128 ] && echo "exited with signal (or returned $RETVAL)" >> "$TESTDIR/actual"
 
   DIFF="$(cd "$TESTDIR"; diff -au expected actual 2>&1)"
