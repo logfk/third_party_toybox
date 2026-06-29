@@ -105,20 +105,18 @@ testing() {
   REMOTE_CMD="${REMOTE_CMD//\"$TOYBOX_CMD $CMDNAME\"/$TOYBOX_CMD $CMDNAME}"
   REMOTE_CMD="${REMOTE_CMD//\$C/$TOYBOX_CMD $CMDNAME}"
 
-  # 将数据文件通过 base64 写入板端（避免 hdc file send 的路径翻译问题）
+  # 同步测试创建的文件和目录到板端
+  # 文件：cat > file 通过 stdin 管道传输（避免 base64 编码问题）
+  # 目录：mkdir -p 创建
   for f in *; do
-    [ -f "$f" ] || continue
-    local b64
-    b64=$(base64 -w0 "$f" 2>/dev/null) || continue
-    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/$f" 2>/dev/null
+    [ -d "$f" ] && "$HDC" shell "mkdir -p $BOARD_DIR/$f" 2>/dev/null
+    [ -f "$f" ] && "$HDC" shell "cat > $BOARD_DIR/$f" < "$f" 2>/dev/null
   done
 
   # 推送 stdin 文件（如有）
   if [ -n "$5" ]; then
     printf '%s' "$5" > "$TESTDIR/stdin"
-    local b64
-    b64=$(base64 -w0 "$TESTDIR/stdin" 2>/dev/null)
-    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/stdin" 2>/dev/null
+    "$HDC" shell "cat > $BOARD_DIR/stdin" < "$TESTDIR/stdin" 2>/dev/null
   fi
 
   # 直接在板端执行命令（保留末尾换行，$() 会吃掉，所以重定向到临时文件）
@@ -168,8 +166,13 @@ for testfile in "$@"; do
   echo "=========================================="
 
   C="$TOYBOX_CMD $CMDNAME"
+  # 在干净的工作目录中运行测试，避免污染 $TOP
+  # 测试创建的文件/目录会在此目录，testing() 只同步此目录内容
+  WORKDIR="$TOP/_test/${CMDNAME}_work"
+  rm -rf "$WORKDIR"
+  mkdir -p "$WORKDIR"
   (
-    cd "$TOP"
+    cd "$WORKDIR"
     source "$TEST_OH_DIR/$CMDNAME.test"
     echo "$FAILCOUNT" > "$TOP/_test/${CMDNAME}_continue"
   ) || true
