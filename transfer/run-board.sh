@@ -8,12 +8,12 @@
 #
 # 用法:
 #   export HDC=/path/to/hdc.exe
-#   ./run-board.sh              # 跑全部 23 个测试
+#   hdc file send toybox /data/toybox-test/toybox   # 先推送待测二进制
+#   ./run-board.sh              # 跑全部 21 个测试
 #   ./run-board.sh ls grep ps   # 跑指定命令
 #
 # 环境变量:
 #   HDC          hdc 可执行文件路径 (默认 hdc)
-#   TOYBOX_PATH  主板上 toybox 所在目录 (默认 /system/bin)
 #   DEBUG=1      显示详细执行过程
 
 TOP="$(cd "$(dirname "$0")" && pwd)"
@@ -23,8 +23,6 @@ BOARD_DIR=/data/toybox-test
 
 # 可配置: hdc 路径
 HDC="${HDC:-hdc}"
-# 可配置: 主板上 toybox 路径
-TOYBOX_PATH="${TOYBOX_PATH:-/system/bin}"
 
 echo "=========================================="
 echo "  OHOS Toybox 板端测试运行器"
