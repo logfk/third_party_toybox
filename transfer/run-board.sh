@@ -44,11 +44,29 @@ if ! "$HDC" list targets 2>&1 | grep -q "."; then
 fi
 echo "主板连接正常"
 
+# ==== hdc 帮助函数 ====
+# hdc.exe 在 Windows 上不传播远程退出码（永远返回 0），
+# 所以不能依赖 $?，需要捕获输出检查错误信息。
+# hdc_run CMD 返回 CMD 的执行输出（去掉末尾空行）
+hdc_out() {
+  "$HDC" shell "$@" 2>/dev/null | sed '$ { /^[[:space:]]*$/ d }'
+}
+# hdc_works: 命令输出中无错误信息即视为成功
+hdc_works() {
+  local out
+  out=$(hdc_out "$1") || return 1
+  case "$out" in
+    *"inaccessible"*|*"not found"*|*"No such file"*) return 1 ;;
+    "") return 1 ;;
+  esac
+  return 0
+}
+
 # 检查主板上 toybox 路径：优先用板端推送的（带 TOYBOX_OH_ADAPT）
-if "$HDC" shell "$BOARD_DIR/toybox --help >/dev/null 2>&1"; then
+if hdc_works "$BOARD_DIR/toybox --help"; then
   TOYBOX_CMD="$BOARD_DIR/toybox"
   echo "toybox 路径: $TOYBOX_CMD (推送版本)"
-elif "$HDC" shell "$TOYBOX_PATH/toybox --help >/dev/null 2>&1"; then
+elif hdc_works "$TOYBOX_PATH/toybox --help"; then
   TOYBOX_CMD="$TOYBOX_PATH/toybox"
   echo "toybox 路径: $TOYBOX_CMD (系统版本)"
 else
@@ -66,7 +84,7 @@ echo "===== 检查主板命令支持 ====="
 MISSING=0
 for testfile in "$TEST_OH_DIR"/*.test; do
   CMDNAME="$(basename "${testfile%.test}")"
-  if "$HDC" shell "$TOYBOX_CMD $CMDNAME --help >/dev/null 2>&1" 2>/dev/null; then
+  if hdc_works "$TOYBOX_CMD $CMDNAME --help"; then
     echo "  [OK] $CMDNAME"
   else
     echo "  [--] $CMDNAME (不支持)"
@@ -166,7 +184,7 @@ for testfile in "$@"; do
   CMDNAME="$(basename "${testfile%.test}")"
 
   # 检查主板是否支持该命令
-  if ! "$HDC" shell "$TOYBOX_CMD $CMDNAME --help >/dev/null 2>&1" 2>/dev/null; then
+  if ! hdc_works "$TOYBOX_CMD $CMDNAME --help"; then
     echo ""
     echo "=========================================="
     echo "  测试: $CMDNAME [跳过 - 主板不支持]"
