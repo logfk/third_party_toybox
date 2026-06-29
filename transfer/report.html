@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OHOS Toybox Test Report - Interactive</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#0f0f23;color:#e0e0e0;line-height:1.6}
+.container{max-width:920px;margin:0 auto;padding:20px}
+@media(max-width:600px){.container{padding:10px}}
+header{text-align:center;padding:30px 0;border-bottom:1px solid #2a2a4e;margin-bottom:30px}
+header h1{font-size:1.8em;color:#e8e8ff;margin-bottom:6px;font-weight:700}
+header .sub{color:#888;font-size:0.9em}
+.input-area{background:#161638;border-radius:12px;padding:20px;margin-bottom:24px}
+.input-area textarea{width:100%;min-height:200px;background:#0a0a1e;color:#e0e0e0;border:1px solid #2a2a4e;border-radius:8px;padding:14px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;resize:vertical;outline:none;transition:border-color .3s}
+.input-area textarea:focus{border-color:#4e4e8e}
+.input-area .btn-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn{background:#2e2e5e;color:#e0e0ff;border:none;border-radius:6px;padding:10px 24px;font-size:0.95em;cursor:pointer;transition:background .2s}
+.btn:hover{background:#3e3e7e}
+.btn.primary{background:#4a4a8a;font-weight:600}
+.btn.primary:hover{background:#5a5aaa}
+.summary{background:#161638;border-radius:12px;padding:24px;margin-bottom:24px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:600px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
+.summary-item{border-radius:8px;padding:16px 12px;text-align:center}
+.summary-item.total{background:#1e1e4a}
+.summary-item.pass{background:#0d2b1a}
+.summary-item.fail{background:#2b0d0d}
+.summary-item.skip{background:#2b2b0d}
+.summary-item .num{font-size:2em;font-weight:700;line-height:1.2}
+.summary-item.total .num{color:#fff}
+.summary-item.pass .num{color:#4caf50}
+.summary-item.fail .num{color:#f44336}
+.summary-item.skip .num{color:#ff9800}
+.summary-item .lbl{font-size:0.8em;color:#999;margin-top:4px}
+.progress-bar{display:flex;height:14px;border-radius:7px;background:#2a2a4e;overflow:hidden;margin-top:16px}
+.progress-segment{height:100%;transition:width .6s ease}
+.progress-pass{background:#4caf50}
+.progress-fail{background:#f44336}
+.progress-skip{background:#ff9800}
+.status-banner{text-align:center;padding:12px;border-radius:8px;margin:16px 0 0;font-size:1.05em;font-weight:600}
+.status-banner.success{background:#0d2b1a;color:#4caf50}
+.status-banner.has-fail{background:#2b0d0d;color:#f44336}
+.section{background:#161638;border-radius:12px;padding:24px;margin-bottom:20px}
+.section-title{font-size:1.15em;color:#e8e8ff;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #2a2a4e}
+.board-list{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.board-list li{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:4px;font-size:0.85em;font-family:'Consolas','Courier New',monospace}
+.board-list li.ok{background:#0d2b1a;color:#4caf50;border:1px solid #1a5a2a}
+.board-list li.no{background:#2b0d0d;color:#f44336;border:1px solid #5a1a1a}
+.badge-ok,.badge-no{font-weight:bold;font-size:0.9em}
+.results{display:flex;flex-direction:column;gap:8px}
+.result{padding:10px 14px;border-radius:6px;font-size:0.9em;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.result.pass{background:rgba(76,175,80,0.08);border-left:3px solid #4caf50}
+.result.fail{background:rgba(244,67,54,0.08);border-left:3px solid #f44336}
+.result.skip{background:rgba(255,152,0,0.08);border-left:3px solid #ff9800}
+.badge{flex-shrink:0;display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75em;font-weight:bold;text-transform:uppercase}
+.badge-pass{background:#4caf50;color:#fff}
+.badge-fail{background:#f44336;color:#fff}
+.badge-skip{background:#ff9800;color:#000}
+.result-text{flex:1;padding-top:2px}
+details{width:100%;margin-top:4px}
+details summary{cursor:pointer;color:#888;font-size:0.85em;padding:4px 0;user-select:none}
+details summary:hover{color:#ccc}
+.fail-detail{margin-top:8px;padding:12px;background:#0a0a1e;border-radius:6px;overflow-x:auto}
+.fail-cmd{margin-bottom:8px}
+.fail-cmd code{display:block;padding:8px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#e0e0e0;word-break:break-all;white-space:pre-wrap;margin-top:4px}
+.fail-diff{padding:10px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#d0d0d0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;margin-top:4px}
+footer{text-align:center;padding:20px;color:#555;font-size:0.85em}
+#output{display:none}
+.error-msg{background:#2b0d0d;color:#f44336;padding:14px;border-radius:8px;margin-bottom:20px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>OHOS Toybox Test Report</h1>
+    <div class="sub">Interactive Parser — Paste test output below</div>
+  </header>
+
+  <div class="input-area">
+    <textarea id="inputText" placeholder="将 run-board.sh 的输出粘贴到这里...&#10;&#10;例如:&#10;==========================================&#10;  OHOS Toybox 板端测试运行器&#10;==========================================&#10;主板连接正常&#10;&#10;===== 检查主板命令支持 =====&#10;  [OK] bunzip2&#10;  [OK] cut&#10;..."></textarea>
+    <div class="btn-row">
+      <button class="btn primary" onclick="parseAndRender()">生成报告</button>
+      <button class="btn" onclick="document.getElementById('inputText').value='';document.getElementById('output').style.display='none'">清除</button>
+      <button class="btn" onclick="loadSample()">加载示例</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+
+  <footer>OHOS Toybox Test Report &mdash; Interactive Version</footer>
+</div>
+
+<script>
+function escHtml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function parseAndRender() {
+    var text = document.getElementById('inputText').value;
+    var output = document.getElementById('output');
+    
+    if (!text.trim()) {
+        output.style.display = 'block';
+        output.innerHTML = '<div class="error-msg">错误: 请粘贴测试输出</div>';
+        return;
+    }
+    
+    var lines = text.split('\\n');
+    var boardOk = [], boardNo = [];
+    var sections = [], results = [], resSection = [], failCmd = [], failDiff = [];
+    var curSidx = -1, curRidx = -1;
+    var inBoard = false, inFail = false;
+    
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        
+        if (line.indexOf('检查主板命令支持') !== -1) {
+            inBoard = true;
+            continue;
+        }
+        
+        if (inBoard) {
+            var m = line.match(/^\\s*\\[OK\\]\\s+(.+)$/);
+            if (m) { boardOk.push(m[1]); continue; }
+            m = line.match(/^\\s*\\[--\\]\\s+(.+)$/);
+            if (m) { 
+                var c = m[1].replace(' (不支持)', '');
+                boardNo.push(c); continue;
+            }
+            if (line.trim() === '' || line.indexOf('=====') === 0) {
+                inBoard = false;
+                if (line.trim() === '') continue;
+            } else {
+                continue;
+            }
+        }
+        
+        if (line === '==========================================') {
+            inFail = false;
+            if (i + 1 < lines.length) {
+                var nm = lines[i+1].match(/^\\s*测试:\\s+(.+)$/);
+                if (nm) {
+                    curSidx = sections.length;
+                    sections.push(nm[1]);
+                    i++;
+                    continue;
+                }
+            }
+            continue;
+        }
+        
+        if (line.indexOf('PASS:') === 0) {
+            inFail = false;
+            curRidx = results.length;
+            results.push({type:'PASS', desc:line.substring(5).trim()});
+            resSection.push(curSidx);
+            failCmd.push('');
+            failDiff.push('');
+            continue;
+        }
+        if (line.indexOf('SKIP:') === 0) {
+            inFail = false;
+            curRidx = results.length;
+            results.push({type:'SKIP', desc:line.substring(5).trim()});
+            resSection.push(curSidx);
+            failCmd.push('');
+            failDiff.push('');
+            continue;
+        }
+        if (line.indexOf('FAIL:') === 0) {
+            inFail = true;
+            curRidx = results.length;
+            results.push({type:'FAIL', desc:line.substring(5).trim()});
+            resSection.push(curSidx);
+            failCmd.push('');
+            failDiff.push('');
+            continue;
+        }
+        
+        if (inFail && curRidx >= 0) {
+            if (failCmd[curRidx] === '') {
+                failCmd[curRidx] = line;
+            } else {
+                failDiff[curRidx] = (failDiff[curRidx] || '') + line + '\\n';
+            }
+        }
+    }
+    
+    // Count
+    var pass = 0, fail = 0, skip = 0;
+    for (var ri = 0; ri < results.length; ri++) {
+        if (results[ri].type === 'PASS') pass++;
+        else if (results[ri].type === 'FAIL') fail++;
+        else if (results[ri].type === 'SKIP') skip++;
+    }
+    var total = pass + fail + skip;
+    var pp = total > 0 ? Math.round(pass * 100 / total) : 0;
+    var fp = total > 0 ? Math.round(fail * 100 / total) : 0;
+    var sp = total > 0 ? Math.round(skip * 100 / total) : 0;
+    
+    var statusText = fail > 0 ? '失败数: ' + fail : '全部通过!';
+    var statusClass = fail > 0 ? 'has-fail' : 'success';
+    
+    var now = new Date();
+    var ts = now.getFullYear() + '-' + 
+        String(now.getMonth()+1).padStart(2,'0') + '-' + 
+        String(now.getDate()).padStart(2,'0') + ' ' +
+        String(now.getHours()).padStart(2,'0') + ':' +
+        String(now.getMinutes()).padStart(2,'0') + ':' +
+        String(now.getSeconds()).padStart(2,'0');
+    
+    var h = '';
+    h += '<div class="summary">';
+    h += '<div class="summary-grid">';
+    h += '<div class="summary-item total"><div class="num">' + total + '</div><div class="lbl">总计</div></div>';
+    h += '<div class="summary-item pass"><div class="num">' + pass + '</div><div class="lbl">通过</div></div>';
+    h += '<div class="summary-item fail"><div class="num">' + fail + '</div><div class="lbl">失败</div></div>';
+    h += '<div class="summary-item skip"><div class="num">' + skip + '</div><div class="lbl">跳过</div></div>';
+    h += '</div>';
+    
+    if (total > 0) {
+        h += '<div class="progress-bar">';
+        if (pp > 0) h += '<div class="progress-segment progress-pass" style="width:' + pp + '%"></div>';
+        if (fp > 0) h += '<div class="progress-segment progress-fail" style="width:' + fp + '%"></div>';
+        if (sp > 0) h += '<div class="progress-segment progress-skip" style="width:' + sp + '%"></div>';
+        h += '</div>';
+    }
+    h += '<div class="status-banner ' + statusClass + '">' + statusText + '</div>';
+    h += '</div>';
+    
+    // Board check
+    if (boardOk.length > 0 || boardNo.length > 0) {
+        h += '<div class="section"><h2 class="section-title">主板命令支持</h2><ul class="board-list">';
+        for (var bi = 0; bi < boardOk.length; bi++) {
+            h += '<li class="ok"><span class="badge-ok">OK</span> ' + escHtml(boardOk[bi]) + '</li>';
+        }
+        for (var bi = 0; bi < boardNo.length; bi++) {
+            h += '<li class="no"><span class="badge-no">--</span> ' + escHtml(boardNo[bi]) + '</li>';
+        }
+        h += '</ul></div>';
+    }
+    
+    // Sections
+    for (var si = 0; si < sections.length; si++) {
+        h += '<div class="section">';
+        h += '<h2 class="section-title">测试: ' + escHtml(sections[si]) + '</h2>';
+        h += '<div class="results">';
+        
+        for (var ri = 0; ri < results.length; ri++) {
+            if (resSection[ri] !== si) continue;
+            var r = results[ri];
+            h += '<div class="result ' + r.type.toLowerCase() + '">';
+            h += '<span class="badge badge-' + r.type.toLowerCase() + '">' + r.type + '</span>';
+            h += '<span class="result-text">' + escHtml(r.desc) + '</span>';
+            
+            if (r.type === 'FAIL' && failCmd[ri]) {
+                h += '<details><summary>查看详情</summary><div class="fail-detail">';
+                h += '<div class="fail-cmd"><strong>命令:</strong><code>' + escHtml(failCmd[ri]) + '</code></div>';
+                if (failDiff[ri]) {
+                    h += '<pre class="fail-diff">' + escHtml(failDiff[ri]) + '</pre>';
+                }
+                h += '</div></details>';
+            }
+            
+            h += '</div>';
+        }
+        
+        h += '</div></div>';
+    }
+    
+    h += '<footer>Generated: ' + ts + '</footer>';
+    
+    output.style.display = 'block';
+    output.innerHTML = h;
+}
+
+function loadSample() {
+    document.getElementById('inputText').value = 
+'==========================================\n' +
+'  OHOS Toybox 板端测试运行器\n' +
+'  hdc:      hdc\n' +
+'  测试目录: /c/Users/test/test-oh\n' +
+'==========================================\n' +
+'主板连接正常\n' +
+'toybox 路径: /data/toybox-test/toybox (推送版本)\n' +
+'\n' +
+'===== 检查主板命令支持 =====\n' +
+'  [OK] bunzip2\n' +
+'  [OK] cut\n' +
+'  [OK] dmesg\n' +
+'  [OK] grep\n' +
+'  [OK] id\n' +
+'  [OK] killall\n' +
+'  [OK] ls\n' +
+'  [OK] more\n' +
+'  [OK] mv\n' +
+'  [OK] mktemp\n' +
+'  [OK] ps\n' +
+'  [--] lsof\n' +
+'  [--] netstat\n' +
+'  [--] watch\n' +
+'\n' +
+'==========================================\n' +
+'  测试: bunzip2\n' +
+'==========================================\n' +
+'PASS: bunzip2 -k keeps input\n' +
+'PASS: bunzip2 -k produces output\n' +
+'PASS: bunzip2 removes input\n' +
+'PASS: bunzip2 -c to stdout\n' +
+'\n' +
+'==========================================\n' +
+'  测试: dmesg\n' +
+'==========================================\n' +
+'PASS: dmesg basic output\n' +
+'PASS: dmesg -T\n' +
+'PASS: dmesg -c\n' +
+'FAIL: dmesg -r\n' +
+"echo -ne '' | /data/toybox-test/toybox dmesg -r 2>/dev/null | head -1 | grep -q \"<\" && echo ok\n" +
+'--- expected    2026-06-29 15:30:04.843094100 +0800\n' +
+'+++ actual      2026-06-29 15:30:05.001027000 +0800\n' +
+'@@ -1 +0,0 @@\n' +
+'-ok\n' +
+'\n' +
+'==========================================\n' +
+'  测试: killall\n' +
+'==========================================\n' +
+'FAIL: killall kill -l lists HUP\n' +
+"echo -ne '' | /data/toybox-test/toybox killall /data/toybox-test/toybox killall -l 2>&1 | tr ' ' '\\n' | grep -q 'HUP' && echo ok\n" +
+'--- expected    2026-06-29 15:30:09.806311000 +0800\n' +
+'+++ actual      2026-06-29 15:30:09.974697900 +0800\n' +
+'@@ -1 +1 @@\n' +
+'-ok\n' +
+'+/bin/sh: tr: inaccessible or not found\n' +
+'\n' +
+'==========================================\n' +
+'  全部通过!\n' +
+'==========================================\n';
+}
+</script>
+</body>
+</html>

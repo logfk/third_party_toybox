@@ -1,0 +1,31 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+echo "one" > file1
+echo "two" > file2
+ohosonly testing "cat" "cat && echo yes" "oneyes\n" "" "one"
+ohosonly testing "-" "cat - && echo yes" "oneyes\n" "" "one"
+ohosonly testing "file1 file2" "cat file1 file2" "one\ntwo\n"  "" ""
+ohosonly testing "- file"      "cat - file1"     "zero\none\n" "" "zero\n"
+ohosonly testing "file -"      "cat file1 -"     "one\nzero\n" "" "zero\n"
+
+ohosonly testing "file1 notfound file2" \
+        "cat file1 notfound file2 2>stderr && echo ok ; cat stderr; rm stderr" \
+        "one\ntwo\ncat: notfound: No such file or directory\n" "" ""
+
+ohosonly testing "binary" \
+        'cat "$C" > file1 && cmp "$C" file1 && echo yes' "yes\n" "" ""
+
+ohosonly testing "- file1" \
+        "cat - file1 | diff -a -U 0 - file1 | tail -n 1" \
+        "-hello\n" "" "hello\n"
+
+skipnot [ -e /dev/full ]
+ohosonly testing "> /dev/full" \
+        "cat - > /dev/full 2>/dev/null || echo failed" \
+        "failed\n" "" "zero\n"
+
+rm file1 file2
