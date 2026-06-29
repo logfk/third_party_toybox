@@ -4,15 +4,14 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-ohosonly testing "dry run doesn't create file" \
-  "patch --dry-run >/dev/null && [ ! -e bork ] && echo yes" "yes\n" "" "
+ohosonly testing "dry run doesn't create file"    "$C --dry-run >/dev/null && [ ! -e bork ] && echo yes" "yes\n" "" "
 --- /dev/null
 +++ bork
 @@ -0,0 +1,1 @@
 +one
 "
 
-ohosonly testing "create file" "patch >/dev/null && cat bork" "one\ntwo\nthree\n" "" "
+ohosonly testing "create file" "$C >/dev/null && cat bork" "one\ntwo\nthree\n" "" "
 --- /dev/null
 +++ bork
 @@ -0,0 +1,3 @@
@@ -21,8 +20,7 @@ ohosonly testing "create file" "patch >/dev/null && cat bork" "one\ntwo\nthree\n
 +three
 "
 
-ohosonly testing "insert in middle" "patch > /dev/null && cat bork" \
-  "one\nfour\ntwo\nthree\n" "" "
+ohosonly testing "insert in middle" "$C > /dev/null && cat bork"    "one\nfour\ntwo\nthree\n" "" "
 --- bork
 +++ bork
 @@ -1,3 +1,4 @@
@@ -31,8 +29,7 @@ ohosonly testing "insert in middle" "patch > /dev/null && cat bork" \
  two
  three
 "
-ohosonly testing "append at end" "patch > /dev/null && cat bork" \
-  "one\nfour\ntwo\nthree\nfive\nsix\n" "" "
+ohosonly testing "append at end" "$C > /dev/null && cat bork"    "one\nfour\ntwo\nthree\nfive\nsix\n" "" "
 --- bork
 +++ bork
 @@ -2,3 +2,5 @@
@@ -42,8 +39,7 @@ ohosonly testing "append at end" "patch > /dev/null && cat bork" \
 +five
 +six
 "
-ohosonly testing "insert at start" "patch > /dev/null && cat bork" \
-  "seven\none\nfour\ntwo\nthree\nfive\nsix\n" "" "
+ohosonly testing "insert at start" "$C > /dev/null && cat bork"    "seven\none\nfour\ntwo\nthree\nfive\nsix\n" "" "
 --- bork
 +++ bork
 @@ -1,3 +1,4 @@
@@ -52,8 +48,7 @@ ohosonly testing "insert at start" "patch > /dev/null && cat bork" \
  four
  two
 "
-ohosonly testing "delete at end" "patch > /dev/null && cat bork" \
-  "seven\none\nfour\ntwo\nthree\nfive\n" "" "
+ohosonly testing "delete at end" "$C > /dev/null && cat bork"    "seven\none\nfour\ntwo\nthree\nfive\n" "" "
 --- bork
 +++ bork
 @@ -4,4 +4,3 @@
@@ -63,8 +58,7 @@ ohosonly testing "delete at end" "patch > /dev/null && cat bork" \
 -six
 "
 
-ohosonly testing "delete at start" "patch > /dev/null && cat bork" \
-  "four\ntwo\nthree\nfive\n" "" "
+ohosonly testing "delete at start" "$C > /dev/null && cat bork"    "four\ntwo\nthree\nfive\n" "" "
 --- bork
 +++ bork
 @@ -1,5 +1,3 @@
@@ -75,8 +69,7 @@ ohosonly testing "delete at start" "patch > /dev/null && cat bork" \
  three
 "
 
-ohosonly testing "filter timestamps" "patch > /dev/null && cat bork" \
-  "four\ntwo\nthree\neight\nfive\n" "" "
+ohosonly testing "filter timestamps" "$C > /dev/null && cat bork"    "four\ntwo\nthree\neight\nfive\n" "" "
 --- bork	2019-12-20 16:54:35.735630973 -0600
 +++ bork	2019-12-20 16:57:03.083625706 -0600
 @@ -1,4 +1,5 @@
@@ -87,26 +80,23 @@ ohosonly testing "filter timestamps" "patch > /dev/null && cat bork" \
  five
 "
 
-ohosonly testing "quoted name" "patch > /dev/null && cat 'fruit bat'" \
-  "hello\n" "" '
+ohosonly testing "quoted name" "$C > /dev/null && cat 'fruit bat'"    "hello\n" "" '
 --- /dev/null
 +++ "fruit ba\164"
 @@ -0,0 +1 @@
 +hello
 '
 
-ohosonly testing "bad quote" "patch 2>&1" $'patch: bad "filename\n' "" '--- "filename'
+ohosonly testing "bad quote" "$C 2>&1" $'patch: bad "filename\n' "" '--- "filename'
 
-ohosonly testing "dry run doesn't delete file" \
-  "patch --dry-run > /dev/null && [ -e 'fruit bat' ] && echo yes" "yes\n" "" '
+ohosonly testing "dry run doesn't delete file"    "$C --dry-run > /dev/null && [ -e 'fruit bat' ] && echo yes" "yes\n" "" '
 --- "fruit bat"
 +++ /dev/null
 @@ -1 +0,0 @@
 -hello
 '
 
-ohosonly testing "delete file" \
-  "patch > /dev/null && [ ! -e 'fruit bat' ] && echo yes" "yes\n" "" '
+ohosonly testing "delete file"    "$C > /dev/null && [ ! -e 'fruit bat' ] && echo yes" "yes\n" "" '
 --- "fruit bat"
 +++ /dev/null
 @@ -1 +0,0 @@
@@ -116,8 +106,7 @@ ohosonly testing "delete file" \
 # todo bork bork2
 
 # We hit a bug, test the bugfix.
-ohosonly testing "fuzz" "patch > /dev/null && cat input" \
-"blah blah
+ohosonly testing "fuzz" "$C > /dev/null && cat input"  "blah blah
  */
 package org.yaml.snakeyaml.representer;
 

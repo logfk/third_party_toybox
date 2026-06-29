@@ -14,27 +14,26 @@ killall yes >/dev/null 2>&1
 
 yes >/dev/null &
 sleep 1
-ohosonly testing "pattern" "pkill yes && sleep 1 && (pgrep yes || echo 'yes')" \
-  "yes\n" "" ""
+ohosonly testing "pattern" "$C yes && sleep 1 && (pgrep yes || echo 'yes')"    "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes >/dev/null &
 yes print1 >/dev/null &
 yes print2 >/dev/null &
 sleep 1
-ohosonly testing "pattern (multiple)" "pkill yes && sleep 1 &&
+ohosonly testing "pattern (multiple)" "$C yes && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes >/dev/null &
 sleep 1
-ohosonly testing "-f pattern (one)" "pkill -f yes && sleep 1 &&
+ohosonly testing "-f pattern (one)" "$C -f yes && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes print1 >/dev/null &
 sleep 1
-ohosonly testing "-f pattern args" "pkill -f \"yes print1\" && sleep 1 &&
+ohosonly testing "-f pattern args" "$C -f \"yes print1\" && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
@@ -42,13 +41,13 @@ yes >/dev/null &
 yes print1 >/dev/null &
 yes print2 >/dev/null &
 sleep 1
-ohosonly testing "-f pattern (multiple)" "pkill -f yes && sleep 1 &&
+ohosonly testing "-f pattern (multiple)" "$C -f yes && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes this-is-unlikely-to-appear-otherwise >/dev/null &
 sleep 1
-ohosonly testing "-s 0 -f pattern (regexp)" "pkill -s 0 -f .*-unlikely-.*-otherwise &&
+ohosonly testing "-s 0 -f pattern (regexp)" "$C -s 0 -f .*-unlikely-.*-otherwise &&
    sleep 1 && (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
@@ -57,8 +56,7 @@ proc1=$!
 yes >/dev/null &
 proc2=$!
 sleep 1
-ohosonly testing "-n pattern" "pkill -n yes && sleep 1 && pgrep yes" \
-  "$proc1\n" "" ""
+ohosonly testing "-n pattern" "$C -n yes && sleep 1 && pgrep yes"    "$proc1\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes >/dev/null &
@@ -67,19 +65,18 @@ sleep 1
 yes >/dev/null &
 proc2=$!
 sleep 1
-ohosonly testing "-o pattern" "pkill -o yes && sleep 1 && pgrep yes" \
-  "$proc2\n" "" ""
+ohosonly testing "-o pattern" "$C -o yes && sleep 1 && pgrep yes"    "$proc2\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes >/dev/null &
 sleep 1
-ohosonly testing "-s (blank) pattern" "pkill -s '' yes && sleep 1 &&
+ohosonly testing "-s (blank) pattern" "$C -s '' yes && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes >/dev/null &
 sleep 1
-ohosonly testing "-s 0 pattern" "pkill -s 0 yes && sleep 1 &&
+ohosonly testing "-s 0 pattern" "$C -s 0 yes && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
@@ -87,21 +84,20 @@ yes >/dev/null &
 proc=$!
 proc_p=`cat /proc/${proc}/stat | cut -d' ' -f4`
 sleep 1
-ohosonly testing "-P parent_prodId pattern" "pkill -P $proc_p yes && sleep 1 &&
+ohosonly testing "-P parent_prodId pattern" "$C -P $proc_p yes && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes >/dev/null &
 sleep 1
-ohosonly testing "-9 pattern" "pkill -9 yes && sleep 1 &&
+ohosonly testing "-9 pattern" "$C -9 yes && sleep 1 &&
    (pgrep yes || echo 'yes')" "yes\n" "" ""
 killall yes >/dev/null 2>&1
 
 yes >/dev/null &
 sleep 1
-ohosonly testing "return success" "pkill yes && echo success" "success\n" "" ""
+ohosonly testing "return success" "$C yes && echo success" "success\n" "" ""
 killall yes >/dev/null 2>&1
 
-ohosonly testing "return failure" "pkill almost-certainly-not || echo failure" \
-    "failure\n" "" ""
+ohosonly testing "return failure" "$C almost-certainly-not || echo failure"      "failure\n" "" ""
 

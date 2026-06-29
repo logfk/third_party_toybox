@@ -4,6 +4,6 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-ohosonly testing "" "tee" "one" "" "one"
-ohosonly testing "" "tee -" "two\n" "" "two\n"
-ohosonly testing "" "tee one > two && cmp one two && echo that" "that\n" "" "three"
+ohosonly testing "" "$C" "one" "" "one"
+ohosonly testing "" "$C -" "two\n" "" "two\n"
+ohosonly testing "" "$C one > two && cmp one two && echo that" "that\n" "" "three"

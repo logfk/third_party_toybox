@@ -6,39 +6,30 @@
 
 BIGTEST="one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\n"
 echo -ne "$BIGTEST" > file1
-ohosonly testing "tail" "tail && echo yes" "oneyes\n" "" "one"
-ohosonly testing "file" "tail file1" \
-	"two\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\n" "" ""
-ohosonly testing "-n in bounds" "tail -n 3 file1" "nine\nten\neleven\n" "" ""
-ohosonly testing "-n out of bounds" "tail -n 999 file1" "$BIGTEST" "" ""
-ohosonly testing "-n+ in bounds" "tail -n +3 file1" \
-	"three\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\n" "" ""
-ohosonly testing "-n+ outof bounds" "tail -n +999 file1" "" "" ""
-ohosonly testing "-c in bounds" "tail -c 27 file1" \
-	"even\neight\nnine\nten\neleven\n" "" ""
-ohosonly testing "-c out of bounds" "tail -c 999 file1" "$BIGTEST" "" ""
-ohosonly testing "-c+ in bounds" "tail -c +27 file1" \
-	"x\nseven\neight\nnine\nten\neleven\n" "" ""
-ohosonly testing "-c+ out of bonds" "tail -c +999 file1" "" "" ""
-ohosonly testing "-N" "tail -1 file1" "eleven\n" "" ""
+ohosonly testing "tail" "$C && echo yes" "oneyes\n" "" "one"
+ohosonly testing "file" "$C file1"  	"two\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\n" "" ""
+ohosonly testing "-n in bounds" "$C -n 3 file1" "nine\nten\neleven\n" "" ""
+ohosonly testing "-n out of bounds" "$C -n 999 file1" "$BIGTEST" "" ""
+ohosonly testing "-n+ in bounds" "$C -n +3 file1"  	"three\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\n" "" ""
+ohosonly testing "-n+ outof bounds" "$C -n +999 file1" "" "" ""
+ohosonly testing "-c in bounds" "$C -c 27 file1"  	"even\neight\nnine\nten\neleven\n" "" ""
+ohosonly testing "-c out of bounds" "$C -c 999 file1" "$BIGTEST" "" ""
+ohosonly testing "-c+ in bounds" "$C -c +27 file1"  	"x\nseven\neight\nnine\nten\neleven\n" "" ""
+ohosonly testing "-c+ out of bonds" "$C -c +999 file1" "" "" ""
+ohosonly testing "-N" "$C -1 file1" "eleven\n" "" ""
 rm file1
 
-ohosonly testing "stdin no trailing newline" "tail -n 1 - " "c" "" "a\nb\nc"
-ohosonly testing "file no trailing newline" "tail -n 1 input" "c" "a\nb\nc" ""
+ohosonly testing "stdin no trailing newline" "$C -n 1 - " "c" "" "a\nb\nc"
+ohosonly testing "file no trailing newline" "$C -n 1 input" "c" "a\nb\nc" ""
 
-ohosonly testing "noseek -n in bounds" "tail -n 3" "nine\nten\neleven\n" \
-	"" "$BIGTEST"
-ohosonly testing "noseek -n out of bounds" "tail -n 999" "$BIGTEST" "" "$BIGTEST"
-ohosonly testing "noseek -n+ in bounds" "tail -n +3" \
-	"three\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\n" "" \
-	"$BIGTEST"
-ohosonly testing "noseek -n+ outof bounds" "tail -n +999" "" "" "$BIGTEST"
-ohosonly testing "noseek -c in bounds" "tail -c 27" \
-	"even\neight\nnine\nten\neleven\n" "" "$BIGTEST"
-ohosonly testing "noseek -c out of bounds" "tail -c 999" "$BIGTEST" "" "$BIGTEST"
-ohosonly testing "noseek -c+ in bounds" "tail -c +27" \
-	"x\nseven\neight\nnine\nten\neleven\n" "" "$BIGTEST"
-ohosonly testing "noseek -c+ out of bonds" "tail -c +999" "" "" "$BIGTEST"
+ohosonly testing "noseek -n in bounds" "$C -n 3" "nine\nten\neleven\n"  	"" "$BIGTEST"
+ohosonly testing "noseek -n out of bounds" "$C -n 999" "$BIGTEST" "" "$BIGTEST"
+ohosonly testing "noseek -n+ in bounds" "$C -n +3"  	"three\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\n" ""  	"$BIGTEST"
+ohosonly testing "noseek -n+ outof bounds" "$C -n +999" "" "" "$BIGTEST"
+ohosonly testing "noseek -c in bounds" "$C -c 27"  	"even\neight\nnine\nten\neleven\n" "" "$BIGTEST"
+ohosonly testing "noseek -c out of bounds" "$C -c 999" "$BIGTEST" "" "$BIGTEST"
+ohosonly testing "noseek -c+ in bounds" "$C -c +27"  	"x\nseven\neight\nnine\nten\neleven\n" "" "$BIGTEST"
+ohosonly testing "noseek -c+ out of bonds" "$C -c +999" "" "" "$BIGTEST"
 
 makebigfile()
 {
@@ -54,27 +45,21 @@ makebigfile()
 }
 makebigfile > bigfile
 
-ohosonly testing "-c 12345 -n 3 bigfile" "tail -c 12345 -n 3 bigfile | md5sum" \
-  "347bbdcbad8a313f4dc7bd558c5bfcb8  -\n" "" ""
-ohosonly testing "-n 3 -c 12345 bigfile" "tail -n 3 -c 12345 bigfile | md5sum" \
-  "1698825a750288284ec3ba7d8a59f302  -\n" "" ""
+ohosonly testing "-c 12345 -n 3 bigfile" "$C -c 12345 -n 3 bigfile | md5sum"    "347bbdcbad8a313f4dc7bd558c5bfcb8  -\n" "" ""
+ohosonly testing "-n 3 -c 12345 bigfile" "$C -n 3 -c 12345 bigfile | md5sum"    "1698825a750288284ec3ba7d8a59f302  -\n" "" ""
 rm bigfile
 
 echo 111 > one
-ohosonly testing "-f one" \
-  'tail -f one & sleep .25 ; echo two >> one; sleep .25; echo three >> one; sleep .25; kill $! >/dev/null' \
-  "111\ntwo\nthree\n" "" ""
+ohosonly testing "-f one"    '$C -f one & sleep .25 ; echo two >> one; sleep .25; echo three >> one; sleep .25; kill $! >/dev/null'    "111\ntwo\nthree\n" "" ""
 rm one
 
 echo uno > one
 echo dos > two
 echo tres > three
-ohosonly testing "-f one two three" \
-  'tail -f one two three & sleep .25 ; echo more >> three ; echo also >> one; sleep .25; kill $! >/dev/null' \
-  "==> one <==\nuno\n\n==> two <==\ndos\n\n==> three <==\ntres\nmore\n\n==> one <==\nalso\n" "" ""
+ohosonly testing "-f one two three"    '$C -f one two three & sleep .25 ; echo more >> three ; echo also >> one; sleep .25; kill $! >/dev/null'    "==> one <==\nuno\n\n==> two <==\ndos\n\n==> three <==\ntres\nmore\n\n==> one <==\nalso\n" "" ""
 rm one two three
 
-ohosonly testing "-F" "tail -s .1 -F walrus 2>/dev/null & sleep .2; echo hello > walrus;
+ohosonly testing "-F" "$C -s .1 -F walrus 2>/dev/null & sleep .2; echo hello > walrus;
 sleep .2; truncate -s 0 walrus; sleep .2; echo potato >> walrus; sleep .2;
 echo hello >> walrus; sleep .2; rm walrus; sleep .2; echo done > walrus;
   sleep .5; kill %1" "hello\npotato\nhello\ndone\n" "" ""

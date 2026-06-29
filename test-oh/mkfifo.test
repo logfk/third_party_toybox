@@ -4,25 +4,21 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-ohosonly testing "mkfifo" "mkfifo one && [ -p one ] && echo yes" "yes\n" "" ""
+ohosonly testing "mkfifo" "$C one && [ -p one ] && echo yes" "yes\n" "" ""
 rm one
 
 touch existing
-ohosonly testing "existing" \
-	"mkfifo existing 2> /dev/null || [ -f existing ] && echo yes" "yes\n" "" ""
+ohosonly testing "existing"  	"$C existing 2> /dev/null || [ -f existing ] && echo yes" "yes\n" "" ""
 rm existing
 
-ohosonly testing "one two" \
-	"mkfifo one two && [ -p one ] && [ -p two ] && echo yes" "yes\n" "" ""
+ohosonly testing "one two"  	"$C one two && [ -p one ] && [ -p two ] && echo yes" "yes\n" "" ""
 rm one two
 
 umask 123
-ohosonly testing "(default permissions)" \
-	"mkfifo one && stat -c %a one" "644\n" "" ""
+ohosonly testing "(default permissions)"  	"$C one && stat -c %a one" "644\n" "" ""
 rm one
 
 umask 000
 
-ohosonly testing "-m 124" \
-	"mkfifo -m 124 one && stat -c %a one" "124\n" "" ""
+ohosonly testing "-m 124"  	"$C -m 124 one && stat -c %a one" "124\n" "" ""
 rm -f one

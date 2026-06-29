@@ -21,11 +21,13 @@ function clean()
          -e 's/[EeIN]-/--/g; s/[0-9]+/_/g'
 }
 
-ohosonly testing "file" "lsattr file | clean" "$_A file\n" "" ""
-ohosonly testing "-R file" "lsattr -R file | clean" "$_A file\n" "" ""
-ohosonly testing "-a file" "lsattr -a file | clean" "$_A file\n" "" ""
-ohosonly testing "-d ." "lsattr -d . | clean" "$_d .\n" "" ""
-ohosonly testing "-d file" "lsattr -d file | clean" "$_A file\n" "" ""
+_clean="sed -E -e 's/, (Encrypted|Extents|Indexed_directory|Inline_Data)//g;' -e 's/[EeIN]-/--/g; s/[0-9]+/_/g'"
+
+ohosonly testing "file" "lsattr file | $_clean" "$_A file\n" "" ""
+ohosonly testing "-R file" "lsattr -R file | $_clean" "$_A file\n" "" ""
+ohosonly testing "-a file" "lsattr -a file | $_clean" "$_A file\n" "" ""
+ohosonly testing "-d ." "lsattr -d . | $_clean" "$_d .\n" "" ""
+ohosonly testing "-d file" "lsattr -d file | $_clean" "$_A file\n" "" ""
 NOSPACE=1 testing "-l file" "lsattr -l file | clean" "file No_Atime\n" "" ""
 NOSPACE=1 testing "-v file" "lsattr -v file | clean" "_ $_A file\n" "" ""
 NOSPACE=1 testing "-lv file" "lsattr -lv file | clean" "_ file No_Atime\n" "" ""

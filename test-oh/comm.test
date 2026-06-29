@@ -6,7 +6,6 @@
 
 echo -e 'a\nb\nc'> lhs
 for i in c d e ; do echo $i >> rhs ; done
-ohosonly testing "comm" "comm lhs input" "a\nb\n\t\tc\n\td\n\te\n" "c\nd\ne\n" ""
-ohosonly testing "comm -" "comm - input" "a\nb\n\t\tc\n\td\n\te\n" "c\nd\ne\n" "a\nb\nc\n"
-ohosonly testing "comm -123 detects missing" "comm - missing 2>/dev/null || echo here" \
-  "here\n" "" ""
+ohosonly testing "comm" "$C lhs input" "a\nb\n\t\tc\n\td\n\te\n" "c\nd\ne\n" ""
+ohosonly testing "comm -" "$C - input" "a\nb\n\t\tc\n\td\n\te\n" "c\nd\ne\n" "a\nb\nc\n"
+ohosonly testing "comm -123 detects missing" "$C - missing 2>/dev/null || echo here"    "here\n" "" ""

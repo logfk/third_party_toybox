@@ -4,24 +4,18 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-ohosonly testing "nl" "nl" "     1\tone\n     2\ttwo\n     3\tthree\n" \
-  "" "one\ntwo\nthree\n"
+ohosonly testing "$C" "$C" "     1\tone\n     2\ttwo\n     3\tthree\n"    "" "one\ntwo\nthree\n"
 
-ohosonly testing "explicit defaults" "nl -nrn -b a" \
-  "     1\tone\n     2\ttwo\n     3\tthree\n" "" "one\ntwo\nthree\n"
+ohosonly testing "explicit defaults" "$C -nrn -b a"    "     1\tone\n     2\ttwo\n     3\tthree\n" "" "one\ntwo\nthree\n"
 
 # -n ln rn rz
 
-ohosonly testing "-nln" "nl -nln" "1     \tone\n2     \ttwo\n3     \tthree\n" \
-  "" "one\ntwo\nthree\n"
-ohosonly testing "-nln -w" "nl -nln -w 8" \
-  "1       \tone\n2       \ttwo\n3       \tthree\n" "" "one\ntwo\nthree\n"
+ohosonly testing "-nln" "$C -nln" "1     \tone\n2     \ttwo\n3     \tthree\n"    "" "one\ntwo\nthree\n"
+ohosonly testing "-nln -w" "$C -nln -w 8"    "1       \tone\n2       \ttwo\n3       \tthree\n" "" "one\ntwo\nthree\n"
 
-ohosonly testing "-nrz" "nl -nrz" "000001\tone\n000002\ttwo\n000003\tthree\n" \
-  "" "one\ntwo\nthree\n"
+ohosonly testing "-nrz" "$C -nrz" "000001\tone\n000002\ttwo\n000003\tthree\n"    "" "one\ntwo\nthree\n"
 
-ohosonly testing "-nrz -w" "nl -w3 -nrz" "001\tone\n002\ttwo\n003\tthree\n" \
-  "" "one\ntwo\nthree\n"
+ohosonly testing "-nrz -w" "$C -w3 -nrz" "001\tone\n002\ttwo\n003\tthree\n"    "" "one\ntwo\nthree\n"
 
 
 # For non-matching lines the separator is "suppressed" meaning it...
@@ -31,27 +25,17 @@ ohosonly testing "-nrz -w" "nl -w3 -nrz" "001\tone\n002\ttwo\n003\tthree\n" \
 #   nl -w 3 -bpthe README
 # Yeah. And I doubt utf8 fontmetrics are used either.
 
-ohosonly testing "-b t" "nl -b t" "       \n     1\tone\n       \n     2\ttwo\n" \
-  "" "\none\n\ntwo\n"
-ohosonly testing "-b n" "nl -b n" "       one\n       two\n       three\n" \
-  "" "one\ntwo\nthree\n"
-ohosonly testing "-sook -b p" "nl -sook -bpoing" \
-  "         one\n     1ookboing\n     2ooksproingy\n" \
-  "" "one\nboing\nsproingy\n"
+ohosonly testing "-b t" "$C -b t" "       \n     1\tone\n       \n     2\ttwo\n"    "" "\none\n\ntwo\n"
+ohosonly testing "-b n" "$C -b n" "       one\n       two\n       three\n"    "" "one\ntwo\nthree\n"
+ohosonly testing "-sook -b p" "$C -sook -bpoing"    "         one\n     1ookboing\n     2ooksproingy\n"    "" "one\nboing\nsproingy\n"
 
-ohosonly testing "-v42" "nl -v 42" "    42\tone\n    43\ttwo\n    44\tthree\n" \
-  "" "one\ntwo\nthree\n"
-ohosonly testing "-v-1" "nl -v -1" "    -1\tone\n     0\ttwo\n     1\tthree\n" \
-  "" "one\ntwo\nthree\n"
-ohosonly testing "-v0" "nl -v 0" "     0\tone\n     1\ttwo\n     2\tthree\n" \
-  "" "one\ntwo\nthree\n"
+ohosonly testing "-v42" "$C -v 42" "    42\tone\n    43\ttwo\n    44\tthree\n"    "" "one\ntwo\nthree\n"
+ohosonly testing "-v-1" "$C -v -1" "    -1\tone\n     0\ttwo\n     1\tthree\n"    "" "one\ntwo\nthree\n"
+ohosonly testing "-v0" "$C -v 0" "     0\tone\n     1\ttwo\n     2\tthree\n"    "" "one\ntwo\nthree\n"
 
-ohosonly testing "-l" "nl -ba -l2 -w2 - input" \
-  " 1\tone\n   \n 2\t\n 3\ttwo\n   \n 4\t\n   \n 5\tthree\n 6\tfour\n   \n 7\t\n   \n 8\tbang\n   \n" \
-  "\n\nbang\n\n" "one\n\n\ntwo\n\n\n\nthree\nfour\n\n"
-ohosonly testing "no space" "nl -w 1 -v 42" "42\tline\n" "" "line\n"
+ohosonly testing "-l" "$C -ba -l2 -w2 - input"    " 1\tone\n   \n 2\t\n 3\ttwo\n   \n 4\t\n   \n 5\tthree\n 6\tfour\n   \n 7\t\n   \n 8\tbang\n   \n"    "\n\nbang\n\n" "one\n\n\ntwo\n\n\n\nthree\nfour\n\n"
+ohosonly testing "no space" "$C -w 1 -v 42" "42\tline\n" "" "line\n"
 
 # Should test for -E but no other implementation seems to have it?
 ohosonly
-toyonly testing "-E" "nl -w2 -sx -Ebp'(one|two)'" " 1xone\n   and\n 2xtwo\n" \
-  "" "one\nand\ntwo\n"
+toyonly testing "-E" "$C -w2 -sx -Ebp'(one|two)'" " 1xone\n   and\n 2xtwo\n"    "" "one\nand\ntwo\n"

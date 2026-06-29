@@ -35,18 +35,16 @@ ohosonly testcmd "missing" "missing 2>&1" "modinfo: missing: not found\n" "" ""
 # which change from kernel to kernel and can be disabled: grep to remove these.
 
 skipnot [ -n "$DASH_MODULE" ]
-ohosonly testing "treats - and _ as equivalent" "modinfo $DASH_MODULE > dash-dash &&
-  modinfo ${DASH_MODULE/-/_} > dash-bar && diff -u dash-dash dash-bar" "" "" ""
+ohosonly testing "treats - and _ as equivalent" "$C $DASH_MODULE > dash-dash &&
+  $C ${DASH_MODULE/-/_} > dash-bar && cmp dash-dash dash-bar" "" "" ""
 skipnot [ -n "$BAR_MODULE" ]
-ohosonly testing "treats _ and - as equivalent" "modinfo $BAR_MODULE > bar-bar &&
-  modinfo ${BAR_MODULE/_/-} > bar-dash && diff -u bar-bar bar-dash" "" "" ""
+ohosonly testing "treats _ and - as equivalent" "$C $BAR_MODULE > bar-bar &&
+  $C ${BAR_MODULE/_/-} > bar-dash && cmp bar-bar bar-dash" "" "" ""
 
 # Output of -F filename should be an absolute path to the module.
 # Otherwise, initrd generating scripts will break.
 
-ohosonly testing "-F filename gets absolute path" "modinfo -F filename $MODULE1" \
-  "$MODULE_PATH1\n" "" ""
+ohosonly testing "-F filename gets absolute path" "$C -F filename $MODULE1"    "$MODULE_PATH1\n" "" ""
 
 skipnot [ "$MODULE1" != "$MODULE2" ]
-ohosonly testing "supports multiple modules" "modinfo -F filename $MODULE1 $MODULE2" \
-  "$MODULE_PATH1\n$MODULE_PATH2\n" "" ""
+ohosonly testing "supports multiple modules" "$C -F filename $MODULE1 $MODULE2"    "$MODULE_PATH1\n$MODULE_PATH2\n" "" ""

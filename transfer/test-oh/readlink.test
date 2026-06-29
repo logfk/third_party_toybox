@@ -6,38 +6,36 @@
 
 APWD="$(pwd -P)"
 
-ohosonly testing "missing" "readlink notfound || echo yes" "yes\n" "" ""
+ohosonly testing "missing" "$C notfound || echo yes" "yes\n" "" ""
 
 # simple tests on a file
 
 touch file
-ohosonly testing "file" "readlink file || echo yes" "yes\n" "" ""
-ohosonly testing "-f dir" "readlink -f ." "$APWD\n" "" ""
-ohosonly testing "-f missing" "readlink -f notfound" "$APWD/notfound\n" "" ""
+ohosonly testing "file" "$C file || echo yes" "yes\n" "" ""
+ohosonly testing "-f dir" "$C -f ." "$APWD\n" "" ""
+ohosonly testing "-f missing" "$C -f notfound" "$APWD/notfound\n" "" ""
 
 ln -sf notfound link
-ohosonly testing "link" "readlink link" "notfound\n" "" ""
-ohosonly testing "links" "readlink link link" "notfound\nnotfound\n" "" ""
-ohosonly testing "link->missing" "readlink -f link" "$APWD/notfound\n" "" ""
+ohosonly testing "link" "$C link" "notfound\n" "" ""
+ohosonly testing "links" "$C link link" "notfound\nnotfound\n" "" ""
+ohosonly testing "link->missing" "$C -f link" "$APWD/notfound\n" "" ""
 ln -sf ../../ link
-ohosonly testing "stays relative" "readlink link" "../../\n" "" ""
+ohosonly testing "stays relative" "$C link" "../../\n" "" ""
 rm link
 ln -sf file link
-ohosonly testing "-f link->file" "readlink -f link" "$APWD/file\n" "" ""
+ohosonly testing "-f link->file" "$C -f link" "$APWD/file\n" "" ""
 ln -sf . link
-ohosonly testing "-f link->dir" "readlink -f link" "$APWD\n" "" ""
+ohosonly testing "-f link->dir" "$C -f link" "$APWD\n" "" ""
 ln -snf link link
-ohosonly testing "link->link (recursive)" "readlink link" "link\n" "" ""
-ohosonly testing "-f link->link (recursive)" \
-  "readlink -f link 2>/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "link->link (recursive)" "$C link" "link\n" "" ""
+ohosonly testing "-f link->link (recursive)"    "$C -f link 2>/dev/null || echo yes" "yes\n" "" ""
 
-ohosonly testing "-q notlink" "readlink -q file 2>&1 || echo yes" "yes\n" "" ""
-ohosonly testing "-q link" "readlink -q link && echo yes" "link\nyes\n" "" ""
-ohosonly testing "-q notfound" "readlink -q notfound || echo yes" "yes\n" "" ""
-ohosonly testing "-e found" "readlink -e file" "$APWD/file\n" "" ""
-ohosonly testing "-e notfound" \
-  "readlink -e notfound 2>/dev/null || echo yes" "yes\n" "" ""
-ohosonly testing "-nf ." "readlink -nf ." "$APWD" "" ""
+ohosonly testing "-q notlink" "$C -q file 2>&1 || echo yes" "yes\n" "" ""
+ohosonly testing "-q link" "$C -q link && echo yes" "link\nyes\n" "" ""
+ohosonly testing "-q notfound" "$C -q notfound || echo yes" "yes\n" "" ""
+ohosonly testing "-e found" "$C -e file" "$APWD/file\n" "" ""
+ohosonly testing "-e notfound"    "$C -e notfound 2>/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "-nf ." "$C -nf ." "$APWD" "" ""
 # -n means no newline at _end_. I.E. on last argument.
 ohosonly
 toyonly testcmd '-nf multiple args' '-n link link' "link\nlink" '' ''
@@ -48,24 +46,20 @@ mkdir sub &&
 ln -s . here &&
 ln -s ./sub dir &&
 touch sub/bang || exit 1
-ohosonly testing "-f multi" "readlink -f dir/../here/dir/bang" \
-  "$APWD/sub/bang\n" "" ""
-ohosonly testing "-f link/missing" "readlink -f dir/boing" \
-  "$APWD/sub/boing\n" "" ""
-ohosonly testing "-f /dev/null/file" \
-  "readlink -f /dev/null/file 2>/dev/null || echo yes" "yes\n" "" ""
-ohosonly testing "-m missing/dir" "readlink -m sub/two/three" "$APWD/sub/two/three\n" "" ""
-ohosonly testing "-m missing/../elsewhere" "readlink -m sub/two/../../three" "$APWD/three\n" "" ""
+ohosonly testing "-f multi" "$C -f dir/../here/dir/bang"    "$APWD/sub/bang\n" "" ""
+ohosonly testing "-f link/missing" "$C -f dir/boing"    "$APWD/sub/boing\n" "" ""
+ohosonly testing "-f /dev/null/file"    "$C -f /dev/null/file 2>/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "-m missing/dir" "$C -m sub/two/three" "$APWD/sub/two/three\n" "" ""
+ohosonly testing "-m missing/../elsewhere" "$C -m sub/two/../../three" "$APWD/three\n" "" ""
 # TODO: host bug? That's not missing, that's "cannot exist".
 ohosonly
-toyonly testing "-m file/dir" "readlink -m sub/bang/two 2>/dev/null || echo err" "err\n" "" ""
+toyonly testing "-m file/dir" "$C -m sub/bang/two 2>/dev/null || echo err" "err\n" "" ""
 rm link
 ln -sf / link || exit 1
-ohosonly testing "-f link->/" "readlink -e link/dev" "/dev\n" "" ""
-ohosonly testing "-f /dev/null/.." \
-  "readlink -f link/null/.. 2>/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "-f link->/" "$C -e link/dev" "/dev\n" "" ""
+ohosonly testing "-f /dev/null/.."    "$C -f link/null/.. 2>/dev/null || echo yes" "yes\n" "" ""
 rm -f link && ln -sf link link || exit 1
-ohosonly testing "recurse" "readlink link" "link\n" "" ""
+ohosonly testing "recurse" "$C link" "link\n" "" ""
 
 rm file link sub/bang dir here
 rmdir sub
@@ -74,6 +68,5 @@ rmdir sub
 
 ln -s link1 link2
 ln -s link2 link1
-ohosonly testing "follow recursive2" "readlink -f link1 || echo yes" \
-	"yes\n" "" ""
+ohosonly testing "follow recursive2" "$C -f link1 || echo yes"  	"yes\n" "" ""
 rm link1 link2

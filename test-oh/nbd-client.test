@@ -54,8 +54,8 @@ ohosonly testing "binary" \
         'cat "$C" > file1 && cmp "$C" file1 && echo yes' "yes\n" "" ""
 
 ohosonly testing "- file1" \
-        "cat - file1 | diff -a -U 0 - file1 | tail -n 1" \
-        "-hello\n" "" "hello\n"
+        "cat - file1 && echo yes" \
+        "hello\none\nyes\n" "" "hello\n"
 
 skipnot [ -e /dev/full ]
 ohosonly testing "> /dev/full" \

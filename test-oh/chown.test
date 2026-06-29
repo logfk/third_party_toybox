@@ -31,13 +31,11 @@ OUT="&& stat --format '%U %G' $F"
 #testing "name" "command" "result" "infile" "stdin"
 
 # Basic smoketest
-ohosonly testing "initial" "chown root:root $F $OUT" "root root\n" "" ""
-ohosonly testing "usr:grp" "chown $USR:$GRP $F $OUT" "$USR $GRP\n" "" ""
-ohosonly testing "root"    "chown root $F $OUT" "root $GRP\n" "" ""
+ohosonly testing "initial" "$C root:root $F $OUT" "root root\n" "" ""
+ohosonly testing "usr:grp" "$C $USR:$GRP $F $OUT" "$USR $GRP\n" "" ""
+ohosonly testing "root"    "$C root $F $OUT" "root $GRP\n" "" ""
 # TODO: can we test "owner:"?
-ohosonly testing ":grp"    "chown root:root $F && chown :$GRP $F $OUT" \
-    "root $GRP\n" "" ""
-ohosonly testing ":"       "chown $USR:$GRP $F && chown : $F $OUT" \
-    "$USR $GRP\n" "" ""
+ohosonly testing ":grp"    "$C root:root $F && $C :$GRP $F $OUT"      "root $GRP\n" "" ""
+ohosonly testing ":"       "$C $USR:$GRP $F && $C : $F $OUT"      "$USR $GRP\n" "" ""
 
 rm -rf testdir

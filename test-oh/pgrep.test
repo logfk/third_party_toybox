@@ -20,18 +20,17 @@ proc_parent=`cat /proc/${proc}/stat | cut -d' ' -f4`
 #echo "# Parent Process id of $proc is $proc_parent"
 
 # Testcases for pgrep command
-ohosonly testing "pattern" "pgrep yes" "$proc\n" "" ""
-ohosonly testing "wildCardPattern" "pgrep ^y.*s$" "$proc\n" "" ""
-ohosonly testing "-l pattern" "pgrep -l yes" "$proc yes\n" "" ""
-ohosonly testing "-f pattern" "pgrep -f yes" "$proc\n" "" ""
-ohosonly testing "-n pattern" "pgrep -n yes" "$proc\n" "" ""
-ohosonly testing "-o pattern" "pgrep -o yes" "$proc\n" "" ""
-ohosonly testing "-s" "pgrep -s $session_id yes" "$proc\n" "" ""
-ohosonly testing "-P" "pgrep -P $proc_parent yes" "$proc\n" "" ""
+ohosonly testing "pattern" "$C yes" "$proc\n" "" ""
+ohosonly testing "wildCardPattern" "$C ^y.*s$" "$proc\n" "" ""
+ohosonly testing "-l pattern" "$C -l yes" "$proc yes\n" "" ""
+ohosonly testing "-f pattern" "$C -f yes" "$proc\n" "" ""
+ohosonly testing "-n pattern" "$C -n yes" "$proc\n" "" ""
+ohosonly testing "-o pattern" "$C -o yes" "$proc\n" "" ""
+ohosonly testing "-s" "$C -s $session_id yes" "$proc\n" "" ""
+ohosonly testing "-P" "$C -P $proc_parent yes" "$proc\n" "" ""
 
-ohosonly testing "return success" "pgrep yes && echo success" "$proc\nsuccess\n" "" ""
-ohosonly testing "return failure" "pgrep almost-certainly-not || echo failure" \
-    "failure\n" "" ""
+ohosonly testing "return success" "$C yes && echo success" "$proc\nsuccess\n" "" ""
+ohosonly testing "return failure" "$C almost-certainly-not || echo failure"      "failure\n" "" ""
 
 #Clean-up
 kill -9 $proc

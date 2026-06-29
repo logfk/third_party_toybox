@@ -6,7 +6,7 @@
 
 HOST="$(cat /proc/sys/kernel/hostname 2>/dev/null)"
 skipnot [ $? -eq 0 ]
-ohosonly testing "get" "hostname" "$HOST\n" "" ""
+ohosonly testing "get" "$C" "$HOST\n" "" ""
 
 skipnot [ $(id -u) -eq 0 ]
-ohosonly testing "set" 'hostname "2>&1 | tee"; hostname; hostname "$HOST"' "2>&1 | tee\n" "" ""
+ohosonly testing "set" '$C "2>&1 | tee"; $C; $C "$HOST"' "2>&1 | tee\n" "" ""

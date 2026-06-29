@@ -34,23 +34,19 @@ for U in $(seq 0 7); do for G in 0 3 6; do for O in 0 7; do for T in dir file; d
     mkdir dir
     C=d
   fi
-ohosonly   testing "$U$G$O $T" "chmod $U$G$O $T && ls -ld $T | cut -d' ' -f 1" \
-    "${C}$(num2perm $U$G$O)\n" "" ""
+ohosonly   testing "$U$G$O $T" "$C $U$G$O $T && ls -ld $T | cut -d' ' -f 1"      "${C}$(num2perm $U$G$O)\n" "" ""
 done; done; done; done
 unset U G O T C
 
 rm -rf dir file && mkdir dir && touch file 640
-ohosonly testing "750 dir 640 file" "chmod 750 dir 640 file &&
-  ls -ld 640 dir file | cut -d' ' -f 1 | cut -d. -f 1" \
-  "-rwxr-x---\ndrwxr-x---\n-rwxr-x---\n" "" ""
+ohosonly testing "750 dir 640 file" "$C 750 dir 640 file &&
+  ls -ld 640 dir file | cut -d' ' -f 1 | cut -d. -f 1"    "-rwxr-x---\ndrwxr-x---\n-rwxr-x---\n" "" ""
 
 chtest()
 {
   chmod -fR 700 dir file 2>/dev/null
   rm -rf dir file && mkdir dir && touch file
-ohosonly   testing "$1 dir file" \
-    "chmod $1 dir file && ls -ld dir file | cut -d' ' -f 1 | cut -d. -f 1" \
-    "$2" "" ""
+ohosonly   testing "$1 dir file"      "$C $1 dir file && ls -ld dir file | cut -d' ' -f 1 | cut -d. -f 1"      "$2" "" ""
 }
 
 chtest 666 "drw-rw-rw-\n-rw-rw-rw-\n"
@@ -118,16 +114,14 @@ chtest u+rwX-s,g+rX-ws,o+rX-wt "drwxr-xr-x\n-rw-r--r--\n"
 chtest u+rwX,u-s,g+rX,g-ws,o+rX,o-wt "drwxr-xr-x\n-rw-r--r--\n"
 
 # (chtest starts off with a directory that's +x...)
-ohosonly testing "+X" \
-  "mkdir -m 000 Xd && touch Xf && chmod +X Xd Xf && ls -ld Xd Xf | cut -d' ' -f 1" \
-  "d--x--x--x\n-rw-r--r--\n" "" ""
+ohosonly testing "+X"    "mkdir -m 000 Xd && touch Xf && $C +X Xd Xf && ls -ld Xd Xf | cut -d' ' -f 1"    "d--x--x--x\n-rw-r--r--\n" "" ""
 
 mkdir foo
 ln -s bar foo/baz
 # If you explicitly ask us, we'll try (and fail) to chmod a symlink.
-ohosonly testing "-R symlink arg" 'chmod -R 750 foo/baz 2>/dev/null; echo $?' "1\n" "" ""
+ohosonly testing "-R symlink arg" '$C -R 750 foo/baz 2>/dev/null; echo $?' "1\n" "" ""
 # If you only imply that you might want us to do that, we'll skip it.
-ohosonly testing "-R symlink recurse" 'chmod -R 750 foo; echo $?' "0\n" "" ""
+ohosonly testing "-R symlink recurse" '$C -R 750 foo; echo $?' "0\n" "" ""
 
 # Removing test files for cleanup purpose
 rm -rf dir file

@@ -20,33 +20,20 @@ chmod a=r perm/all-read-only
 
 # Testing operators
 
-ohosonly testing "-type l -a -type d -o -type p" \
-	"find dir -type l -a -type d -o -type p" "dir/fifo\n" "" ""
-ohosonly testing "-type l -type d -o -type p" "find dir -type l -type d -o -type p" \
-	"dir/fifo\n" "" ""
-ohosonly testing "-type l -o -type d -a -type p" \
-	"find dir -type l -o -type d -a -type p" "dir/link\n" "" ""
-ohosonly testing "-type l -o -type d -type p" "find dir -type l -o -type d -type p" \
-	"dir/link\n" "" ""
-ohosonly testing "-type l ( -type d -o -type l )" \
-	"find dir -type l \( -type d -o -type l \)" "dir/link\n" "" ""
-ohosonly testing "extra parentheses" \
-	"find dir \( \( -type l \) \( -type d -o \( \( -type l \) \) \) \)" \
-	"dir/link\n" "" ""
-ohosonly testing "( -type p -o -type d ) -type p" \
-	"find dir \( -type p -o -type d \) -type p" "dir/fifo\n" "" ""
-ohosonly testing "-type l -o -type d -type p -o -type f" \
-	"find dir -type l -o -type d -type p -o -type f | sort" \
-	"dir/file\ndir/link\n" "" ""
-ohosonly testing "-type l,f" \
-	"find dir -type l,f | sort" "dir/file\ndir/link\n" "" ""
+ohosonly testing "-type l -a -type d -o -type p"  	"$C dir -type l -a -type d -o -type p" "dir/fifo\n" "" ""
+ohosonly testing "-type l -type d -o -type p" "$C dir -type l -type d -o -type p"  	"dir/fifo\n" "" ""
+ohosonly testing "-type l -o -type d -a -type p"  	"$C dir -type l -o -type d -a -type p" "dir/link\n" "" ""
+ohosonly testing "-type l -o -type d -type p" "$C dir -type l -o -type d -type p"  	"dir/link\n" "" ""
+ohosonly testing "-type l ( -type d -o -type l )"  	"$C dir -type l \( -type d -o -type l \)" "dir/link\n" "" ""
+ohosonly testing "extra parentheses"  	"$C dir \( \( -type l \) \( -type d -o \( \( -type l \) \) \) \)"  	"dir/link\n" "" ""
+ohosonly testing "( -type p -o -type d ) -type p"  	"$C dir \( -type p -o -type d \) -type p" "dir/fifo\n" "" ""
+ohosonly testing "-type l -o -type d -type p -o -type f"  	"$C dir -type l -o -type d -type p -o -type f | sort"  	"dir/file\ndir/link\n" "" ""
+ohosonly testing "-type l,f"  	"$C dir -type l,f | sort" "dir/file\ndir/link\n" "" ""
 
 # Testing short-circuit evaluations
 
-ohosonly testing "-type f -a -print" \
-	"find dir -type f -a -print" "dir/file\n" "" ""
-ohosonly testing "-print -o -print" \
-	"find dir -type f -a \( -print -o -print \)" "dir/file\n" "" ""
+ohosonly testing "-type f -a -print"  	"$C dir -type f -a -print" "dir/file\n" "" ""
+ohosonly testing "-print -o -print"  	"$C dir -type f -a \( -print -o -print \)" "dir/file\n" "" ""
 
 # these were erroring or segfaulting:
 # find -type f -user nobody -exec : \;
@@ -54,115 +41,87 @@ ohosonly testing "-print -o -print" \
 
 # Testing previous failures
 
-ohosonly testing " " "cd perm; find" ".\n./all-read-only\n" "" ""
-ohosonly testing "-type f -user -exec" \
-  "find dir -type f -user $USER -exec ls {} \\;" "dir/file\n" "" ""
-ohosonly testing "-type l -newer -exec" \
-  "find dir -type l -newer dir/file -exec ls {} \\;" "dir/link\n" "" ""
-ohosonly testing "-exec true \\; -print" \
-  "find dir/file -exec true \\; -print" "dir/file\n" "" ""
-ohosonly testing "-exec false \\; -print" \
-  "find dir/file -exec false \\; -print" "" "" ""
-ohosonly testing "-perm (exact success)" \
-  "find perm -type f -perm 0444" "perm/all-read-only\n" "" ""
-ohosonly testing "-perm (exact failure)" \
-  "find perm -type f -perm 0400" "" "" ""
-ohosonly testing "-perm (min success)" \
-  "find perm -type f -perm -0400" "perm/all-read-only\n" "" ""
-ohosonly testing "-perm (min failure)" \
-  "find perm -type f -perm -0600" "" "" ""
-ohosonly testing "-perm (any success)" \
-  "find perm -type f -perm -0444" "perm/all-read-only\n" "" ""
-ohosonly testing "-perm (any failure)" \
-  "find perm -type f -perm -0222" "" "" ""
+ohosonly testing " " "cd perm; $C" ".\n./all-read-only\n" "" ""
+ohosonly testing "-type f -user -exec"    "$C dir -type f -user $USER -exec ls {} \\;" "dir/file\n" "" ""
+ohosonly testing "-type l -newer -exec"    "$C dir -type l -newer dir/file -exec ls {} \\;" "dir/link\n" "" ""
+ohosonly testing "-exec true \\; -print"    "$C dir/file -exec true \\; -print" "dir/file\n" "" ""
+ohosonly testing "-exec false \\; -print"    "$C dir/file -exec false \\; -print" "" "" ""
+ohosonly testing "-perm (exact success)"    "$C perm -type f -perm 0444" "perm/all-read-only\n" "" ""
+ohosonly testing "-perm (exact failure)"    "$C perm -type f -perm 0400" "" "" ""
+ohosonly testing "-perm (min success)"    "$C perm -type f -perm -0400" "perm/all-read-only\n" "" ""
+ohosonly testing "-perm (min failure)"    "$C perm -type f -perm -0600" "" "" ""
+ohosonly testing "-perm (any success)"    "$C perm -type f -perm -0444" "perm/all-read-only\n" "" ""
+ohosonly testing "-perm (any failure)"    "$C perm -type f -perm -0222" "" "" ""
 
-ohosonly testing "unterminated -exec {}" \
-  "find dir -type f -exec ls {} 2>/dev/null || echo bad" "bad\n" "" ""
-ohosonly testing "-exec {} +" \
-  "find dir -type f -exec ls {} +" "dir/file\n" "" ""
+ohosonly testing "unterminated -exec {}"    "$C dir -type f -exec ls {} 2>/dev/null || echo bad" "bad\n" "" ""
+ohosonly testing "-exec {} +"    "$C dir -type f -exec ls {} +" "dir/file\n" "" ""
 
 # `find . -iname` was segfaulting
-ohosonly testing "-name file" "find dir -name file" "dir/file\n" "" ""
-ohosonly testing "-name FILE" "find dir -name FILE" "" "" ""
+ohosonly testing "-name file" "$C dir -name file" "dir/file\n" "" ""
+ohosonly testing "-name FILE" "$C dir -name FILE" "" "" ""
 
 ln -s ../broken dir/link2
-ohosonly testing "-iname file" "find dir -iname FILE" "dir/file\n" "" ""
-ohosonly testing "-iname FILE" "find dir -iname FILE" "dir/file\n" "" ""
+ohosonly testing "-iname file" "$C dir -iname FILE" "dir/file\n" "" ""
+ohosonly testing "-iname FILE" "$C dir -iname FILE" "dir/file\n" "" ""
 
-ohosonly testing "-name (no arguments)" \
-  "find dir -name 2>&1 | grep -o '[-]name'" "-name\n" "" ""
-ohosonly testing "-iname (no arguments)" \
-  "find dir -iname 2>&1 | grep -o '[-]iname'" "-iname\n" "" ""
-ohosonly testing "-lname" "find dir -lname '?./brok*'" "dir/link2\n" "" ""
-ohosonly testing "-ilname" "find dir -ilname '*ROK*'" "dir/link2\n" "" ""
+ohosonly testing "-name (no arguments)"    "$C dir -name 2>&1 | grep -o '[-]name'" "-name\n" "" ""
+ohosonly testing "-iname (no arguments)"    "$C dir -iname 2>&1 | grep -o '[-]iname'" "-iname\n" "" ""
+ohosonly testing "-lname" "$C dir -lname '?./brok*'" "dir/link2\n" "" ""
+ohosonly testing "-ilname" "$C dir -ilname '*ROK*'" "dir/link2\n" "" ""
 
-ohosonly testing "" "find dir \( -iname file -o -iname missing \) -exec echo {} \;" \
-  "dir/file\n" "" ""
+ohosonly testing "" "$C dir \( -iname file -o -iname missing \) -exec echo {} \;"    "dir/file\n" "" ""
 
-ohosonly testing "-path glob" "find dir -path 'dir*e'" "dir/file\n" "" ""
-ohosonly testing "-wholename glob" "find dir -wholename 'dir*e'" "dir/file\n" "" ""
-ohosonly testing "-ipath glob" "find dir -ipath 'dIr*E'" "dir/file\n" "" ""
-ohosonly testing "-iwholename glob" "find dir -iwholename 'dIr*E'" "dir/file\n" "" ""
-ohosonly testing "-printf" "find dir -name file -printf '%f %p %P %s'" \
-  "file dir/file file 0" "" ""
-ohosonly testing "-printf .N" "find dir -name file -printf %.2f" "fi" "" ""
+ohosonly testing "-path glob" "$C dir -path 'dir*e'" "dir/file\n" "" ""
+ohosonly testing "-wholename glob" "$C dir -wholename 'dir*e'" "dir/file\n" "" ""
+ohosonly testing "-ipath glob" "$C dir -ipath 'dIr*E'" "dir/file\n" "" ""
+ohosonly testing "-iwholename glob" "$C dir -iwholename 'dIr*E'" "dir/file\n" "" ""
+ohosonly testing "-printf" "$C dir -name file -printf '%f %p %P %s'"    "file dir/file file 0" "" ""
+ohosonly testing "-printf .N" "$C dir -name file -printf %.2f" "fi" "" ""
 # findutils find supports C letter escapes and \0 octal, but not \x or \u.
-ohosonly testing "-printf escapes" \
-  "find dir -name file -printf '\0 \007 \t \079' | xxd -p" \
-  "0020072009200739\n" "" ""
+ohosonly testing "-printf escapes"    "$C dir -name file -printf '\0 \007 \t \079' | xxd -p"    "0020072009200739\n" "" ""
 # findutils find treats \c as "no more output from this -printf", not "no more
 # output from find".
-ohosonly testing "-printf \\c escape" "find dir -name f* -printf 'x\cy'" "xx" "" ""
+ohosonly testing "-printf \\c escape" "$C dir -name f* -printf 'x\cy'" "xx" "" ""
 
 # No error message for a dangling link.
 ln -s does-not-exist dir/dangler
-ohosonly testing "-L dangling symlink silent" \
-  "LANG=C find -L dir -name file 2>&1" "dir/file\n" "" ""
+ohosonly testing "-L dangling symlink silent"    "LANG=C $C -L dir -name file 2>&1" "dir/file\n" "" ""
 rm -f dir/dangler
 
 # An error for a symlink loop.
 ln -s looper dir/looper
-ohosonly testing "-L symlink loop noisy" \
-  "LANG=C find -L dir -name file 2>err ; grep -q dir/looper err || echo missing error" \
-  "dir/file\n" "" ""
+ohosonly testing "-L symlink loop noisy"    "LANG=C $C -L dir -name file 2>err ; grep -q dir/looper err || echo missing error"    "dir/file\n" "" ""
 
-ohosonly testing "-false" "find dir -false" "" "" ""
-ohosonly testing "-true" "find dir/file -true" "dir/file\n" "" ""
+ohosonly testing "-false" "$C dir -false" "" "" ""
+ohosonly testing "-true" "$C dir/file -true" "dir/file\n" "" ""
 
-ohosonly testing "missing root error" \
-  "LANG=C find -L dir/missing-root 2>err ; grep -q dir/missing-root err || echo missing error" \
-  "" "" ""
+ohosonly testing "missing root error"    "LANG=C $C -L dir/missing-root 2>err ; grep -q dir/missing-root err || echo missing error"    "" "" ""
 rm -f dir/looper err
 
-ohosonly testing "-path match root" "find dir/f* -path dir/file" "dir/file\n" "" ""
-ohosonly testing "-name match root" "find dir/f* -name file" "dir/file\n" "" ""
+ohosonly testing "-path match root" "$C dir/f* -path dir/file" "dir/file\n" "" ""
+ohosonly testing "-name match root" "$C dir/f* -name file" "dir/file\n" "" ""
 
 # https://github.com/landley/toybox/issues/69
 ln -s nowhere broken
-ohosonly testing "-H broken" "find -H broken" "broken\n" "" ""
-ohosonly testing "-L broken" "find -L broken" "broken\n" "" ""
+ohosonly testing "-H broken" "$C -H broken" "broken\n" "" ""
+ohosonly testing "-L broken" "$C -L broken" "broken\n" "" ""
 
-ohosonly testing "one slash" 'find /etc/ -maxdepth 1 | grep /passwd\$' '/etc/passwd\n' \
-  '' ''
-ohosonly testing 'empty arg' 'find "" dir -name file 2>/dev/null' 'dir/file\n' '' ''
-ohosonly testing 'quit' 'find dir perm -print -quit' 'dir\n' '' ''
+ohosonly testing "one slash" '$C /etc/ -maxdepth 1 | grep /passwd\$' '/etc/passwd\n'    '' ''
+ohosonly testing 'empty arg' '$C "" dir -name file 2>/dev/null' 'dir/file\n' '' ''
+ohosonly testing 'quit' '$C dir perm -print -quit' 'dir\n' '' ''
 ln dir/file perm/hardlink
-ohosonly testing 'samefile' 'find . -samefile dir/file | sort' \
-  './dir/file\n./perm/hardlink\n' '' ''
+ohosonly testing 'samefile' '$C . -samefile dir/file | sort'    './dir/file\n./perm/hardlink\n' '' ''
 rm -rf dir broken perm irrelevant
 
 mkdir dir
 touch -d @12345 dir/one
 touch -d @12346 dir/two
-ohosonly testing 'newerat' 'find dir -type f -newerat @12345' 'dir/two\n' '' ''
-ohosonly testing 'newer nano' 'find dir -type f -newerat @12345.67890' 'dir/two\n' '' ''
+ohosonly testing 'newerat' '$C dir -type f -newerat @12345' 'dir/two\n' '' ''
+ohosonly testing 'newer nano' '$C dir -type f -newerat @12345.67890' 'dir/two\n' '' ''
 ln -s one dir/three
-ohosonly testing '-size implies -type f' 'find dir -size -1M | sort' \
-  'dir/one\ndir/two\n' '' ''
+ohosonly testing '-size implies -type f' '$C dir -size -1M | sort'    'dir/one\ndir/two\n' '' ''
 rm -rf dir
 
 utf8locale
 skipnot [ "$(uname)" != "Darwin" ]  # Darwin's towlower() is broken.
-ohosonly testing 'strlower edge case' \
-  'touch aaaaaⱥⱥⱥⱥⱥⱥⱥⱥⱥ; find . -iname aaaaaȺȺȺȺȺȺȺȺȺ' './aaaaaⱥⱥⱥⱥⱥⱥⱥⱥⱥ\n' \
-  '' ''
+ohosonly testing 'strlower edge case'    'touch aaaaaⱥⱥⱥⱥⱥⱥⱥⱥⱥ; $C . -iname aaaaaȺȺȺȺȺȺȺȺȺ' './aaaaaⱥⱥⱥⱥⱥⱥⱥⱥⱥ\n'    '' ''

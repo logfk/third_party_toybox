@@ -11,18 +11,16 @@ function clean()
   grep -v "security\."
 }
 
+_clean='grep -v "security\."'
+
 mkdir attrs
 touch attrs/file
 setfattr -n user.empty attrs/file
 setfattr -n user.data -v hello attrs/file
 setfattr -n user.delete-me -v hello attrs/file
 
-ohosonly testing "-x" \
-    "setfattr -x user.delete-me attrs/file && getfattr attrs/file | clean" \
-    "# file: attrs/file\nuser.data\nuser.empty\n\n" "" ""
-ohosonly testing "-n" "setfattr -n user.new attrs/file && getfattr -d attrs/file | clean" \
-    "# file: attrs/file\nuser.data=\"hello\"\nuser.empty\nuser.new\n\n" "" ""
-ohosonly testing "-n -v" "setfattr -n user.new -v data attrs/file && getfattr -d attrs/file | clean" \
-    "# file: attrs/file\nuser.data=\"hello\"\nuser.empty\nuser.new=\"data\"\n\n" "" ""
+ohosonly testing "-x"      "$C -x user.delete-me attrs/file && getfattr attrs/file | $_clean"      "# file: attrs/file\nuser.data\nuser.empty\n\n" "" ""
+ohosonly testing "-n" "$C -n user.new attrs/file && getfattr -d attrs/file | $_clean"      "# file: attrs/file\nuser.data=\"hello\"\nuser.empty\nuser.new\n\n" "" ""
+ohosonly testing "-n -v" "$C -n user.new -v data attrs/file && getfattr -d attrs/file | $_clean"      "# file: attrs/file\nuser.data=\"hello\"\nuser.empty\nuser.new=\"data\"\n\n" "" ""
 
 rm -rf attrs

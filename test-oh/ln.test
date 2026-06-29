@@ -9,82 +9,74 @@
 #set -x
 
 echo file1 > file
-ohosonly testing "create_hardlink" "ln file hlink && [ file -ef hlink ] &&
+ohosonly testing "create_hardlink" "$C file hlink && [ file -ef hlink ] &&
           echo 'yes'" "yes\n" "" ""
-ohosonly testing "create_softlink" "ln -s file slink && [ -L slink ] &&
+ohosonly testing "create_softlink" "$C -s file slink && [ -L slink ] &&
           readlink slink" "file\n" "" ""
 rm slink hlink
 
 echo hlink1 > hlink
-ohosonly testing "force_create_hardlink" "ln -f file hlink &&
+ohosonly testing "force_create_hardlink" "$C -f file hlink &&
           [ file -ef hlink ] && cat hlink 2>/dev/null" "file1\n" "" ""
 
 echo slink1 > slink
-ohosonly testing "force_create_symlink" "ln -f -s file slink &&
+ohosonly testing "force_create_symlink" "$C -f -s file slink &&
           [ -L slink ] && readlink slink" "file\n" "" ""
 rm slink hlink
 
 echo hlink1 > hlink
 set +e
-ohosonly testing "preserves_hardlinks" "ln file hlink 2>/dev/null || echo 'yes'" \
-          "yes\n" "" ""
+ohosonly testing "preserves_hardlinks" "$C file hlink 2>/dev/null || echo 'yes'"            "yes\n" "" ""
 
 echo slink1 > slink
 set +e
-ohosonly testing "preserves_symlinks" "ln -s file slink 2>/dev/null || echo 'yes'" \
-          "yes\n" "" ""
+ohosonly testing "preserves_symlinks" "$C -s file slink 2>/dev/null || echo 'yes'"            "yes\n" "" ""
 rm slink hlink
 
 mkdir dir
-ohosonly testing "multilevel_symbolic_links" "ln -s dir slink &&
-          ln -s file slink && [ -L slink -a -L slink/file ] &&
+ohosonly testing "multilevel_symbolic_links" "$C -s dir slink &&
+          $C -s file slink && [ -L slink -a -L slink/file ] &&
           readlink slink && readlink slink/file" "dir\nfile\n" "" ""
 rm slink
 
-ohosonly testing "no_dereference" "ln -s dir slink &&
-          ln -n -s file slink 2>/dev/null || [ -L slink ] && readlink slink" \
-          "dir\n" "" ""
+ohosonly testing "no_dereference" "$C -s dir slink &&
+          $C -n -s file slink 2>/dev/null || [ -L slink ] && readlink slink"            "dir\n" "" ""
 rm slink
 
-ohosonly testing "-T acts like -n" "ln -s dir slink &&
-          ln -Tsf file slink || [ -L slink ] && readlink slink" "file\n" "" ""
+ohosonly testing "-T acts like -n" "$C -s dir slink &&
+          $C -Tsf file slink || [ -L slink ] && readlink slink" "file\n" "" ""
 rm slink
 
-ohosonly testing "-T with dir" "ln -Ts file dir 2>/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "-T with dir" "$C -Ts file dir 2>/dev/null || echo yes" "yes\n" "" ""
 rm -rf file dir slink
 
-ohosonly testing "-t" "ln -st . one/two three && readlink two three" "one/two\nthree\n" \
-  "" ""
+ohosonly testing "-t" "$C -st . one/two three && readlink two three" "one/two\nthree\n"    "" ""
 rm -f two three
 
 touch file1 file2 && mkdir dir
-ohosonly testing "create_multiple_hardlinks" "ln file* dir/ &&
+ohosonly testing "create_multiple_hardlinks" "$C file* dir/ &&
    [ file1 -ef dir/file1 -a file2 -ef dir/file2 ] && echo 'yes'" "yes\n" "" ""
 rm -rf file* dir
 
 touch file1 file2 && mkdir dir
-ohosonly testing "create_multiple_softlinks" "ln -s file* dir/ &&
+ohosonly testing "create_multiple_softlinks" "$C -s file* dir/ &&
           [ -L dir/file1 -a -L dir/file2 ] && readlink dir/file1 &&
           readlink dir/file2" "file1\nfile2\n" "" ""
 rm -rf file* dir
 
 echo file1 > file
-ohosonly testing "create_softlink_and_remove_sourcefile" "ln -s file slink &&
-          [ -L slink ] && rm file && cat slink 2>/dev/null || echo 'yes' " \
-          "yes\n" "" ""
+ohosonly testing "create_softlink_and_remove_sourcefile" "$C -s file slink &&
+          [ -L slink ] && rm file && cat slink 2>/dev/null || echo 'yes' "            "yes\n" "" ""
 rm -f file slink
 
 echo file1 > file
-ohosonly testing "create_hardlink_and_remove_sourcefile" "ln file hlink &&
-          [ file -ef hlink ] && rm file && [ -f hlink ] && echo 'yes'" \
-          "yes\n" "" ""
+ohosonly testing "create_hardlink_and_remove_sourcefile" "$C file hlink &&
+          [ file -ef hlink ] && rm file && [ -f hlink ] && echo 'yes'"            "yes\n" "" ""
 rm -f file hlink
 
 mkdir -p one/two
 ln -s . circular
 mkdir -p three
 echo hello > three/four
-ohosonly testing "ln -r" \
-  "ln -sr circular/three/../three/four one/two/five && cat one/two/five" \
-  "hello\n" "" ""
+ohosonly testing "ln -r"    "$C -sr circular/three/../three/four one/two/five && cat one/two/five"    "hello\n" "" ""
 rm -rf one three circular
