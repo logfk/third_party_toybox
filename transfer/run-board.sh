@@ -61,6 +61,10 @@ hdc_works() {
   esac
   return 0
 }
+# hdc_cleanup: 清理板端测试内容，保留推送的 toybox 二进制
+hdc_cleanup() {
+  "$HDC" shell "cd $BOARD_DIR && ls -a 2>/dev/null | while read f; do case \"\$f\" in .|..|toybox) continue ;; esac; rm -rf \"\$f\"; done" 2>/dev/null
+}
 
 # 检查主板上 toybox 路径：优先用板端推送的（带 TOYBOX_OH_ADAPT）
 if hdc_works "$BOARD_DIR/toybox --help"; then
@@ -74,8 +78,8 @@ else
   TOYBOX_CMD="toybox"
 fi
 
-# 清理并创建板端工作目录（分两步，避免 && 被 hdc.exe 吞掉）
-"$HDC" shell "rm -rf $BOARD_DIR" 2>/dev/null
+# 清理板端工作目录（保留推送版 toybox），再确保目录存在
+hdc_cleanup
 "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
 # 检查主板上的 toybox 是否支持各命令
@@ -214,12 +218,9 @@ for testfile in "$@"; do
     rm -f "$TOP/_test/${CMDNAME}_continue"
   fi
 
-  # 清理板端
-  "$HDC" shell "rm -rf $BOARD_DIR/*" 2>/dev/null
+  # 清理板端（保留推送版 toybox）
+  hdc_cleanup
 done
-
-# 清理板端目录
-"$HDC" shell "rm -rf $BOARD_DIR" 2>/dev/null
 
 echo ""
 echo "=========================================="
