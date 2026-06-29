@@ -28,7 +28,6 @@ TOYBOX_PATH="${TOYBOX_PATH:-/system/bin}"
 
 echo "=========================================="
 echo "  OHOS Toybox 板端测试运行器"
-echo "  主板路径: $TOYBOX_PATH/toybox"
 echo "  hdc:      $HDC"
 echo "  测试目录: $TEST_OH_DIR"
 echo "=========================================="
