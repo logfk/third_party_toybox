@@ -213,27 +213,58 @@ for testfile in "$@"; do
   echo "  测试: $CMDNAME"
   echo "=========================================="
 
-  # 按需同步测试数据（内联执行，避免 Git Bash 函数+tee 组合的兼容问题）
-  # 只同步白名单命令：blkid, bzcat, file, fstype, tar, wc
-  case "$CMDNAME" in blkid|bzcat|file|fstype|tar|wc)
+  # 按需同步测试数据（内联执行）
+  # 每个命令只同步它实际需要的文件，定义文件依赖映射：
+  #   blkid/fstype → blkid/    bzcat → blkid/ + bzcat/
+  #   file → 根目录 + tar/ + utf8/ + zip/ + elf/
+  #   tar  → tar/              wc   → utf8/
+  case "$CMDNAME" in
+    blkid|fstype) SYNC_ITEMS="blkid" ;;
+    bzcat)        SYNC_ITEMS="blkid bzcat" ;;
+    file)         SYNC_ITEMS=". tar utf8 zip elf" ;;
+    tar)          SYNC_ITEMS="tar" ;;
+    wc)           SYNC_ITEMS="utf8" ;;
+    *)            SYNC_ITEMS="" ;;
+  esac
+  if [ -n "$SYNC_ITEMS" ]; then
     echo "同步测试数据到板端 $FILES ..."
-    if [ -d "$FILES_SRC" ]; then
-      find "$FILES_SRC" -type f -print0 | while IFS= read -r -d '' f; do
-        rel="${f#$FILES_SRC/}"
-        b64=$(base64 -w0 "$f" 2>/dev/null) || { echo "  [FAIL] base64: $rel"; continue; }
-        "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
-        if "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > ${BOARD_DIR}/files/$rel" 2>/dev/null; then
-          echo "  [OK] $rel"
+    # 重建干净的文件目录，避免之前残留的 同名目录/文件 冲突（如 java.class）
+    "$HDC" shell "rm -rf ${BOARD_DIR}/files && mkdir -p ${BOARD_DIR}/files" 2>/dev/null
+    for _item in $SYNC_ITEMS; do
+      if [ "$_item" = "." ]; then
+        _src_dir="$FILES_SRC"
+        _rel_prefix=""
+      else
+        _src_dir="$FILES_SRC/$_item"
+        _rel_prefix="$_item/"
+      fi
+      [ -d "$_src_dir" ] || continue
+      find "$_src_dir" -type f -print0 | while IFS= read -r -d '' _f; do
+        _rel="${_rel_prefix}${_f#$_src_dir/}"
+        # base64 编码后分块写入板端，避免大文件时 printf 命令行超长
+        _b64=$(base64 -w0 "$_f" 2>/dev/null) || { echo "  [FAIL] base64: $_rel"; continue; }
+        _total=${#_b64}
+        _off=0
+        _first=true
+        while [ $_off -lt $_total ]; do
+          _chunk="${_b64:$_off:8000}"
+          if $_first; then
+            "$HDC" shell "printf '%s' '$_chunk' > ${BOARD_DIR}/files/_tmp.b64" 2>/dev/null
+            _first=false
+          else
+            "$HDC" shell "printf '%s' '$_chunk' >> ${BOARD_DIR}/files/_tmp.b64" 2>/dev/null
+          fi
+          _off=$((_off + 8000))
+        done
+        if "$HDC" shell "$TOYBOX_CMD base64 -d < ${BOARD_DIR}/files/_tmp.b64 > ${BOARD_DIR}/files/$_rel && rm ${BOARD_DIR}/files/_tmp.b64" 2>/dev/null; then
+          echo "  [OK] $_rel"
         else
-          echo "  [FAIL] $rel"
+          echo "  [FAIL] $_rel"
         fi
       done
-      echo "同步完成"
-    else
-      echo "  WARNING: 测试数据源目录不存在: $FILES_SRC"
-    fi
-    ;;
-  esac
+    done
+    echo "同步完成"
+  fi
 
   C="$TOYBOX_CMD $CMDNAME"
   # 在干净的工作目录中运行测试，避免污染 $TOP
