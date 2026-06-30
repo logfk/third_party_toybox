@@ -52,7 +52,8 @@ echo "主板连接正常"
 
 # hdc_cleanup: 清理板端测试内容，保留推送的 toybox 二进制
 hdc_cleanup() {
-  "$HDC" shell "cd $BOARD_DIR && ls -a 2>/dev/null | while read f; do case \"\$f\" in .|..|toybox) continue ;; esac; rm -rf \"\$f\"; done" 2>/dev/null
+  # 保留推送版 toybox 及测试数据 files/
+  "$HDC" shell "cd $BOARD_DIR && ls -a 2>/dev/null | while read f; do case \"\$f\" in .|..|toybox|files) continue ;; esac; rm -rf \"\$f\"; done" 2>/dev/null
 }
 
 # 固定使用推送版 toybox（需提前 hdc file send 到 BOARD_DIR）
@@ -63,21 +64,24 @@ echo "toybox 路径: $TOYBOX_CMD (推送版本)"
 hdc_cleanup
 "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
-# 同步测试数据文件（tests/files/ → 板端 $BOARD_DIR/files/）
+# 测试数据文件按需同步（只有用到 $FILES 的测试才推送）
 FILES_SRC="$TOP/../tests/files"
 export FILES="$BOARD_DIR/files"
-if [ -d "$FILES_SRC" ]; then
-  echo ""
-  echo "===== 同步测试数据文件 ====="
+sync_test_data() {
+  local testfile="$1"
+  grep -q '\$FILES' "$testfile" 2>/dev/null || return 0
+  # 检查板端是否已同步过
+  "$HDC" shell "test -d $BOARD_DIR/files" 2>/dev/null && return 0
+  echo "  同步测试数据..."
+  [ -d "$FILES_SRC" ] || { echo "    警告: $FILES_SRC 不存在"; return 1; }
   while IFS= read -r -d '' f; do
     rel="${f#$FILES_SRC/}"
-    # 转成 Windows 绝对路径（C:\Users\...），hdc.exe 不认识 Unix 路径
     win_f="$(cd "$(dirname "$f")" && pwd -W 2>/dev/null)\\$(basename "$f")"
     "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
-    "$HDC" file send "$win_f" "$BOARD_DIR/files/$rel" && echo "  [OK] files/$rel" || echo "  [FAIL] files/$rel"
+    "$HDC" file send "$win_f" "$BOARD_DIR/files/$rel" 2>/dev/null && echo "    [OK] $rel" || echo "    [FAIL] $rel"
   done < <(find "$FILES_SRC" -type f -print0)
   echo "  测试数据路径: \$FILES=$FILES"
-fi
+}
 
 # 导出 TOYBOX 路径（test 文件可用 \$TOYBOX 调用 toybox 下的其他子命令）
 export TOYBOX="$TOYBOX_CMD"
@@ -223,6 +227,9 @@ for testfile in "$@"; do
   echo "=========================================="
   echo "  测试: $CMDNAME"
   echo "=========================================="
+
+  # 按需同步测试数据
+  sync_test_data "$TEST_OH_DIR/$CMDNAME.test"
 
   C="$TOYBOX_CMD $CMDNAME"
   # 在干净的工作目录中运行测试，避免污染 $TOP
