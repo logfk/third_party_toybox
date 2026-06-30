@@ -256,6 +256,10 @@ for testfile in "$@"; do
           fi
           _off=$((_off + 8000))
         done
+        # 创建父目录（仅当路径含 /）
+        case "$_rel" in
+          */*) "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${_rel%/*}" 2>/dev/null ;;
+        esac
         if "$HDC" shell "$TOYBOX_CMD base64 -d < ${BOARD_DIR}/files/_tmp.b64 > ${BOARD_DIR}/files/$_rel && rm ${BOARD_DIR}/files/_tmp.b64" 2>/dev/null; then
           echo "  [OK] $_rel"
         else
