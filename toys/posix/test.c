@@ -135,13 +135,13 @@ static int do_test(char **args, int *count)
 #define OR  4  // test before -o succeeded since ( so force true
 void test_main(void)
 {
-  char *s = (void *)1;
+  char *s = NULL;
   int pos, paren, pstack, result = 0;
 
   toys.exitval = 2;
   if (CFG_TOYBOX && *toys.which->name=='[') {
     if (toys.optc) for (s = toys.optargs[--toys.optc]; *s==']'; s++);
-    if (*s) error_exit("Missing ']'");
+    if (!s || *s) error_exit("Missing ']'");
   }
 
   // loop through command line arguments
