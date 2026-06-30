@@ -78,9 +78,14 @@ sync_test_data() {
   [ -d "$FILES_SRC" ] || { echo "    警告: $FILES_SRC 不存在"; return 1; }
   while IFS= read -r -d '' f; do
     rel="${f#$FILES_SRC/}"
-    win_f="$(cd "$(dirname "$f")" && pwd -W 2>/dev/null)\\$(basename "$f")"
-    "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
-    "$HDC" file send "$win_f" "$BOARD_DIR/files/$rel" 2>/dev/null && echo "    [OK] $rel" || echo "    [FAIL] $rel"
+    # hdc file send 在 Windows 上会把绝对路径拼上自己的 CWD，
+    # 先 cd 到文件所在目录，只传文件名
+    (
+      cd "$(dirname "$f")" 2>/dev/null || exit 1
+      "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
+      "$HDC" file send "$(basename "$f")" "$BOARD_DIR/files/$rel" 2>/dev/null \
+        && echo "    [OK] $rel" || echo "    [FAIL] $rel"
+    )
   done < <(find "$FILES_SRC" -type f -print0)
   # 写入同步标记（hdc_cleanup 保留 files/ 目录，标记跨测试文件有效）
   "$HDC" shell "touch ${BOARD_DIR}/files/.synced" 2>/dev/null
