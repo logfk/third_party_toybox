@@ -121,7 +121,8 @@ testing() {
 
   # 推送 stdin 文件（如有）
   if [ -n "$5" ]; then
-    printf '%s' "$5" > "$TESTDIR/stdin"
+    # 用 printf '%b' 解释 \n 等转义序列，匹配上游 echo -ne 行为
+    printf '%b' "$5" > "$TESTDIR/stdin"
     local b64
     b64=$(base64 -w0 "$TESTDIR/stdin" 2>/dev/null)
     "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/stdin" 2>/dev/null
@@ -129,7 +130,8 @@ testing() {
 
   # 直接在板端执行命令（保留末尾换行，$() 会吃掉，所以重定向到临时文件）
   if [ -n "$5" ]; then
-    "$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD < $BOARD_DIR/stdin" > "$TESTDIR/actual.raw" 2>/dev/null
+    # 用 { } 包裹，确保 stdin 重定向作用于整个复合命令（而非 && 后的最后一个子命令）
+    "$HDC" shell "cd $BOARD_DIR && { $REMOTE_CMD; } < $BOARD_DIR/stdin" > "$TESTDIR/actual.raw" 2>/dev/null
   else
     "$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" > "$TESTDIR/actual.raw" 2>/dev/null
   fi
