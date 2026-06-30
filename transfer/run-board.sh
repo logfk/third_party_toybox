@@ -69,7 +69,9 @@ FILES_SRC="$TOP/../tests/files"
 export FILES="$BOARD_DIR/files"
 sync_test_data() {
   local testfile="$1"
-  grep -q '\$FILES' "$testfile" 2>/dev/null || return 0
+  local cmdname="$(basename "${testfile%.test}")"
+  # 只同步那些用到 $FILES 的测试（硬编码白名单，避免 grep 在 Git Bash 上行为异常）
+  case "$cmdname" in blkid|bzcat|file|fstype|tar|wc) ;; *) return 0 ;; esac
   # 检查板端是否已同步过（用 .synced 标记，避免空目录误判）
   "$HDC" shell "test -f ${BOARD_DIR}/files/.synced" 2>/dev/null && return 0
   echo "  同步测试数据..."
