@@ -71,11 +71,10 @@ if [ -d "$FILES_SRC" ]; then
   echo "===== 同步测试数据文件 ====="
   while IFS= read -r -d '' f; do
     rel="${f#$FILES_SRC/}"
-    # 转换为 Windows 路径（cygpath -w），否则 hdc file send 不认识 Unix 路径
-    win_f=$(command -v cygpath >/dev/null 2>&1 && cygpath -w "$f" 2>/dev/null || echo "$f")
+    # 转成 Windows 绝对路径（C:\Users\...），hdc.exe 不认识 Unix 路径
+    win_f="$(cd "$(dirname "$f")" && pwd -W 2>/dev/null)\\$(basename "$f")"
     "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
-    "$HDC" file send "$win_f" "$BOARD_DIR/files/$rel" 2>/dev/null
-    echo "  [OK] files/$rel"
+    "$HDC" file send "$win_f" "$BOARD_DIR/files/$rel" && echo "  [OK] files/$rel" || echo "  [FAIL] files/$rel"
   done < <(find "$FILES_SRC" -type f -print0)
   echo "  测试数据路径: \$FILES=$FILES"
 fi
