@@ -70,8 +70,8 @@ export FILES="$BOARD_DIR/files"
 sync_test_data() {
   local testfile="$1"
   grep -q '\$FILES' "$testfile" 2>/dev/null || return 0
-  # 检查板端是否已同步过
-  "$HDC" shell "test -d $BOARD_DIR/files" 2>/dev/null && return 0
+  # 检查板端是否已同步过（用 .synced 标记，避免空目录误判）
+  "$HDC" shell "test -f ${BOARD_DIR}/files/.synced" 2>/dev/null && return 0
   echo "  同步测试数据..."
   [ -d "$FILES_SRC" ] || { echo "    警告: $FILES_SRC 不存在"; return 1; }
   while IFS= read -r -d '' f; do
@@ -80,6 +80,8 @@ sync_test_data() {
     "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
     "$HDC" file send "$win_f" "$BOARD_DIR/files/$rel" 2>/dev/null && echo "    [OK] $rel" || echo "    [FAIL] $rel"
   done < <(find "$FILES_SRC" -type f -print0)
+  # 写入同步标记（hdc_cleanup 保留 files/ 目录，标记跨测试文件有效）
+  "$HDC" shell "touch ${BOARD_DIR}/files/.synced" 2>/dev/null
   echo "  测试数据路径: \$FILES=$FILES"
 }
 
