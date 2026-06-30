@@ -29,18 +29,18 @@ for U in $(seq 0 7); do for G in 0 3 6; do for O in 0 7; do for T in dir file; d
   rm -rf $T
   if [ "$T" == file ]; then
     touch file
-    C=-
+    TYP=-
   else
     mkdir dir
-    C=d
+    TYP=d
   fi
-  testing "$U$G$O $T" "chmod $U$G$O $T && ls -ld $T | cut -d' ' -f 1" \
-    "${C}$(num2perm $U$G$O)\n" "" ""
+  testing "$U$G$O $T" "$C $U$G$O $T && ls -ld $T | cut -d' ' -f 1" \
+    "${TYP}$(num2perm $U$G$O)\n" "" ""
 done; done; done; done
-unset U G O T C
+unset U G O T TYP
 
 rm -rf dir file && mkdir dir && touch file 640
-testing "750 dir 640 file" "chmod 750 dir 640 file &&
+testing "750 dir 640 file" "$C 750 dir 640 file &&
   ls -ld 640 dir file | cut -d' ' -f 1 | cut -d. -f 1" \
   "-rwxr-x---\ndrwxr-x---\n-rwxr-x---\n" "" ""
 
@@ -49,7 +49,7 @@ chtest()
   chmod -fR 700 dir file 2>/dev/null
   rm -rf dir file && mkdir dir && touch file
   testing "$1 dir file" \
-    "chmod $1 dir file && ls -ld dir file | cut -d' ' -f 1 | cut -d. -f 1" \
+    "$C $1 dir file && ls -ld dir file | cut -d' ' -f 1 | cut -d. -f 1" \
     "$2" "" ""
 }
 

@@ -190,8 +190,10 @@ static int cp_node(struct dirtree *try)
 
     // Handle -inuvF
     if (!faccessat(cfd, catch, F_OK, 0) && !S_ISDIR(cst.st_mode)) {
-      if (S_ISDIR(try->st.st_mode))
+      if (S_ISDIR(try->st.st_mode)) {
         error_msg("dir at '%s'", s = dirtree_path(try, 0));
+        toys.exitval = 1;
+      }
       else if (FLAG(F) && unlinkat(cfd, catch, 0))
         error_msg("unlink '%s'", catch);
       else if (FLAG(i)) {
