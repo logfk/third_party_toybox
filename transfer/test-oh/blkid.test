@@ -54,9 +54,10 @@ toyonly testing "stdin" \
   "$TOYBOX bzcat $FILES/blkid/squashfs.bz2 | $C -" \
   '-: TYPE="squashfs"\n' "" ""
 
-# -o value -s and -o export
-$TOYBOX bzcat $FILES/blkid/ext3.bz2 > temp.img
-ohosonly testcmd "-o value -s" "-o value -s TYPE temp.img" 'ext3\n' "" ""
-ohosonly testcmd "-o export" "-o export temp.img" \
+# -o value -s and -o export（整条在板端执行，避免 $TOYBOX 在宿主机不可用）
+ohosonly testing "-o value -s" \
+  "$TOYBOX bzcat $FILES/blkid/ext3.bz2 > temp.img && $C -o value -s TYPE temp.img && rm temp.img" \
+  'ext3\n' "" ""
+ohosonly testing "-o export" \
+  "$TOYBOX bzcat $FILES/blkid/ext3.bz2 > temp.img && $C -o export temp.img && rm temp.img" \
   'DEVNAME=temp.img\nLABEL=myext3\nUUID=79d1c877-1a0f-4e7d-b21d-fc32ae3ef101\nSEC_TYPE=ext2\nTYPE=ext3\n' "" ""
-rm temp.img

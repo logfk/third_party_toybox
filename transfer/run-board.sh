@@ -23,6 +23,7 @@ BOARD_DIR=/data/toybox-test
 # Git Bash (MSYS2) 会自动将 /data/… 转换为 Windows 路径传给 hdc.exe，
 # 导致路径被截断。双斜杠前缀 //data 让 MSYS2 当作 UNC 路径不转换，
 # 而 OHOS/Linux 会将 // 折叠为 /，板端行为不变。
+BOARD_DIR_DISPLAY="$BOARD_DIR"
 case "$(uname -s)" in MINGW*|MSYS*) BOARD_DIR="//data/toybox-test" ;; esac
 
 # 可配置: hdc 路径
@@ -62,7 +63,7 @@ hdc_cleanup() {
 
 # 固定使用推送版 toybox（需提前 hdc file send 到 BOARD_DIR）
 TOYBOX_CMD="$BOARD_DIR/toybox"
-echo "toybox 路径: $TOYBOX_CMD (推送版本)"
+echo "toybox 路径: $BOARD_DIR_DISPLAY/toybox (推送版本)"
 
 # 清理板端工作目录（保留推送版 toybox），再确保目录存在
 hdc_cleanup
