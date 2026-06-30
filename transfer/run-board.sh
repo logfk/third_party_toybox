@@ -23,6 +23,10 @@ BOARD_DIR=/data/toybox-test
 
 # 可配置: hdc 路径
 HDC="${HDC:-hdc}"
+# 在 Git Bash (MSYS2/MINGW) 上，禁用 MSYS2 路径转换，避免 hdc.exe 将 /data/… 
+# 自动转换为 Windows 路径（如 C:/Program Files/Git/data/…），导致发给板端的
+# shell 命令被空格截断
+case "$(uname -s)" in MINGW*|MSYS*) export MSYS2_ARG_CONV_EXCL='*' ;; esac
 
 # 报告输出目录
 REPORT_DIR="$TOP/_reports"
