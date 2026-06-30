@@ -64,7 +64,28 @@ hdc_cleanup
 "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
 # 确定测试文件列表（指定参数只跑指定项，否则跑全部）
-[ $# -eq 0 ] && set -- "$TEST_OH_DIR"/*.test
+# 参数可以是命令名（cat, ls）或 glob 模式（[a-c]*），自动解析为 test-oh/*.test
+if [ $# -eq 0 ]; then
+  set -- "$TEST_OH_DIR"/*.test
+else
+  RESOLVED=()
+  for arg in "$@"; do
+    # 如果 arg 含通配符，在 test-oh/ 下展开
+    if [[ "$arg" == *[*?\[]* ]]; then
+      for tf in "$TEST_OH_DIR"/${arg}.test; do
+        [ -f "$tf" ] && RESOLVED+=("$tf")
+      done
+    else
+      # 否则当作命令名，去掉可能携带的 .test 后缀
+      cmd="${arg%.test}"
+      cmd="${cmd%.*}"
+      tf="$TEST_OH_DIR/$cmd.test"
+      [ -f "$tf" ] && RESOLVED+=("$tf") || echo "警告: 未找到测试 '$cmd' (通配符请加引号如 '[a-c]*')" >&2
+    fi
+  done
+  set -- "${RESOLVED[@]}"
+  [ $# -eq 0 ] && echo "错误: 没有匹配的测试文件" && exit 1
+fi
 
 # 检查主板上的 toybox 是否支持各命令（简单试跑 --help）
 echo ""
