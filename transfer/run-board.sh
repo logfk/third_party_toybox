@@ -24,10 +24,19 @@ BOARD_DIR=/data/toybox-test
 # 可配置: hdc 路径
 HDC="${HDC:-hdc}"
 
+# 报告输出目录
+REPORT_DIR="$TOP/_reports"
+mkdir -p "$REPORT_DIR"
+REPORT_LOG="$REPORT_DIR/report-$(date +%Y%m%d-%H%M%S).log"
+
+# 所有输出同时写入日志文件
+exec > >(tee -a "$REPORT_LOG") 2>&1
+
 echo "=========================================="
 echo "  OHOS Toybox 板端测试运行器"
 echo "  hdc:      $HDC"
 echo "  测试目录: $TEST_OH_DIR"
+echo "  日志文件: $REPORT_LOG"
 echo "=========================================="
 
 # 检查 hdc 连接
@@ -193,4 +202,14 @@ echo ""
 echo "=========================================="
 [ $FAILCOUNT -eq 0 ] && echo "  全部通过!" || echo "  失败: $FAILCOUNT"
 echo "=========================================="
+
+# 生成 HTML 报告
+REPORT_HTML="$REPORT_DIR/report-$(date +%Y%m%d-%H%M%S).html"
+"$TOP/gen-report.sh" < "$REPORT_LOG" > "$REPORT_HTML" 2>/dev/null && \
+  echo "报告已生成: $REPORT_HTML" || \
+  echo "报告生成失败"
+
+# 清理日志中可能存在的敏感信息
+chmod 644 "$REPORT_LOG" "$REPORT_HTML" 2>/dev/null
+
 exit $FAILCOUNT

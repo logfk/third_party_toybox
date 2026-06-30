@@ -9,3 +9,4 @@ syntax: glob
 /toybox_unstripped
 /.vscode
 /transfer/_test/
+/transfer/_reports/

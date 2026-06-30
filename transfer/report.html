@@ -86,6 +86,13 @@ footer{text-align:center;padding:20px;color:#555;font-size:0.85em}
       <button class="btn" onclick="document.getElementById('inputText').value='';document.getElementById('output').style.display='none'">清除</button>
       <button class="btn" onclick="loadSample()">加载示例</button>
     </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #2a2a4e">
+      <label style="color:#888;font-size:0.85em">或加载已保存的日志文件 (.log):</label>
+      <div style="display:flex;gap:10px;margin-top:8px;align-items:center">
+        <input type="file" id="fileInput" accept=".log,.txt" style="color:#e0e0e0;font-size:0.85em">
+        <button class="btn" onclick="loadReportFile()">加载</button>
+      </div>
+    </div>
   </div>
 
   <div id="output"></div>
@@ -279,6 +286,17 @@ function parseAndRender() {
     
     output.style.display = 'block';
     output.innerHTML = h;
+}
+
+function loadReportFile() {
+    var file = document.getElementById('fileInput').files[0];
+    if (!file) { alert('请先选择日志文件'); return; }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('inputText').value = e.target.result;
+        parseAndRender();
+    };
+    reader.readAsText(file);
 }
 
 function loadSample() {

@@ -30,9 +30,15 @@ TOYBOX_PATH  - 主板上 toybox 所在目录 (默认: /system/bin)
 DEBUG=1      - 显示详细执行过程
 
 文件结构:
---------
+-------
 transfer/
   run-board.sh    - 主运行脚本 (在 Windows Git Bash 中执行)
+                    每次运行自动保存日志和生成 HTML 报告到 _reports/
+  gen-report.sh   - 独立的日志转 HTML 报告脚本
+                    用法: ./run-board.sh 2>&1 | ./gen-report.sh > report.html
+  report.html     - 交互式报告查看器 (在浏览器中打开)
+                    支持粘贴输出或加载已保存的 .log 文件
   test-oh/        - *.test 测试文件
   scripts/        - runtest.sh 测试框架
+  _reports/       - 自动生成的日志和 HTML 报告 (git ignored)
   README.txt      - 本说明
