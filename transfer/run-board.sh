@@ -20,13 +20,13 @@ TOP="$(cd "$(dirname "$0")" && pwd)"
 TEST_OH_DIR="$TOP/test-oh"
 SCRIPT_DIR="$TOP/scripts"
 BOARD_DIR=/data/toybox-test
+# Git Bash (MSYS2) 会自动将 /data/… 转换为 Windows 路径传给 hdc.exe，
+# 导致路径被截断。双斜杠前缀 //data 让 MSYS2 当作 UNC 路径不转换，
+# 而 OHOS/Linux 会将 // 折叠为 /，板端行为不变。
+case "$(uname -s)" in MINGW*|MSYS*) BOARD_DIR="//data/toybox-test" ;; esac
 
 # 可配置: hdc 路径
 HDC="${HDC:-hdc}"
-# 在 Git Bash (MSYS2/MINGW) 上，禁用 MSYS2 路径转换，避免 hdc.exe 将 /data/… 
-# 自动转换为 Windows 路径（如 C:/Program Files/Git/data/…），导致发给板端的
-# shell 命令被空格截断
-case "$(uname -s)" in MINGW*|MSYS*) export MSYS2_ARG_CONV_EXCL='*' ;; esac
 
 # 报告输出目录
 REPORT_DIR="$TOP/_reports"
