@@ -63,6 +63,24 @@ echo "toybox 路径: $TOYBOX_CMD (推送版本)"
 hdc_cleanup
 "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
+# 同步测试数据文件（tests/files/ → 板端 $BOARD_DIR/files/）
+FILES_SRC="$TOP/../tests/files"
+export FILES="$BOARD_DIR/files"
+if [ -d "$FILES_SRC" ]; then
+  echo ""
+  echo "===== 同步测试数据文件 ====="
+  while IFS= read -r -d '' f; do
+    rel="${f#$FILES_SRC/}"
+    "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
+    "$HDC" file send "$f" "$BOARD_DIR/files/$rel" 2>/dev/null
+    echo "  [OK] files/$rel"
+  done < <(find "$FILES_SRC" -type f -print0)
+  echo "  测试数据路径: \$FILES=$FILES"
+fi
+
+# 导出 TOYBOX 路径（test 文件可用 \$TOYBOX 调用 toybox 下的其他子命令）
+export TOYBOX="$TOYBOX_CMD"
+
 # 确定测试文件列表（指定参数只跑指定项，否则跑全部）
 # 参数可以是命令名（cat, ls）或 glob 模式（[a-c]*），自动解析为 test-oh/*.test
 if [ $# -eq 0 ]; then

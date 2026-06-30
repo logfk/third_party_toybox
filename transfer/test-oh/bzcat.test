@@ -4,5 +4,14 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# bzcat tests require compressed test data files ($FILES) not available on device.
-ohosonly testing "--help" "$C --help 2>&1 | head -1" "bzcat: usage\n" "" ""
+ohosonly testing "2 known files" \
+  "$TOYBOX bzcat $FILES/blkid/minix.bz2 $FILES/blkid/ntfs.bz2 | $TOYBOX sha1sum | $TOYBOX cut -d ' ' -f 1" \
+  'c0b7469c9660d6056a988ef8a7fe73925efc9266\n' '' ''
+
+ohosonly testing "overflow" \
+  "$TOYBOX bzcat $FILES/bzcat/overflow.bz2 >/dev/null 2>/dev/null ; [ \$? -ne 0 ] && echo good" \
+  "good\n" "" ""
+
+ohosonly testing "badcrc" \
+  "$TOYBOX bzcat $FILES/bzcat/badcrc.bz2 > /dev/null 2>/dev/null ; [ \$? -ne 0 ] && echo good" \
+  "good\n" "" ""

@@ -4,5 +4,59 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# blkid requires filesystem image files which are not available on device.
-ohosonly testing "--help" "$C --help 2>&1 | head -1" "blkid: usage\n" "" ""
+# BLKID helper — expands inline for device-side execution via $TOYBOX / $FILES
+# $TOYBOX and $FILES are exported by run-board.sh before sourcing this file.
+
+ohosonly testing "cramfs" \
+  "$TOYBOX bzcat $FILES/blkid/cramfs.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="mycramfs" TYPE="cramfs"\n' "" ""
+ohosonly testing "ext2" \
+  "$TOYBOX bzcat $FILES/blkid/ext2.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="myext2" UUID="e59093ba-4135-4fdb-bcc4-f20beae4dfaf" TYPE="ext2"\n' "" ""
+ohosonly testing "ext3" \
+  "$TOYBOX bzcat $FILES/blkid/ext3.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="myext3" UUID="79d1c877-1a0f-4e7d-b21d-fc32ae3ef101" SEC_TYPE="ext2" TYPE="ext3"\n' "" ""
+ohosonly testing "ext4" \
+  "$TOYBOX bzcat $FILES/blkid/ext4.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="myext4" UUID="dc4b7c00-c0c0-4600-af7e-0335f09770fa" TYPE="ext4"\n' "" ""
+ohosonly testing "f2fs" \
+  "$TOYBOX bzcat $FILES/blkid/f2fs.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="myf2fs" UUID="b53d3619-c204-4c0b-8504-36363578491c" TYPE="f2fs"\n' "" ""
+ohosonly testing "iso" \
+  "$TOYBOX bzcat $FILES/blkid/iso.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="CDROM" UUID="2023-02-08-04-47-27-00" TYPE="iso9660"\n' "" ""
+ohosonly testing "msdos" \
+  "$TOYBOX bzcat $FILES/blkid/msdos.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: SEC_TYPE="msdos" LABEL="mymsdos" UUID="6E1E-0851" TYPE="vfat"\n' "" ""
+
+ohosonly testing "ntfs" \
+  "$TOYBOX bzcat $FILES/blkid/ntfs.bz2 > temp.img && $C -s UUID -s TYPE temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: UUID="6EE1BF3808608585" TYPE="ntfs"\n' "" ""
+ohosonly testing "reiserfs" \
+  "$TOYBOX bzcat $FILES/blkid/reiser3.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="myreiser" UUID="a5b99bec-45cc-41d7-986e-32f4b6fc28f2" TYPE="reiserfs"\n' "" ""
+ohosonly testing "squashfs" \
+  "$TOYBOX bzcat $FILES/blkid/squashfs.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: TYPE="squashfs"\n' "" ""
+ohosonly testing "vfat" \
+  "$TOYBOX bzcat $FILES/blkid/vfat.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: SEC_TYPE="msdos" LABEL="myvfat" UUID="7356-B91D" TYPE="vfat"\n' "" ""
+ohosonly testing "fat32" \
+  "$TOYBOX bzcat $FILES/blkid/fat32.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="myfat32" UUID="2E7D-E046" TYPE="vfat"\n' "" ""
+ohosonly testing "xfs" \
+  "$TOYBOX bzcat $FILES/blkid/xfs.bz2 > temp.img && $C temp.img | sed 's/ \$//' && rm temp.img" \
+  'temp.img: LABEL="XFS_test" UUID="d63a1dc3-27d5-4dd4-8b38-f4f97f495c6f" TYPE="xfs"\n' "" ""
+
+# stdin test
+ohosonly
+toyonly testing "stdin" \
+  "$TOYBOX bzcat $FILES/blkid/squashfs.bz2 | $C -" \
+  '-: TYPE="squashfs"\n' "" ""
+
+# -o value -s and -o export
+$TOYBOX bzcat $FILES/blkid/ext3.bz2 > temp.img
+ohosonly testcmd "-o value -s" "-o value -s TYPE temp.img" 'ext3\n' "" ""
+ohosonly testcmd "-o export" "-o export temp.img" \
+  'DEVNAME=temp.img\nLABEL=myext3\nUUID=79d1c877-1a0f-4e7d-b21d-fc32ae3ef101\nSEC_TYPE=ext2\nTYPE=ext3\n' "" ""
+rm temp.img
