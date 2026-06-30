@@ -63,6 +63,8 @@ echo "toybox 路径: $TOYBOX_CMD (推送版本)"
 # 清理板端工作目录（保留推送版 toybox），再确保目录存在
 hdc_cleanup
 "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
+# 删除 .synced 标记，强制每次运行都重新同步测试数据（避免上次同步不完整导致文件缺失）
+"$HDC" shell "rm -f ${BOARD_DIR}/files/.synced" 2>/dev/null
 
 # 测试数据文件按需同步（只有用到 $FILES 的测试才推送）
 FILES_SRC="$TOP/../tests/files"
