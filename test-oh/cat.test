@@ -14,7 +14,7 @@ ohosonly testing "file -"      "$C file1 -"     "one\nzero\n" "" "zero\n"
 
 ohosonly testing "file1 notfound file2"          "$C file1 notfound file2 2>stderr && echo ok ; $C stderr; rm stderr"          "one\ntwo\ncat: notfound: No such file or directory\n" "" ""
 
-ohosonly testing "binary"          '$C "$C" > file1 && cmp "$C" file1 && echo yes' "yes\n" "" ""
+ohosonly testing "binary"          '$C /data/toybox-test/toybox > file1 && cmp /data/toybox-test/toybox file1 && echo yes' "yes\n" "" ""
 
 ohosonly testing "- file1"          "$C - file1 | tail -1"          "one\n" "" "hello\n"
 

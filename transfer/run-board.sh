@@ -54,11 +54,14 @@ echo "toybox 路径: $TOYBOX_CMD (推送版本)"
 hdc_cleanup
 "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
 
+# 确定测试文件列表（指定参数只跑指定项，否则跑全部）
+[ $# -eq 0 ] && set -- "$TEST_OH_DIR"/*.test
+
 # 检查主板上的 toybox 是否支持各命令（简单试跑 --help）
 echo ""
 echo "===== 检查主板命令支持 ====="
 MISSING=0
-for testfile in "$TEST_OH_DIR"/*.test; do
+for testfile in "$@"; do
   CMDNAME="$(basename "${testfile%.test}")"
   if "$HDC" shell "$TOYBOX_CMD $CMDNAME --help" > /dev/null 2>&1; then
     echo "  [OK] $CMDNAME"
@@ -156,8 +159,6 @@ testing() {
 }
 
 # ====== 遍历执行测试 ======
-[ $# -eq 0 ] && set -- "$TEST_OH_DIR"/*.test
-
 for testfile in "$@"; do
   CMDNAME="$(basename "${testfile%.test}")"
 
