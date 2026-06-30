@@ -6,7 +6,7 @@
 # This means all possible values of strlen(name)+1 % 4,
 # plus file sizes of at least 0-4.
 
-CPIO="cpio${TEST_HOST:+ --quiet}"
+CPIO="$C"
 CPI_O="$CPIO -o -H newc"
 
 touch a bb ccc dddd
@@ -30,7 +30,7 @@ printf '333' >dddd
 # the relevant bit should be here:
 # 110*5 + 4*3 + 2 + 6*3 = 550 + 12 + 20 = 582
 # files are padded to n*4, names are padded to 2 + n*4 due to the header length
-ohosonly testing "archive length" "$CPI_O|dd ibs=2 skip=291 count=5 2>/dev/null" "TRAILER!!!" "" "a\nbb\nccc\ndddd\n"
+ohosonly testing "archive length" "$CPI_O|dd bs=2 skip=291 count=5 2>/dev/null" "TRAILER!!!" "" "a\nbb\nccc\ndddd\n"
 ohosonly testing "archive magic" "$CPI_O|dd ibs=2 count=3 2>/dev/null" "070701" "" "a\n"
 # check name length (8 bytes before the empty "crc")
 ohosonly testing "name length" "$CPI_O|dd ibs=2 skip=47 count=4 2>/dev/null" "00000002" "" "a\n"

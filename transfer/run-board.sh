@@ -139,17 +139,24 @@ testing() {
   # Windows 上 echo > file 可能产生 CRLF，板端 cut -s 会对被抑制行
   # 也输出 \r\n，导致对比出现空行。对文本文件发送前 strip \r。
   # 二进制文件（含 NUL 字节的如 data.bz2、binary.txt）原样发送。
+  # 注意：hdc_cleanup 只在测试文件间运行，同一文件内的多个 testing()
+  # 调用共享板端工作目录，必须在同步前处理文件↔目录类型冲突。
   for f in *; do
-    [ -d "$f" ] && "$HDC" shell "mkdir -p $BOARD_DIR/$f" 2>/dev/null
-    [ -f "$f" ] || continue
-    local b64
-    # 用 od 检测 NUL 字节（比 grep -P 更兼容，POSIX 平台通用）
-    if od -A n -t x1 "$f" 2>/dev/null | grep -q ' 00'; then
-      b64=$(base64 -w0 "$f" 2>/dev/null) || continue
-    else
-      b64=$(tr -d '\r' < "$f" | base64 -w0 2>/dev/null) || continue
+    if [ -d "$f" ]; then
+      # 目录：清除板端可能残留的同名文件
+      "$HDC" shell "rm -f $BOARD_DIR/$f 2>/dev/null; mkdir -p $BOARD_DIR/$f" 2>/dev/null
+    elif [ -f "$f" ]; then
+      # 文件：清除板端可能残留的同名目录
+      "$HDC" shell "rm -rf $BOARD_DIR/$f 2>/dev/null" 2>/dev/null
+      local b64
+      # 用 od 检测 NUL 字节（比 grep -P 更兼容，POSIX 平台通用）
+      if od -A n -t x1 "$f" 2>/dev/null | grep -q ' 00'; then
+        b64=$(base64 -w0 "$f" 2>/dev/null) || continue
+      else
+        b64=$(tr -d '\r' < "$f" | base64 -w0 2>/dev/null) || continue
+      fi
+      "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/$f" 2>/dev/null
     fi
-    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/$f" 2>/dev/null
   done
 
   # 推送 stdin 文件（如有）
