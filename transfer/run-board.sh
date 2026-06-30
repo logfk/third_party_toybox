@@ -132,11 +132,12 @@ testing() {
   fi
 
   # 直接在板端执行命令（保留末尾换行，$() 会吃掉，所以重定向到临时文件）
+  # 非空 stdin → 板端文件重定向；空 stdin → /dev/null 确保 stdin 立即 EOF 不卡死
   if [ -n "$5" ]; then
     # 用 { } 包裹，确保 stdin 重定向作用于整个复合命令（而非 && 后的最后一个子命令）
     "$HDC" shell "cd $BOARD_DIR && { $REMOTE_CMD; } < $BOARD_DIR/stdin" > "$TESTDIR/actual.raw" 2>/dev/null
   else
-    "$HDC" shell "cd $BOARD_DIR && $REMOTE_CMD" > "$TESTDIR/actual.raw" 2>/dev/null
+    "$HDC" shell "cd $BOARD_DIR && { $REMOTE_CMD; } < /dev/null" > "$TESTDIR/actual.raw" 2>/dev/null
   fi
   RETVAL=$?
   tr -d '\r' < "$TESTDIR/actual.raw" > "$TESTDIR/actual"
