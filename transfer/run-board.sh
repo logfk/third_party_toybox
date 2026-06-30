@@ -63,36 +63,10 @@ echo "toybox 路径: $TOYBOX_CMD (推送版本)"
 # 清理板端工作目录（保留推送版 toybox），再确保目录存在
 hdc_cleanup
 "$HDC" shell "mkdir -p $BOARD_DIR" 2>/dev/null
-# 删除 .synced 标记，强制每次运行都重新同步测试数据（避免上次同步不完整导致文件缺失）
-"$HDC" shell "rm -f ${BOARD_DIR}/files/.synced" 2>/dev/null
-
 # 测试数据文件按需同步（只有用到 $FILES 的测试才推送）
+# 使用 base64 通过 shell 通道传输，避免 hdc file send 在 Windows 上的路径问题
 FILES_SRC="$TOP/../tests/files"
 export FILES="$BOARD_DIR/files"
-sync_test_data() {
-  local testfile="$1"
-  local cmdname="$(basename "${testfile%.test}")"
-  # 只同步那些用到 $FILES 的测试（硬编码白名单，避免 grep 在 Git Bash 上行为异常）
-  case "$cmdname" in blkid|bzcat|file|fstype|tar|wc) ;; *) return 0 ;; esac
-  # 检查板端是否已同步过（用 .synced 标记，避免空目录误判）
-  "$HDC" shell "test -f ${BOARD_DIR}/files/.synced" 2>/dev/null && return 0
-  echo "  同步测试数据..."
-  [ -d "$FILES_SRC" ] || { echo "    警告: $FILES_SRC 不存在"; return 1; }
-  while IFS= read -r -d '' f; do
-    rel="${f#$FILES_SRC/}"
-    # hdc file send 在 Windows 上会把绝对路径拼上自己的 CWD，
-    # 先 cd 到文件所在目录，只传文件名
-    (
-      cd "$(dirname "$f")" 2>/dev/null || exit 1
-      "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
-      "$HDC" file send "$(basename "$f")" "$BOARD_DIR/files/$rel" 2>/dev/null \
-        && echo "    [OK] $rel" || echo "    [FAIL] $rel"
-    )
-  done < <(find "$FILES_SRC" -type f -print0)
-  # 写入同步标记（hdc_cleanup 保留 files/ 目录，标记跨测试文件有效）
-  "$HDC" shell "touch ${BOARD_DIR}/files/.synced" 2>/dev/null
-  echo "  测试数据路径: \$FILES=$FILES"
-}
 
 # 导出 TOYBOX 路径（test 文件可用 \$TOYBOX 调用 toybox 下的其他子命令）
 export TOYBOX="$TOYBOX_CMD"
@@ -223,7 +197,7 @@ testing() {
     [ -n "$DIFF" ] && printf "%s\n" "$DIFF"
   fi
 
-  [ -n "$DIFF" ] && ! verbose_has all && exit 1
+  [ -n "$DIFF" ] && ! verbose_has all && { rm -f input; rm -rf "$TESTDIR"; exit 1; }
   rm -f input
   rm -rf "$TESTDIR"
   [ -n "$DEBUG" ] && set +x
@@ -239,8 +213,27 @@ for testfile in "$@"; do
   echo "  测试: $CMDNAME"
   echo "=========================================="
 
-  # 按需同步测试数据
-  sync_test_data "$TEST_OH_DIR/$CMDNAME.test"
+  # 按需同步测试数据（内联执行，避免 Git Bash 函数+tee 组合的兼容问题）
+  # 只同步白名单命令：blkid, bzcat, file, fstype, tar, wc
+  case "$CMDNAME" in blkid|bzcat|file|fstype|tar|wc)
+    echo "同步测试数据到板端 $FILES ..."
+    if [ -d "$FILES_SRC" ]; then
+      find "$FILES_SRC" -type f -print0 | while IFS= read -r -d '' f; do
+        rel="${f#$FILES_SRC/}"
+        b64=$(base64 -w0 "$f" 2>/dev/null) || { echo "  [FAIL] base64: $rel"; continue; }
+        "$HDC" shell "mkdir -p ${BOARD_DIR}/files/${rel%/*}" 2>/dev/null
+        if "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > ${BOARD_DIR}/files/$rel" 2>/dev/null; then
+          echo "  [OK] $rel"
+        else
+          echo "  [FAIL] $rel"
+        fi
+      done
+      echo "同步完成"
+    else
+      echo "  WARNING: 测试数据源目录不存在: $FILES_SRC"
+    fi
+    ;;
+  esac
 
   C="$TOYBOX_CMD $CMDNAME"
   # 在干净的工作目录中运行测试，避免污染 $TOP
@@ -250,8 +243,9 @@ for testfile in "$@"; do
   mkdir -p "$WORKDIR"
   (
     cd "$WORKDIR"
+    # 无论 exit 还是正常结束，都写 FAILCOUNT（trap 保证 subshell 退出时执行）
+    trap "echo \$FAILCOUNT > '$TOP/_test/${CMDNAME}_continue'" EXIT
     source "$TEST_OH_DIR/$CMDNAME.test"
-    echo "$FAILCOUNT" > "$TOP/_test/${CMDNAME}_continue"
   ) || true
 
   if [ -f "$TOP/_test/${CMDNAME}_continue" ]; then
