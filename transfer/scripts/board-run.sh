@@ -48,14 +48,23 @@ for _cmd in cmp stat readlink dd wc md5sum sha1sum sha256sum od hexdump \
 done
 unset _cmd _p _st
 
-C="${TOYBOX} ${CMDNAME}"
-export CMDNAME C OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT
+export CMDNAME OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT
 
 # 每条命令在独立干净工作目录执行，避免相互污染
 WORKDIR=/data/toybox-test/work
 rm -rf "$WORKDIR"
 mkdir -p "$WORKDIR"
 cd "$WORKDIR" || exit 127
+
+# toybox 是 multicall 二进制：建立名为 $CMDNAME 的符号链接指向它，
+# argv[0] 即命令名，toybox main.c 的 toy_find() 据此分发子命令。
+# 这样 $C 是不含空格的单 token 路径，testcmd/testing 里 "\"$C\"" 的
+# 引用约定才能正确工作（不能把 "toybox base32" 整体塞进 $C，
+# 否则被当成带空格的单一文件名 -> "inaccessible or not found"）。
+CMDLINK="$WORKDIR/$CMDNAME"
+ln -sf "$TOYBOX" "$CMDLINK"
+C="$CMDLINK"
+export C
 
 TEST_FILE="/data/toybox-test/test-oh/${CMDNAME}.test"
 [ -f "$TEST_FILE" ] || { echo "board-run: 未找到测试文件 ${TEST_FILE}" >&2; exit 127; }
