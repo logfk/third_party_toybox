@@ -15,7 +15,7 @@ no_modules() {
   exit
 }
 
-[[ ! -e /proc/modules || ! -d $MODULE_ROOT ]] && no_modules
+{ [ ! -e /proc/modules ] || [ ! -d "$MODULE_ROOT" ]; } && no_modules
 
 # Find some modules to work with.
 # Don't need to quote wildcards because test runs in an empty dir.

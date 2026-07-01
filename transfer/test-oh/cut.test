@@ -30,7 +30,7 @@ testcmd "-s -d: -f-2 mix" "-s -d: -f-2 input2.txt" \
 
 # -s with tab delimiter
 printf "a\tb\tc\nno_delim\nd\te\tf\n" >input3.txt
-testcmd "-s -d'TAB' -f-2" $'-s -d\\\t -f-2 input3.txt' \
+testcmd "-s -d'TAB' -f-2" "$(printf -- '-s -d\\\t -f-2 input3.txt')" \
   "a\tb\nd\te\n" "" ""
 
 rm -f input.txt input2.txt input3.txt

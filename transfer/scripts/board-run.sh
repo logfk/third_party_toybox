@@ -26,19 +26,27 @@ CMDNAME="$1"
 : "${FAILCOUNT:=0}"
 
 # 板端 hdc shell 的 PATH 可能缺少 testing() 与测试用例使用的裸命令
-# (diff/cmp/stat/cat/...)。先补全常见系统路径，再对仍缺失的命令定义
-# 调用 toybox 的函数兜底。不覆盖已存在的命令/builtin。
+# (cmp/stat/cat/...)。先补全常见系统路径，再对仍缺失的命令兜底。
+# 工具命令优先用系统 toybox（/system/bin/toybox 更完整），推送的 dev 构建可能缺命令。
+SYS_TOYBOX=
+for _st in /system/bin/toybox /system/xbin/toybox /vendor/bin/toybox; do
+  [ -x "$_st" ] && SYS_TOYBOX="$_st" && break
+done
+[ -z "$SYS_TOYBOX" ] && SYS_TOYBOX="$TOYBOX"
 for _p in /system/bin /system/xbin /vendor/bin /bin /usr/bin /sbin; do
   [ -d "$_p" ] && PATH="$_p:$PATH"
 done
 export PATH
-for _cmd in diff cmp stat readlink dd wc sed grep egrep fgrep head tail \
-             tr cut sort uniq sleep base64 tty od sha1sum md5sum env \
-             dirname basename mktemp find xargs yes nohup timeout; do
+# _util <cmd> <args...>: 按 PATH → 系统 toybox → 推送 toybox 顺序解析
+_util() { "$@" 2>/dev/null || "$SYS_TOYBOX" "$@" 2>/dev/null || "$TOYBOX" "$@"; }
+for _cmd in cmp stat readlink dd wc md5sum sha1sum sha256sum od hexdump \
+             sort uniq tr cut sed grep egrep fgrep awk head tail find xargs \
+             base64 sleep date truncate seq yes mktemp ln tee split comm paste \
+             fold fmt expr factor iconv tty nohup timeout dirname basename; do
   command -v "$_cmd" >/dev/null 2>&1 || \
-    eval "${_cmd}() { \"\$TOYBOX\" ${_cmd} \"\$@\"; }"
+    eval "${_cmd}() { _util ${_cmd} \"\$@\"; }"
 done
-unset _cmd _p
+unset _cmd _p _st
 
 C="${TOYBOX} ${CMDNAME}"
 export CMDNAME C OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT

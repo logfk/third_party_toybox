@@ -6,7 +6,7 @@
 
 mkdir dir && cd dir && touch file
 
-chattr +A file &>/dev/null
+chattr +A file >/dev/null 2>&1
 _A='-------A------------'
 _d='--------------------'
 

@@ -166,7 +166,7 @@ ohosonly
 toyonly testing "cat tbz | extract dir/file (autodetect)"    "cat $FILES/tar/tar.tbz2 | $C xvC dd && stat -c '%A %Y %n' dd/dir dd/dir/file"    "dir/\ndir/file\ndrwxr-x--- 1494637555 dd/dir\n-rw-r----- 1494637555 dd/dir/file\n"    "" ""
 
 mkdir path && ln -s "$(which gzip)" "$(which tar)" path/ && [ -x path/gzip ] ||
-  ((++SKIP))
+  SKIP=$((SKIP+1))
 ohosonly
 toyonly testing "autodetect falls back to gzip -d when no zcat"    "PATH=path; $C tf $FILES/tar/tar.tgz" "dir/\ndir/file\n" "" ""
 rm -rf path

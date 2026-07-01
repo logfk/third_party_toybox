@@ -15,7 +15,7 @@ ln -s one/two dos
 ohosonly testcmd '' '.' "$TOP\n" '' ''
 ohosonly testcmd 'missing' 'missing' "$TOP/missing\n" '' ''
 ohosonly testcmd 'missing2' 'missing/sub 2>/dev/null || echo err' 'err\n' '' ''
-ohosonly testcmd '-z' '-z . | sed '"'"'s/\x0/X/g'"'"' "${TOP}X" '' ''
+ohosonly testcmd '-z' '-z . | sed '"'"'s/\x0/X/g'"'"'' "${TOP}X" '' ''
 ohosonly testcmd 'file' 'file' "$TOP/file\n" '' ''
 ohosonly testcmd 'dir' 'one/two/three' "$TOP/one/two/three\n" '' ''
 ohosonly testcmd '--relative-to' '. --relative-to=one/two/three' '../../..\n' '' ''
