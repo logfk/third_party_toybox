@@ -186,7 +186,7 @@ sync_bundle() {
 }
 
 if [ -z "$NO_SYNC" ]; then
-  sync_bundle
+  sync_bundle "$@"
 else
   echo "NO_SYNC=1，跳过测试包同步"
 fi
