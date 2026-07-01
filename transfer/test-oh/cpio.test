@@ -99,8 +99,10 @@ if [ "$(id -u)" -eq 0 ]; then
   GRP="$(sed -n '$s/:.*//p' /etc/group)"
   : "${USR:=shell}"
   : "${GRP:=shell}"
-  chown -h "${USR}:${GRP}" a/file a/symlink a/dir 2>/dev/null ||
+  chown -h "${USR}:${GRP}" a/file a/symlink a/dir 2>/dev/null || {
+    USR=root; GRP=root
     chown -h root:root a/file a/symlink a/dir
+  }
 fi
 skipnot [ $(id -u) -eq 0 ] && [ "$(basename "$(readlink -f "$C")")" != "toybox" ]
 ohosonly testing "-t preserve ownership" "$CPIO -t <a.cpio >/dev/null && stat -c '%U:%G' a/file a/symlink a/dir" "${USR}:${GRP}\n${USR}:${GRP}\n${USR}:${GRP}\n" "" ""

@@ -17,10 +17,15 @@ GRP="$(sed -n '$s/:.*//p' /etc/group)"
 # or the file may not be readable. Fall back to known-good root/shell.
 : "${USR:=shell}"
 : "${GRP:=daemon}"
-# Verify the group exists on the system; if not, fall back to root.
-if [ -n "$GRP" ]; then
-  grep -q "^${GRP}:" /etc/group 2>/dev/null || GRP=root
-fi
+# Verify the group actually works with toybox chown; fall back to root on failure.
+# grep alone is insufficient - /etc/group lists histogram_sa but getgrnam() may
+# not resolve it, causing "bad group" errors.
+touch _chown_probe 2>/dev/null
+"$C" "${USR}:${GRP}" _chown_probe 2>/dev/null || {
+  USR=root; GRP=root
+  "$C" root:root _chown_probe 2>/dev/null
+}
+rm -f _chown_probe
 
 # Set up a little testing hierarchy
 
