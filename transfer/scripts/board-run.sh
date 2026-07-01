@@ -25,20 +25,23 @@ CMDNAME="$1"
 : "${VERBOSE:=all}"
 : "${FAILCOUNT:=0}"
 
-# 把 toybox 多调用二进制以各子命令名软链到 tbin/ 并加入 PATH，
-# 使 testing() 与测试用例中的裸命令(diff/cmp/stat/cat/readlink ...)能解析到 toybox。
-# toybox 多调用按 argv[0] 分发，软链名即子命令名。
-TOYBOX_BIN=/data/toybox-test/tbin
-if [ ! -d "$TOYBOX_BIN" ] || [ ! -e "$TOYBOX_BIN/diff" ]; then
-  mkdir -p "$TOYBOX_BIN"
-  for cmd in $("$TOYBOX" 2>/dev/null); do
-    ln -sf "$TOYBOX" "$TOYBOX_BIN/$cmd" 2>/dev/null
-  done
-fi
-export PATH="$TOYBOX_BIN:$PATH"
+# 板端 hdc shell 的 PATH 可能缺少 testing() 与测试用例使用的裸命令
+# (diff/cmp/stat/cat/...)。先补全常见系统路径，再对仍缺失的命令定义
+# 调用 toybox 的函数兜底。不覆盖已存在的命令/builtin。
+for _p in /system/bin /system/xbin /vendor/bin /bin /usr/bin /sbin; do
+  [ -d "$_p" ] && PATH="$_p:$PATH"
+done
+export PATH
+for _cmd in diff cmp stat readlink dd wc sed grep egrep fgrep head tail \
+             tr cut sort uniq sleep base64 tty od sha1sum md5sum env \
+             dirname basename mktemp find xargs yes nohup timeout; do
+  command -v "$_cmd" >/dev/null 2>&1 || \
+    eval "${_cmd}() { \"\$TOYBOX\" ${_cmd} \"\$@\"; }"
+done
+unset _cmd _p
 
 C="${TOYBOX} ${CMDNAME}"
-export CMDNAME C OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT PATH
+export CMDNAME C OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT
 
 # 每条命令在独立干净工作目录执行，避免相互污染
 WORKDIR=/data/toybox-test/work
