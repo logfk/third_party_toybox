@@ -98,18 +98,17 @@ sync_bundle() {
   "$HDC" shell "rm -rf $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files && mkdir -p $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files" 2>/dev/null
 
   local ok=0 fail=0
-  # 推送文本脚本：剥掉 Windows CRLF（板端 sh 不认 \r），落临时文件再发
+  # 推送文本脚本：tr 剥 \r 后经管道直送板端 cat（管道二进制安全；
+  # 注意：不能用本地临时文件 + >，因为 Git Bash 的 > 是文本模式会回加 \r）
   send_text() {
     # $1=本地文本文件 $2=板端目标路径
-    local tmp="$REPORT_DIR/.lf.tmp"
-    tr -d '\r' < "$1" > "$tmp"
-    if "$HDC" file send "$tmp" "$2" >/dev/null 2>&1; then
+    if tr -d '\r' < "$1" | "$HDC" shell "cat > $2" 2>/dev/null; then
       ok=$((ok+1)); return 0
     else
       echo "  [FAIL] $(basename "$1")"; fail=$((fail+1)); return 1
     fi
   }
-  # 推送二进制：原样发送
+  # 推送二进制：hdc file send 原样
   send_bin() {
     if "$HDC" file send "$1" "$2" >/dev/null 2>&1; then
       echo "    [OK] ${3:-$(basename "$1")}"; return 0
@@ -126,7 +125,6 @@ sync_bundle() {
   for tf in "$TEST_OH_DIR"/*.test; do
     send_text "$tf" "$REMOTE_ROOT_ARG/test-oh/$(basename "$tf")"
   done
-  rm -f "$REPORT_DIR/.lf.tmp"
   echo "  test-oh: $ok 个推送成功${fail:+，$fail 个失败}"
 
   # 3) tests/files/（file/wc/blkid/tar/bc/awk/bzcat ... 依赖，二进制原样）
