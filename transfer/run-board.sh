@@ -89,26 +89,42 @@ else
 fi
 
 # ====== 同步测试包到板端 ======
-# 推送：testing.sh(框架) + board-run.sh(入口) + test-oh/*.test + tests/files/
-# 用 hdc file send 直推（本地路径 hdc.exe 原生识别，remote 用 // 防 MSYS2 转换）。
+# 只同步本次需要的：框架 + 选中命令的 .test + 这些 test 实际引用的 files/ 子集。
+# 文本用 base64 分块（数据走命令行参数，不依赖 hdc stdin 转发；base64 纯 ASCII
+# 不受 CRLF 影响），二进制用 hdc file send（原生处理二进制）。
 sync_bundle() {
   echo ""
   echo "===== 同步测试包到板端 ====="
 
   "$HDC" shell "rm -rf $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files && mkdir -p $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files" 2>/dev/null
 
-  local ok=0 fail=0
-  # 推送文本脚本：tr 剥 \r 后经管道直送板端 cat（管道二进制安全；
-  # 注意：不能用本地临时文件 + >，因为 Git Bash 的 > 是文本模式会回加 \r）
+  local tok=0 tfail=0
+  # 文本：base64 编码后分块写到板端 .b64，再解码。兼容任意大小，不受 CRLF 影响。
   send_text() {
-    # $1=本地文本文件 $2=板端目标路径
-    if tr -d '\r' < "$1" | "$HDC" shell "cat > $2" 2>/dev/null; then
-      ok=$((ok+1)); return 0
+    local b64 chunk off total first
+    b64=$(tr -d '\r' < "$1" | base64 -w0 | tr -d '\r') || return 1
+    total=${#b64}; off=0; first=true
+    if [ "$total" -eq 0 ]; then
+      "$HDC" shell "echo -n '' > $2" 2>/dev/null || return 1
+      tok=$((tok+1)); return 0
+    fi
+    while [ $off -lt $total ]; do
+      chunk="${b64:$off:8000}"
+      if $first; then
+        "$HDC" shell "printf '%s' '$chunk' > $REMOTE_ROOT_ARG/.b64" 2>/dev/null
+        first=false
+      else
+        "$HDC" shell "printf '%s' '$chunk' >> $REMOTE_ROOT_ARG/.b64" 2>/dev/null
+      fi
+      off=$((off + 8000))
+    done
+    if "$HDC" shell "$TOYBOX_CMD base64 -d < $REMOTE_ROOT_ARG/.b64 > $2 && rm -f $REMOTE_ROOT_ARG/.b64" 2>/dev/null; then
+      tok=$((tok+1)); return 0
     else
-      echo "  [FAIL] $(basename "$1")"; fail=$((fail+1)); return 1
+      echo "  [FAIL] $(basename "$1")"; tfail=$((tfail+1)); return 1
     fi
   }
-  # 推送二进制：hdc file send 原样
+  # 二进制：hdc file send 原样
   send_bin() {
     if "$HDC" file send "$1" "$2" >/dev/null 2>&1; then
       echo "    [OK] ${3:-$(basename "$1")}"; return 0
@@ -117,31 +133,55 @@ sync_bundle() {
     fi
   }
 
-  # 1) 框架（板端命名为 testing.sh）+ 入口（必须 LF）
+  # 1) 框架（板端命名为 testing.sh）+ 入口
   send_text "$SCRIPT_DIR/runtest.sh" "$REMOTE_ROOT_ARG/testing.sh"
   send_text "$SCRIPT_DIR/board-run.sh" "$REMOTE_ROOT_ARG/board-run.sh"
 
-  # 2) test-oh/*.test（文本，剥 CRLF）
-  for tf in "$TEST_OH_DIR"/*.test; do
+  # 2) 仅本次选中的 .test
+  for tf in "$@"; do
     send_text "$tf" "$REMOTE_ROOT_ARG/test-oh/$(basename "$tf")"
   done
-  echo "  test-oh: $ok 个推送成功${fail:+，$fail 个失败}"
+  echo "  脚本: $tok 个推送成功${tfail:+，$tfail 个失败}"
 
-  # 3) tests/files/（file/wc/blkid/tar/bc/awk/bzcat ... 依赖，二进制原样）
+  # 3) 仅同步被选中测试实际引用的 files/ 内容
+  #    解析每个 .test 里 $FILES/xxx 引用，去重收集
   if [ -d "$FILES_SRC" ]; then
-    echo "  同步 files/ ..."
-    # 先建好所有子目录结构
-    find "$FILES_SRC" -type d -print0 | while IFS= read -r -d '' d; do
-      rel="${d#$FILES_SRC}"
-      "$HDC" shell "mkdir -p $REMOTE_ROOT_ARG/files$rel" 2>/dev/null
+    local deps="" d
+    for tf in "$@"; do
+      while IFS= read -r d; do
+        [ -n "$d" ] && deps="$deps $d"
+      done < <(grep -oE '\$FILES[\\"]*/[^/")[:space:]]+' "$tf" 2>/dev/null | sed -E 's#\$FILES[\\"]*/##' | sort -u)
     done
-    # 逐文件发送
-    find "$FILES_SRC" -type f -print0 | while IFS= read -r -d '' lf; do
-      rel="${lf#$FILES_SRC}"
-      send_bin "$lf" "$REMOTE_ROOT_ARG/files$rel" "${rel#/}"
+    # 去重
+    local uniq="" u
+    for d in $deps; do
+      case " $uniq " in *" $d "*) ;; *) uniq="$uniq $d" ;; esac
     done
+    if [ -z "$uniq" ]; then
+      echo "  files/: 无依赖，跳过"
+    else
+      echo "  files/ 依赖:${uniq}"
+      for d in $uniq; do
+        if [ -d "$FILES_SRC/$d" ]; then
+          # 子目录：递归发送
+          find "$FILES_SRC/$d" -type d -print0 | while IFS= read -r -d '' sd; do
+            rel="/${sd#$FILES_SRC/}"
+            "$HDC" shell "mkdir -p $REMOTE_ROOT_ARG/files$rel" 2>/dev/null
+          done
+          find "$FILES_SRC/$d" -type f -print0 | while IFS= read -r -d '' lf; do
+            rel="/${lf#$FILES_SRC/}"
+            send_bin "$lf" "$REMOTE_ROOT_ARG/files$rel" "${rel#/}"
+          done
+        elif [ -f "$FILES_SRC/$d" ]; then
+          # 根文件
+          send_bin "$FILES_SRC/$d" "$REMOTE_ROOT_ARG/files/$d" "$d"
+        else
+          echo "    [SKIP] $d（本地不存在）"
+        fi
+      done
+    fi
   else
-    echo "  跳过 files/（未找到 $FILES_SRC）"
+    echo "  files/: 未找到 $FILES_SRC，跳过"
   fi
 }
 
