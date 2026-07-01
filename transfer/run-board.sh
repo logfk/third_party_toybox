@@ -133,6 +133,31 @@ id() {
   command id "$@"
 }
 
+# 本地 rm 作为测试前置清理命令时：
+#   1. 被测 cp 在板端创建的文件本地不存在 → rm 报 "No such file"（噪音）
+#   2. 被跳过的用例遗留 mode 000 文件 → rm 交互提示甚至卡死
+# 统一加 -f：静默忽略缺失、永不交互。测试本身用 $C 调用 toybox rm，不受影响。
+rm() { command rm -f "$@"; }
+
+# readlink -f 本地解析得到 Windows 绝对路径，直接传给板端 cp/losetup 会找不到。
+# 本地 WORKDIR 与板端 BOARD_DIR 一一镜像，故把本地绝对路径映射为板端绝对路径。
+# realpath.test / losetup.test 中也用它生成与板端输出比对的期望值，映射后一致。
+readlink() {
+  if [ "$1" = "-f" ]; then
+    local lp rel
+    lp=$(command readlink -f "$2") || return $?
+    if [ "${lp#"$WORKDIR"}" != "$lp" ]; then
+      rel="${lp#"$WORKDIR"}"
+      rel="${rel#/}"
+      echo "$BOARD_DIR${rel:+/$rel}"
+    else
+      echo "$lp"
+    fi
+  else
+    command readlink "$@"
+  fi
+}
+
 # ====== 重写 testing()：bash 逻辑本地执行，命令通过 hdc 在主板直接执行 ======
 testing() {
   wrong_args "$@"
