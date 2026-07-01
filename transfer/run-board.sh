@@ -284,15 +284,6 @@ for testfile in "$@"; do
   mkdir -p "$WORKDIR"
   (
     cd "$WORKDIR"
-    # 重定向常用文件操作命令：本地+板端同步执行
-    rm() { command rm -rf "$@"; "$HDC" shell "rm -rf $BOARD_DIR/$*" 2>/dev/null; }
-    mkdir() { command mkdir -p "$@"; "$HDC" shell "mkdir -p $BOARD_DIR/$*" 2>/dev/null; }
-    touch() { command touch "$@"; "$HDC" shell "touch $BOARD_DIR/$*" 2>/dev/null; }
-    chmod() {
-      local _file="${@: -1}" _rest="${@:1:$#-1}"
-      command chmod "$@"
-      "$HDC" shell "chmod $_rest $BOARD_DIR/$_file" 2>/dev/null || true
-    }
     # 无论 exit 还是正常结束，都写 FAILCOUNT（trap 保证 subshell 退出时执行）
     trap "echo \$FAILCOUNT > '$TOP/_test/${CMDNAME}_continue'" EXIT
     source "$TEST_OH_DIR/$CMDNAME.test"
