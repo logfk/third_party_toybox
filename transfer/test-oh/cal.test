@@ -5,5 +5,5 @@
 #testing "name" "command" "result" "infile" "stdin"
 
 # cal 默认输出当月日历（含星期标题）
-ohosonly testing "has weekday header" "$C | head -1 | grep -qi 'su\|mo\|tu' && echo yes" "yes\n" "" ""
+ohosonly testing "has weekday header" "$C | head -1 | grep -Eq 'su|mo|tu' && echo yes" "yes\n" "" ""
 ohosonly testing "month digits" "$C | grep -Eq '[0-9]' && echo yes" "yes\n" "" ""

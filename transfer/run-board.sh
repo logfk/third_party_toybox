@@ -124,12 +124,33 @@ sync_bundle() {
       echo "  [FAIL] $(basename "$1")"; tfail=$((tfail+1)); return 1
     fi
   }
-  # 二进制：hdc file send 原样
+  # 二进制：base64 分块传输（同 send_text 机制）。
+  # 不用 hdc file send：其远端路径在 MSYS2 下用 // 前缀会静默失败
+  # （hdc 返回 0 但文件未落地），blkid/bzcat 测试曾因此全部 "No such file"。
+  # base64 是纯 ASCII，不受 CRLF / 路径转换影响，且 build-bundle.sh 已验证可行。
   send_bin() {
-    if "$HDC" file send "$1" "$2" >/dev/null 2>&1; then
-      echo "    [OK] ${3:-$(basename "$1")}"; return 0
+    local src="$1" dst="$2" label="${3:-$(basename "$1")}" b64 chunk off total first
+    # 注意：二进制不能像 send_text 那样 tr -d '\r'，原样 base64
+    b64=$(base64 -w0 "$src" 2>/dev/null) || { echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1; }
+    total=${#b64}; off=0; first=true
+    if [ "$total" -eq 0 ]; then
+      "$HDC" shell "echo -n '' > $dst" 2>/dev/null && { echo "    [OK] $label"; return 0; }
+      echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1
+    fi
+    while [ $off -lt $total ]; do
+      chunk="${b64:$off:8000}"
+      if $first; then
+        "$HDC" shell "printf '%s' '$chunk' > $REMOTE_ROOT_ARG/.b64b" 2>/dev/null
+        first=false
+      else
+        "$HDC" shell "printf '%s' '$chunk' >> $REMOTE_ROOT_ARG/.b64b" 2>/dev/null
+      fi
+      off=$((off + 8000))
+    done
+    if "$HDC" shell "$TOYBOX_CMD base64 -d < $REMOTE_ROOT_ARG/.b64b > $dst && rm -f $REMOTE_ROOT_ARG/.b64b" 2>/dev/null; then
+      echo "    [OK] $label"; return 0
     else
-      echo "    [FAIL] ${3:-$(basename "$1")}"; return 1
+      echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1
     fi
   }
 

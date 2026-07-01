@@ -14,6 +14,12 @@ GRP="$(sed -n '$s/:.*//p' /etc/group)"
 # Or if that fails, assume we're on Android and pick a well-known group.
 : "${GRP:=shell}"
 
+# OHOS: /etc/group 列出的组，C 库 getgrnam() 未必能解析（group DB 与文件不一致）。
+# 探测该组是否真的可用；不可用则回退 root，使测试仍能验证 chgrp 的 -R/-h/-HLP 逻辑。
+touch _grp_probe 2>/dev/null
+chgrp "$GRP" _grp_probe 2>/dev/null || GRP=root
+rm -f _grp_probe
+
 # Set up a little testing hierarchy
 
 rm -rf testdir &&

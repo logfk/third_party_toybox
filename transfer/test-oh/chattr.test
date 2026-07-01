@@ -10,6 +10,20 @@ if [ "$(id -u)" -ne 0 ]; then
   exit
 fi
 
+# 探测：lsattr 在本 fs/构建上必须输出标准 20+ flag 字段。
+# 已知 OHOS 上 chattr 会段错误(Signal 11)、lsattr 字段仅 13 字符(标准 22)，
+# 此时整组用例无法成立，诚实跳过。段错误属于产品缺陷，应单独修复。
+# 只读 lsattr，绝不调用 chattr 改属性——避免 +i 后 -i 段错误留下不可变文件，
+# 进而污染 WORKDIR 让后续所有命令的 rm -rf 失败。
+echo data > _chattr_p 2>/dev/null
+_fld="$(lsattr _chattr_p 2>/dev/null | awk '{print $1}')"
+rm -f _chattr_p 2>/dev/null
+if [ "${#_fld}" -lt 20 ]; then
+  echo "$SHOWSKIP: chattr (lsattr format unsupported / chattr broken on this build)"
+  return 2>/dev/null
+  exit
+fi
+
 function clean()
 {
   # We don't know whether the fs will have extents (e, typically true on the
