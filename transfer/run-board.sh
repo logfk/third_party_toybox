@@ -90,66 +90,54 @@ fi
 
 # ====== 同步测试包到板端 ======
 # 推送：testing.sh(框架) + board-run.sh(入口) + test-oh/*.test + tests/files/
+# 用 hdc file send 直推（本地路径 hdc.exe 原生识别，remote 用 // 防 MSYS2 转换）。
 sync_bundle() {
   echo ""
   echo "===== 同步测试包到板端 ====="
 
   "$HDC" shell "rm -rf $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files && mkdir -p $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files" 2>/dev/null
 
-  # 1) 框架 + 入口（小文本文件，base64 单次）
-  for f in "$SCRIPT_DIR/runtest.sh" "$SCRIPT_DIR/board-run.sh"; do
-    name="$(basename "$f")"
-    # 板端 testing.sh 即 runtest.sh（test 文件首行 [ -f testing.sh ] && . testing.sh）
-    [ "$name" = "runtest.sh" ] && name="testing.sh"
-    b64=$(base64 -w0 "$f" 2>/dev/null)
-    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $REMOTE_ROOT_ARG/$name" 2>/dev/null \
-      && echo "  [OK] $name" || echo "  [FAIL] $name"
-  done
+  local ok=0 fail=0
+  push_one() {
+    # $1=本地文件 $2=板端目标路径
+    if "$HDC" file send "$1" "$2" >/dev/null 2>&1; then
+      ok=$((ok+1)); return 0
+    else
+      echo "  [FAIL] $(basename "$1")"; fail=$((fail+1)); return 1
+    fi
+  }
+
+  # 1) 框架（板端命名为 testing.sh，匹配 test 文件首行 . testing.sh）+ 入口
+  push_one "$SCRIPT_DIR/runtest.sh" "$REMOTE_ROOT_ARG/testing.sh"
+  push_one "$SCRIPT_DIR/board-run.sh" "$REMOTE_ROOT_ARG/board-run.sh"
 
   # 2) test-oh/*.test
-  local ok=0 fail=0
   for tf in "$TEST_OH_DIR"/*.test; do
-    name="$(basename "$tf")"
-    b64=$(base64 -w0 "$tf" 2>/dev/null) || { echo "  [FAIL] $name"; ((fail++)); continue; }
-    "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $REMOTE_ROOT_ARG/test-oh/$name" 2>/dev/null \
-      && { ((ok++)); } || { echo "  [FAIL] $name"; ((fail++)); }
+    push_one "$tf" "$REMOTE_ROOT_ARG/test-oh/$(basename "$tf")"
   done
   echo "  test-oh: $ok 个推送成功${fail:+，$fail 个失败}"
 
-  # 3) tests/files/（部分测试依赖：file/wc/blkid/tar/bc/awk/bzcat ...）
+  # 3) tests/files/（file/wc/blkid/tar/bc/awk/bzcat ... 依赖）
   if [ -d "$FILES_SRC" ]; then
     echo "  同步 files/ ..."
-    sync_files_dir "$FILES_SRC" ""
+    local fok=0 ffail=0
+    # 先建好所有子目录结构
+    find "$FILES_SRC" -type d -print0 | while IFS= read -r -d '' d; do
+      rel="${d#$FILES_SRC}"
+      "$HDC" shell "mkdir -p $REMOTE_ROOT_ARG/files$rel" 2>/dev/null
+    done
+    # 逐文件发送
+    find "$FILES_SRC" -type f -print0 | while IFS= read -r -d '' lf; do
+      rel="${lf#$FILES_SRC}"
+      if "$HDC" file send "$lf" "$REMOTE_ROOT_ARG/files$rel" >/dev/null 2>&1; then
+        echo "    [OK] ${rel#/}"
+      else
+        echo "    [FAIL] ${rel#/}"
+      fi
+    done
   else
     echo "  跳过 files/（未找到 $FILES_SRC）"
   fi
-}
-
-# 递归同步 files/ 目录：base64 分块避免命令行超长
-sync_files_dir() {
-  local src="$1" relprefix="$2"
-  find "$src" -type f -print0 | while IFS= read -r -d '' lf; do
-    local rel="${relprefix}${lf#$src/}"
-    # 创建父目录
-    case "$rel" in
-      */*) "$HDC" shell "mkdir -p $REMOTE_ROOT_ARG/files/${rel%/*}" 2>/dev/null ;;
-    esac
-    local b64 total off chunk first=true
-    b64=$(base64 -w0 "$lf" 2>/dev/null) || { echo "    [FAIL] $rel"; continue; }
-    total=${#b64}; off=0
-    while [ $off -lt $total ]; do
-      chunk="${b64:$off:8000}"
-      if $first; then
-        "$HDC" shell "printf '%s' '$chunk' > $REMOTE_ROOT_ARG/files/_tmp.b64" 2>/dev/null
-        first=false
-      else
-        "$HDC" shell "printf '%s' '$chunk' >> $REMOTE_ROOT_ARG/files/_tmp.b64" 2>/dev/null
-      fi
-      off=$((off + 8000))
-    done
-    "$HDC" shell "$TOYBOX_CMD base64 -d < $REMOTE_ROOT_ARG/files/_tmp.b64 > $REMOTE_ROOT_ARG/files/$rel && rm -f $REMOTE_ROOT_ARG/files/_tmp.b64" 2>/dev/null \
-      && echo "    [OK] $rel" || echo "    [FAIL] $rel"
-  done
 }
 
 if [ -z "$NO_SYNC" ]; then
