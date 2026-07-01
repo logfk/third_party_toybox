@@ -121,6 +121,18 @@ export OHOS_TEST=1
 export SHOWSKIP=SKIP
 export FAILCOUNT=0
 
+# 探测板端 UID（被测命令实际执行环境）。
+# 测试文件中的 skipnot [ $(id -u) -ne 0 ] 默认在本地 Git Bash 求值，
+# 而被测 cp 等命令实际以板端 root 身份执行，二者上下文不一致会导致
+# 依赖 DAC 权限拦截的用例（如 cp file->inaccessible）误判失败。
+# 这里用板端 UID 覆盖本地 id，使 skipnot 能正确跳过 root 场景。
+BOARD_UID=$("$HDC" shell "id -u" 2>/dev/null | tr -d '\r\n\t ')
+[ -z "$BOARD_UID" ] && BOARD_UID=0
+id() {
+  [ "$1" = "-u" ] && { echo "$BOARD_UID"; return; }
+  command id "$@"
+}
+
 # ====== 重写 testing()：bash 逻辑本地执行，命令通过 hdc 在主板直接执行 ======
 testing() {
   wrong_args "$@"
