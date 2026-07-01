@@ -159,11 +159,12 @@ testing() {
   REMOTE_CMD="${REMOTE_CMD//\"$BOARD_DIR\/$CMDNAME\"/$BOARD_DIR\/$CMDNAME}"
   REMOTE_CMD="${REMOTE_CMD//\$C/$BOARD_DIR\/$CMDNAME}"
 
-  # 同步测试创建的文件到板端（base64 传输）
-  for f in *; do
+  # 同步测试创建的文件到板端（base64 传输，递归支持子目录）
+  while IFS= read -r -d '' f; do
+    f="${f#./}"
     [ -d "$f" ] && "$HDC" shell "mkdir -p $BOARD_DIR/$f" 2>/dev/null
     [ -f "$f" ] || continue
-    local b64
+    b64=
     # 二进制文件（含 NUL 字节）原样发送，文本文件 strip \r
     if od -A n -t x1 "$f" 2>/dev/null | grep -q ' 00'; then
       b64=$(base64 -w0 "$f" 2>/dev/null) || continue
@@ -171,7 +172,7 @@ testing() {
       b64=$(tr -d '\r' < "$f" | base64 -w0 2>/dev/null) || continue
     fi
     "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/$f" 2>/dev/null
-  done
+  done < <(find . -mindepth 1 -print0)
 
   # 推送 stdin（base64 传输，避免 hdc.exe 的 stdin pipe hang）
   if [ -n "$5" ]; then
