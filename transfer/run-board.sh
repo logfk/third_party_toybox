@@ -167,6 +167,9 @@ testing() {
         b64=$(tr -d '\r' < "$f" | base64 -w0 2>/dev/null) || continue
       fi
       "$HDC" shell "printf '%s' '$b64' | $TOYBOX_CMD base64 -d > $BOARD_DIR/$f" 2>/dev/null
+      # 同步文件权限（mode 000 etc.）
+      _mode=$(stat -c "%a" "$f" 2>/dev/null) && [ -n "$_mode" ] &&
+        "$HDC" shell "chmod $_mode $BOARD_DIR/$f" 2>/dev/null
     fi
   done < <(find . -mindepth 1 -print0)
 

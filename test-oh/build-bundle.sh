@@ -159,7 +159,7 @@ testing() {
   REMOTE_CMD="${REMOTE_CMD//\"$BOARD_DIR\/$CMDNAME\"/$BOARD_DIR\/$CMDNAME}"
   REMOTE_CMD="${REMOTE_CMD//\$C/$BOARD_DIR\/$CMDNAME}"
 
-  # 同步测试创建的文件到板端（base64 传输，递归支持子目录）
+  # 同步测试创建的文件到板端（base64 传输，递归支持子目录，同步权限）
   while IFS= read -r -d '' f; do
     f="${f#./}"
     [ -d "$f" ] && "$HDC" shell "mkdir -p $BOARD_DIR/$f" 2>/dev/null
@@ -172,6 +172,9 @@ testing() {
       b64=$(tr -d '\r' < "$f" | base64 -w0 2>/dev/null) || continue
     fi
     "$HDC" shell "printf '%s' '$b64' | $SYS_TOYBOX base64 -d > $BOARD_DIR/$f" 2>/dev/null
+    # 同步文件权限
+    _mode=$(stat -c "%a" "$f" 2>/dev/null) && [ -n "$_mode" ] &&
+      "$HDC" shell "chmod $_mode $BOARD_DIR/$f" 2>/dev/null
   done < <(find . -mindepth 1 -print0)
 
   # 推送 stdin（base64 传输，避免 hdc.exe 的 stdin pipe hang）
