@@ -25,8 +25,20 @@ CMDNAME="$1"
 : "${VERBOSE:=all}"
 : "${FAILCOUNT:=0}"
 
+# 把 toybox 多调用二进制以各子命令名软链到 tbin/ 并加入 PATH，
+# 使 testing() 与测试用例中的裸命令(diff/cmp/stat/cat/readlink ...)能解析到 toybox。
+# toybox 多调用按 argv[0] 分发，软链名即子命令名。
+TOYBOX_BIN=/data/toybox-test/tbin
+if [ ! -d "$TOYBOX_BIN" ] || [ ! -e "$TOYBOX_BIN/diff" ]; then
+  mkdir -p "$TOYBOX_BIN"
+  for cmd in $("$TOYBOX" 2>/dev/null); do
+    ln -sf "$TOYBOX" "$TOYBOX_BIN/$cmd" 2>/dev/null
+  done
+fi
+export PATH="$TOYBOX_BIN:$PATH"
+
 C="${TOYBOX} ${CMDNAME}"
-export CMDNAME C OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT
+export CMDNAME C OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT PATH
 
 # 每条命令在独立干净工作目录执行，避免相互污染
 WORKDIR=/data/toybox-test/work
