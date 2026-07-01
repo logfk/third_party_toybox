@@ -50,6 +50,40 @@ verbose_has()
   [ "${VERBOSE/$1/}" != "$VERBOSE" ]
 }
 
+# Pure-shell two-file comparison (no external diff/cmp dependency).
+# Prints unified-ish text when files differ; prints nothing when identical.
+# Uses only the read builtin + FD redirection, so works on toybox sh with
+# no diff/cmp in PATH. (Trailing-newline-only differences may be ignored.)
+_shdiff()
+{
+  exec 3<"$1"
+  exec 4<"$2"
+  _sd_out=""
+  _sd_n=0
+  _sd_ae=0
+  _sd_be=0
+  while [ "$_sd_ae" -eq 0 ] || [ "$_sd_be" -eq 0 ]; do
+    _sd_n=$((_sd_n+1))
+    if [ "$_sd_ae" -eq 0 ]; then
+      if IFS= read -r _sd_al <&3; then :; else _sd_ae=1; _sd_al=; fi
+    else _sd_al=; fi
+    if [ "$_sd_be" -eq 0 ]; then
+      if IFS= read -r _sd_bl <&4; then :; else _sd_be=1; _sd_bl=; fi
+    else _sd_bl=; fi
+    if [ "$_sd_ae" -eq 1 ] && [ "$_sd_be" -eq 1 ]; then break; fi
+    if [ "$_sd_al" != "$_sd_bl" ]; then
+      _sd_out="${_sd_out}@@ line $_sd_n
+-${_sd_al}
++${_sd_bl}
+"
+    fi
+  done
+  exec 3<&- 4<&-
+  [ -z "$_sd_out" ] || printf -- "--- expected
++++ actual
+%s" "$_sd_out"
+}
+
 wrong_args()
 {
   if [ $# -ne 5 ]
@@ -149,7 +183,7 @@ testing()
   # Catch segfaults
   [ $RETVAL -gt 128 ] &&
     echo "exited with signal (or returned $RETVAL)" >> actual
-  DIFF="$(cd "$TESTDIR"; diff -au${NOSPACE:+w} expected actual 2>&1)"
+  DIFF="$(cd "$TESTDIR" && _shdiff expected actual)"
   [ -z "$DIFF" ] && do_pass || VERBOSE=all do_fail
   if ! verbose_has quiet && { [ -n "$DIFF" ] || verbose_has spam; }
   then
