@@ -58,7 +58,7 @@ echo "主板连接正常"
 # hdc_cleanup: 清理板端测试内容，保留推送的 toybox 二进制
 hdc_cleanup() {
   # 保留推送版 toybox 及测试数据 files/
-  "$HDC" shell "cd $BOARD_DIR && ls -a 2>/dev/null | while read f; do case \"\$f\" in .|..|toybox|files) continue ;; esac; rm -rf \"\$f\"; done" 2>/dev/null
+  "$HDC" shell "cd $BOARD_DIR && ls -a 2>/dev/null | while read f; do case \"\$f\" in .|..|toybox|files) continue ;; esac; rm -rf -- \"\$f\"; done" 2>/dev/null
 }
 
 # 固定使用推送版 toybox（需提前 hdc file send 到 BOARD_DIR）

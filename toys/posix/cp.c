@@ -356,6 +356,7 @@ static int cp_node(struct dirtree *try)
       s = catch;
     } else s = 0;
     perror_msg(err, catch);
+    toys.exitval = 1;
     free(s);
   }
 
