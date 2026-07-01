@@ -4,7 +4,8 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# count = wc -l 的纯计数版（toybox 专有）
-ohosonly testcmd "basic" "" "3\n" "a\nb\nc\n" ""
-ohosonly testcmd "empty" "" "0\n" "" ""
-ohosonly testcmd "no trailing nl" "" "1\n" "x" ""
+# count 是进度指示器：将 stdin 原样拷贝到 stdout，同时报告字节数到 stderr。
+# 测试 stdout 被动输出（数据透传），stderr 的进度显示不校验。
+ohosonly testing "passthru" "printf hello | $C | wc -c" "5\n" "" ""
+ohosonly testing "passthru empty" "printf '' | $C | wc -c" "0\n" "" ""
+ohosonly testing "passthru binary" "printf '\x00\x01\xff' | $C | wc -c" "3\n" "" ""

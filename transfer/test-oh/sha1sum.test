@@ -56,11 +56,11 @@ ohosonly testcmd "abc" "" "$ABC  -\n" "" "abc"
 ohosonly testcmd "longer str" "" "$ABCLONG  -\n"\
         "" "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
 ohosonly testing "a million nulls" \
-        'dd if=/dev/zero bs=1000 count=1000 2>/dev/null|sed '"'"'s/\x0/a/g'"'"'|$CMDNAME' \
+        'dd if=/dev/zero bs=1000 count=1000 2>/dev/null|sed '"'"'s/\x0/a/g'"'"'|$C' \
         "$MILNUL  -\n" "" ""
-ohosonly testing "digits" 'for i in `seq 80`; do echo -n 01234567 ; done | $CMDNAME' \
+ohosonly testing "digits" 'for i in `seq 80`; do echo -n 01234567 ; done | $C' \
         "$DIGITS  -\n" "" ""
-ohosonly testing "seq 10000" "seq 10000 | $CMDNAME" "$SEQ  -\n" "" ""
+ohosonly testing "seq 10000" "seq 10000 | $C" "$SEQ  -\n" "" ""
 
 echo -n "def" > file2
 ohosonly testcmd "file" "input" "$ABC  input\n" "abc" ""

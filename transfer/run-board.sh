@@ -173,6 +173,10 @@ sync_bundle() {
         [ -n "$d" ] && deps="$deps $d"
       done < <(grep -oE '\$FILES[\\"]*/[^/")[:space:]]+' "$tf" 2>/dev/null | sed -E 's#\$FILES[\\"]*/##' | sort -u)
     done
+    # 也收集 FILES_DEP: 注释（test_line 等间接引用的文件）
+    while IFS= read -r d; do
+      [ -n "$d" ] && deps="$deps $d"
+    done < <(grep -oE 'FILES_DEP:[[:space:]]*[^[:space:]]+([[:space:]]+[^[:space:]]+)*' "$@" 2>/dev/null | sed 's/^FILES_DEP:[[:space:]]*//' | tr ' ' '\n' | sort -u)
     # 去重
     local uniq="" u
     for d in $deps; do

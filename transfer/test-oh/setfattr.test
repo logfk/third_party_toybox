@@ -4,6 +4,9 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
+# getfattr 不是 toybox 命令，OHOS 上可能不可用
+command -v getfattr >/dev/null 2>&1 || { echo "SKIP: setfattr (no getfattr)"; exit 0; }
+
 function clean()
 {
   # The filesystem may include some extended attributes by default (for

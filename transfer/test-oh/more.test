@@ -6,6 +6,9 @@
 
 [ -f testing.sh ] && . testing.sh
 
+# more command 在 OHOS 构建中可能未被编译
+$C --help >/dev/null 2>&1 || { echo "SKIP: more (not in this build)"; exit 0; }
+
 # more basic: shows file content with header
 echo "line1
 line2

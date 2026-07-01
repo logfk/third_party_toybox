@@ -13,9 +13,14 @@ fi
 # and group "root" and the last group in /etc/group.
 USR="$(sed -n '$s/:.*//p' /etc/passwd)"
 GRP="$(sed -n '$s/:.*//p' /etc/group)"
-# Or if that fails, we assume we're on Android...
+# Android / OHOS fallback: /etc/group may have unusable entries (histogram_sa),
+# or the file may not be readable. Fall back to known-good root/shell.
 : "${USR:=shell}"
 : "${GRP:=daemon}"
+# Verify the group exists on the system; if not, fall back to root.
+if [ -n "$GRP" ]; then
+  grep -q "^${GRP}:" /etc/group 2>/dev/null || GRP=root
+fi
 
 # Set up a little testing hierarchy
 

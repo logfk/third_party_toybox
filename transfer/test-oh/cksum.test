@@ -21,7 +21,7 @@ ohosonly
 toyonly testing "on abc excluding length" "$C -N" "1219131554\n" "" 'abc\x3'
 
 # cksum on no contents gives 0xffffffff (=4294967295)
-ohosonly testing "on no data post-inversion" "echo -n "" | cksum" "4294967295 0\n" "" ""
+ohosonly testing "on no data post-inversion" "echo -n "" | $C" "4294967295 0\n" "" ""
 # If we do preinversion we will then get 0.
 ohosonly
 toyonly testing "on no data pre+post-inversion" "echo -n "" | cksum -P" "0 0\n" "" ""

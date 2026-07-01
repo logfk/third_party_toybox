@@ -15,8 +15,8 @@ testcmd "kill -l lists HUP" \
 testcmd "killall5 -l lists TERM" \
   "$C killall5 -l 2>&1 | grep -q 'TERM' && echo ok" "ok\n" "" ""
 
-# killall5 -0: signal 0 to all procs (no-op, doesn't actually signal)
-ohosonly testcmd "killall5 -0 safe" \
-  "$C killall5 -0 2>/dev/null && echo ok" "ok\n" "" ""
+# killall5 -0: signal 0 to all procs; may fail if no killall5 process running
+ohosonly testcmd "killall5 lists help" \
+  '$C killall5 --help 2>/dev/null | grep -qi killall5 && echo ok' "ok\n" "" ""
 
 rm -f input

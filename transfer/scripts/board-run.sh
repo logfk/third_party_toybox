@@ -42,7 +42,8 @@ _util() { "$@" 2>/dev/null || "$SYS_TOYBOX" "$@" 2>/dev/null || "$TOYBOX" "$@"; 
 for _cmd in cmp stat readlink dd wc md5sum sha1sum sha256sum od hexdump \
              sort uniq tr cut sed grep egrep fgrep awk head tail find xargs \
              base64 sleep date truncate seq yes mktemp ln tee split comm paste \
-             fold fmt expr factor iconv tty nohup timeout dirname basename; do
+             fold fmt expr factor iconv tty nohup timeout dirname basename \
+             chattr lsattr more hexdump xxd; do
   command -v "$_cmd" >/dev/null 2>&1 || \
     eval "${_cmd}() { _util ${_cmd} \"\$@\"; }"
 done

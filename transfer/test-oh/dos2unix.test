@@ -4,10 +4,11 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# 构造 CRLF 输入
-printf 'a\r\nb\r\n' >crlf.txt
-ohosonly testing "crlf->lf" "$C crlf.txt && od -An -c crlf.txt" "   a  \\n   b  \\n\n" "" ""
-rm -f crlf.txt
+# 构造 CRLF 输入，转换后用 cmp 对比，避免 od 输出格式差异
+printf 'a\nb\n' > expected.txt
+printf 'a\r\nb\r\n' > crlf.txt
+ohosonly testing "crlf->lf" "$C crlf.txt && cmp crlf.txt expected.txt && echo ok" "ok\n" "" ""
 
-# stdin
-ohosonly testing "stdin" "$C | od -An -c" "   a  \\n   b  \\n\n" "" "a\r\nb\r\n"
+# stdin 管道输入
+ohosonly testing "stdin" "printf 'a\r\nb\r\n' | $C | cmp - expected.txt && echo ok" "ok\n" "" ""
+rm -f crlf.txt expected.txt
