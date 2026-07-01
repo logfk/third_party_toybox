@@ -234,6 +234,15 @@ for testfile in "$@"; do
   mkdir -p "$WORKDIR"
   (
     cd "$WORKDIR"
+    # 重定向常用文件操作命令：本地+板端同步执行
+    rm() { command rm -rf "$@"; "$HDC" shell "rm -rf $BOARD_DIR/$*" 2>/dev/null; }
+    mkdir() { command mkdir -p "$@"; "$HDC" shell "mkdir -p $BOARD_DIR/$*" 2>/dev/null; }
+    touch() { command touch "$@"; "$HDC" shell "touch $BOARD_DIR/$*" 2>/dev/null; }
+    chmod() {
+      local _file="${@: -1}" _rest="${@:1:$#-1}"
+      command chmod "$@"
+      "$HDC" shell "chmod $_rest $BOARD_DIR/$_file" 2>/dev/null || true
+    }
     source "$TEST_OH_DIR/$CMDNAME.test"
     echo "$FAILCOUNT" > "$TOPDIR/_test/${CMDNAME}_continue"
   ) || true
