@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+ohosonly testing "specific var" "FOO=bar; $C FOO" "bar\n" "" ""
+ohosonly testing "missing var [fail]" "$C NOPE 2>/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "all contains PATH" "$C | grep -q PATH && echo yes" "yes\n" "" ""

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# arch == uname -m，输出非空即可
+ohosonly testing "nonempty" "[ -n \"\$(\$C)\" ] && echo yes" "yes\n" "" ""

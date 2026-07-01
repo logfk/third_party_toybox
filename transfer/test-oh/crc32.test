@@ -1,0 +1,11 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# crc32 输出格式：<hex>\t<file>  （无文件名则仅 stdin）
+ohosonly testing "stdin known value" "printf 'abc' | $C" "352441c2\n" "" ""
+printf 'abc' >file
+ohosonly testing "file arg" "$C file" "352441c2\tfile\n" "" ""
+rm -f file

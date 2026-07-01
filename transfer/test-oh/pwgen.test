@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# pwgen 输出非空 token
+ohosonly testing "default" "$C | head -1 | grep -q . && echo yes" "yes\n" "" ""
+ohosonly testing "length 12" "$C 12 | head -1 | grep -Eq '^.{12}$' && echo yes" "yes\n" "" ""

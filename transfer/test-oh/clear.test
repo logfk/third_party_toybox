@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# clear/reset 输出终端转义序列，返回 0
+ohosonly testing "clear runs" "$C >/dev/null && echo yes" "yes\n" "" ""

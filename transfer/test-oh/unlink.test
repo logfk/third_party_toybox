@@ -1,0 +1,14 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# unlink 删除单个文件（不支持目录）
+echo x >foo
+ohosonly testing "remove file" "$C foo && [ ! -e foo ] && echo yes" "yes\n" "" ""
+ohosonly testing "missing file [fail]" "$C nope 2>/dev/null || echo yes" "yes\n" "" ""
+mkdir adir
+ohosonly testing "directory [fail]" "$C adir 2>/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "no args [fail]" "$C 2>/dev/null || echo yes" "yes\n" "" ""
+rmdir adir 2>/dev/null

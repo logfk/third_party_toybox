@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# nohup 运行命令，输出 nohup.out 并忽略 SIGHUP
+ohosonly testing "runs and writes" "$C echo hi >/dev/null && [ -f nohup.out ] && cat nohup.out; rm -f nohup.out" "hi\n" "" ""
+ohosonly testing "exits with child code" "$C true; echo rc=\$?" "rc=0\n" "" ""

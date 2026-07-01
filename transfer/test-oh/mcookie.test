@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# mcookie 输出 32 位十六进制
+ohosonly testing "32 hex digits" "$C | grep -Eq '^[0-9a-f]{32}$' && echo yes" "yes\n" "" ""
+ohosonly testing "two differ" "[ \"\$(\$C)\" != \"\$(\$C)\" ] && echo yes" "yes\n" "" ""

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# nice 无参数输出当前 nice 值
+ohosonly testing "current nice" "$C | grep -Eq '^[0-9]+$' && echo yes" "yes\n" "" ""
+# -n 调整后运行命令
+ohosonly testing "-n value" "$C -n 5 nice" "5\n" "" ""
+ohosonly testing "runs command" "$C -n 1 echo ok" "ok\n" "" ""

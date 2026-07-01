@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# ulimit 无参数返回当前软限制（数字）
+ohosonly testing "current value" "$C | head -1 | grep -Eq '^[0-9]+$|unlimited' && echo yes" "yes\n" "" ""
+ohosonly testing "-a runs" "$C -a >/dev/null && echo yes" "yes\n" "" ""

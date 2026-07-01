@@ -1,0 +1,11 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# df 至少列出一个文件系统，含 header
+ohosonly testing "default has header" "$C | head -1 | grep -qi 'filesys\|size\|used' && echo yes" "yes\n" "" ""
+ohosonly testing "-k runs" "$C -k >/dev/null && echo yes" "yes\n" "" ""
+ohosonly testing "-h runs" "$C -h >/dev/null && echo yes" "yes\n" "" ""
+ohosonly testing "-P runs" "$C -P >/dev/null && echo yes" "yes\n" "" ""

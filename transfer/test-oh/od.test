@@ -1,0 +1,16 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# 默认八进制 word dump
+printf 'AB\n' >input
+ohosonly testcmd "default" "" "0000000 041101 000012\n0000004\n" "input" ""
+# -c 可打印字符
+ohosonly testcmd "-c" "-c" "0000000   A   B  \\n\n0000003\n" "input" ""
+# -An 无地址
+ohosonly testcmd "-An" "-An" " 041101 000012\n0000004\n" "input" ""
+# -tx1 十六进制字节
+ohosonly testcmd "-tx1" "-tx1" "0000000 41 42 0a\n0000003\n" "input" ""
+rm -f input

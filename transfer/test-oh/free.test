@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# free 输出含 total 行
+ohosonly testing "has Mem line" "$C | grep -q 'Mem' && echo yes" "yes\n" "" ""
+ohosonly testing "-b runs" "$C -b >/dev/null && echo yes" "yes\n" "" ""
+ohosonly testing "-m runs" "$C -m >/dev/null && echo yes" "yes\n" "" ""

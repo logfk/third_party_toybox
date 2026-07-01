@@ -1,0 +1,11 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+ohosonly testing "default (y)" "$C | head -1" "y\n" "" ""
+ohosonly testing "custom string" "$C on | head -1" "on\n" "" ""
+ohosonly testing "empty arg" "$C '' | head -1" "\n" "" ""
+# head limits output; verify it keeps repeating
+ohosonly testing "repeats" "$C x | head -3" "x\nx\nx\n" "" ""

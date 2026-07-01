@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# getconf 已知配置项返回数字
+ohosonly testing "PAGE_SIZE > 0" "[ 0 -lt \"\$(\$C PAGE_SIZE)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "CLK_TCK > 0" "[ 0 -lt \"\$(\$C CLK_TCK)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "unknown [fail]" "$C _NOPE_ 2>/dev/null || echo yes" "yes\n" "" ""

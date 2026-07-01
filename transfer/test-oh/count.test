@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# count = wc -l 的纯计数版（toybox 专有）
+ohosonly testcmd "basic" "" "3\n" "a\nb\nc\n" ""
+ohosonly testcmd "empty" "" "0\n" "" ""
+ohosonly testcmd "no trailing nl" "" "1\n" "x" ""

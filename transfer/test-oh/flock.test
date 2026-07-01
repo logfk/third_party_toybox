@@ -1,0 +1,11 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# flock 文件锁
+echo x >lockf
+ohosonly testing "exclusive lock runs cmd" "$C lockf echo ok" "ok\n" "" ""
+ohosonly testing "-n nonblock on free lock" "$C -n lockf echo ok" "ok\n" "" ""
+rm -f lockf

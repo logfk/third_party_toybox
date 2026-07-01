@@ -4,4 +4,5 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-ohosonly testing "smoke" "$C | grep -Eq '[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}' && echo okay" "okay\n" "" ""
+# uuidgen 输出 8-4-4-4-12 格式
+ohosonly testing "format" "$C | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' && echo yes" "yes\n" "" ""

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# pmap <pid> 输出进程内存映射，末行 total
+ohosonly testing "header total" "$C \$\$ | tail -1 | grep -qi 'total' && echo yes" "yes\n" "" ""

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# time 包裹命令，输出 real/user/sys 行（格式跨实现不一致，验证返回码即可）
+ohosonly testing "exits with child code" "$C true; echo rc=\$?" "rc=0\n" "" ""
+ohosonly testing "propagates failure" "$C false; echo rc=\$?" "rc=1\n" "" ""
+ohosonly testing "-p format runs" "$C -p true >/dev/null && echo yes" "yes\n" "" ""

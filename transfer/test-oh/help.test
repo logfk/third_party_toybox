@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# help 列出命令
+ohosonly testing "lists commands" "$C | grep -q . && echo yes" "yes\n" "" ""
+ohosonly testing "single cmd help" "$C cp | grep -qi 'cp' && echo yes" "yes\n" "" ""

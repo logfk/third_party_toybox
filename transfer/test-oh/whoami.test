@@ -1,0 +1,7 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+ohosonly testing "nonempty" "[ -n \"\$(\$C)\" ] && echo yes" "yes\n" "" ""

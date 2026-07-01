@@ -1,0 +1,13 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# 构造 CRLF 输入
+printf 'a\r\nb\r\n' >crlf.txt
+ohosonly testing "crlf->lf" "$C crlf.txt && od -An -c crlf.txt" "   a  \\n   b  \\n\n" "" ""
+rm -f crlf.txt
+
+# stdin
+ohosonly testing "stdin" "$C | od -An -c" "   a  \\n   b  \\n\n" "" "a\r\nb\r\n"

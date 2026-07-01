@@ -1,0 +1,14 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# uname 输出依赖板端，这里验证各 flag 不出错且输出非空
+ohosonly testing "default nonempty" "[ -n \"\$(\$C)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "-s nonempty" "[ -n \"\$(\$C -s)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "-n nonempty" "[ -n \"\$(\$C -n)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "-r nonempty" "[ -n \"\$(\$C -r)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "-m nonempty" "[ -n \"\$(\$C -m)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "-a nonempty" "[ -n \"\$(\$C -a)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "unknown flag [fail]" "$C -z 2>/dev/null || echo yes" "yes\n" "" ""

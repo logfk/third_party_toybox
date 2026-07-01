@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# tty 在非终端(stdin 重定向)下输出 "not a tty" 并返回 1
+ohosonly testing "not a tty [fail]" "$C </dev/null 2>/dev/null || echo yes" "yes\n" "" ""

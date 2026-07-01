@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# nproc 返回正整数
+ohosonly testing "default > 0" "[ 0 -lt \"\$(\$C)\" ] && echo yes" "yes\n" "" ""
+ohosonly testing "--all > 0" "[ 0 -lt \"\$(\$C --all)\" ] && echo yes" "yes\n" "" ""

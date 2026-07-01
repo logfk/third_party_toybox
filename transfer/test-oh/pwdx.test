@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# pwdx <pid> 输出 pid 对应的 cwd
+self=$(cut -d' ' -f1 /proc/self/stat 2>/dev/null || echo $$)
+ohosonly testing "self cwd" "$C $$ | grep -q \"\$PWD\" && echo yes" "yes\n" "" ""

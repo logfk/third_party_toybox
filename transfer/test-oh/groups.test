@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# groups 输出非空（root 至少属于 root 组）
+ohosonly testing "nonempty" "[ -n \"\$(\$C)\" ] && echo yes" "yes\n" "" ""

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+ohosonly testing "exit code 1" "$C && echo BAD || echo yes" "yes\n" "" ""
+ohosonly testing "ignored args" "$C foo bar && echo BAD || echo yes" "yes\n" "" ""

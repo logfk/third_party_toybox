@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+ohosonly testing "header" "$C | head -1 | grep -qi 'procs\|cpu\|memory' && echo yes" "yes\n" "" ""
+ohosonly testing "runs" "$C >/dev/null && echo yes" "yes\n" "" ""
