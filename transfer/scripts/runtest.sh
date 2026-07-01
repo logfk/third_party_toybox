@@ -96,13 +96,13 @@ skipnot()
   else
     eval "$@"
   fi
-  [ $? -eq 0 ] || { ((++SKIP)); return 1; }
+  [ $? -eq 0 ] || { SKIP=$((SKIP+1)); return 1; }
 }
 
 # Skip this test (rest of command line) when not running OHOS-adapted build.
 ohosonly()
 {
-  [ -n "$OHOS_TEST" ] || ((++SKIP))
+  [ -n "$OHOS_TEST" ] || SKIP=$((SKIP+1))
   "$@"
 }
 
@@ -117,7 +117,7 @@ toyonly()
   case "$IS_TOYBOX" in
     toybox*) ;;
     This\ is\ not\ GNU*) ;;
-    *) [ $SKIP -eq 0 ] && ((++SKIP)) ;;
+    *) [ $SKIP -eq 0 ] && SKIP=$((SKIP+1)) ;;
   esac
 
   "$@"
@@ -136,7 +136,7 @@ testing()
   if [ "$SKIP" -gt 0 ]
   then
     verbose_has quiet || printf "%s\n" "$SHOWSKIP: $NAME"
-    ((--SKIP))
+    SKIP=$((SKIP-1))
 
     return 0
   fi
