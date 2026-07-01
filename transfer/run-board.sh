@@ -98,29 +98,40 @@ sync_bundle() {
   "$HDC" shell "rm -rf $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files && mkdir -p $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files" 2>/dev/null
 
   local ok=0 fail=0
-  push_one() {
-    # $1=本地文件 $2=板端目标路径
-    if "$HDC" file send "$1" "$2" >/dev/null 2>&1; then
+  # 推送文本脚本：剥掉 Windows CRLF（板端 sh 不认 \r），落临时文件再发
+  send_text() {
+    # $1=本地文本文件 $2=板端目标路径
+    local tmp="$REPORT_DIR/.lf.tmp"
+    tr -d '\r' < "$1" > "$tmp"
+    if "$HDC" file send "$tmp" "$2" >/dev/null 2>&1; then
       ok=$((ok+1)); return 0
     else
       echo "  [FAIL] $(basename "$1")"; fail=$((fail+1)); return 1
     fi
   }
+  # 推送二进制：原样发送
+  send_bin() {
+    if "$HDC" file send "$1" "$2" >/dev/null 2>&1; then
+      echo "    [OK] ${3:-$(basename "$1")}"; return 0
+    else
+      echo "    [FAIL] ${3:-$(basename "$1")}"; return 1
+    fi
+  }
 
-  # 1) 框架（板端命名为 testing.sh，匹配 test 文件首行 . testing.sh）+ 入口
-  push_one "$SCRIPT_DIR/runtest.sh" "$REMOTE_ROOT_ARG/testing.sh"
-  push_one "$SCRIPT_DIR/board-run.sh" "$REMOTE_ROOT_ARG/board-run.sh"
+  # 1) 框架（板端命名为 testing.sh）+ 入口（必须 LF）
+  send_text "$SCRIPT_DIR/runtest.sh" "$REMOTE_ROOT_ARG/testing.sh"
+  send_text "$SCRIPT_DIR/board-run.sh" "$REMOTE_ROOT_ARG/board-run.sh"
 
-  # 2) test-oh/*.test
+  # 2) test-oh/*.test（文本，剥 CRLF）
   for tf in "$TEST_OH_DIR"/*.test; do
-    push_one "$tf" "$REMOTE_ROOT_ARG/test-oh/$(basename "$tf")"
+    send_text "$tf" "$REMOTE_ROOT_ARG/test-oh/$(basename "$tf")"
   done
+  rm -f "$REPORT_DIR/.lf.tmp"
   echo "  test-oh: $ok 个推送成功${fail:+，$fail 个失败}"
 
-  # 3) tests/files/（file/wc/blkid/tar/bc/awk/bzcat ... 依赖）
+  # 3) tests/files/（file/wc/blkid/tar/bc/awk/bzcat ... 依赖，二进制原样）
   if [ -d "$FILES_SRC" ]; then
     echo "  同步 files/ ..."
-    local fok=0 ffail=0
     # 先建好所有子目录结构
     find "$FILES_SRC" -type d -print0 | while IFS= read -r -d '' d; do
       rel="${d#$FILES_SRC}"
@@ -129,11 +140,7 @@ sync_bundle() {
     # 逐文件发送
     find "$FILES_SRC" -type f -print0 | while IFS= read -r -d '' lf; do
       rel="${lf#$FILES_SRC}"
-      if "$HDC" file send "$lf" "$REMOTE_ROOT_ARG/files$rel" >/dev/null 2>&1; then
-        echo "    [OK] ${rel#/}"
-      else
-        echo "    [FAIL] ${rel#/}"
-      fi
+      send_bin "$lf" "$REMOTE_ROOT_ARG/files$rel" "${rel#/}"
     done
   else
     echo "  跳过 files/（未找到 $FILES_SRC）"
