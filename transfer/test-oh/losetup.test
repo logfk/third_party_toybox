@@ -22,8 +22,8 @@ else
   DIR="/dev"
 fi
 
-# OHOS 可能没有 loop 设备节点，探测后跳过
-if [ ! -e "${DIR}/loop0" ] && [ ! -e "/dev/loop0" ] && [ ! -e "/dev/block/loop0" ]; then
+# OHOS 可能没有 loop 设备，用 losetup -f 本身探测
+if ! losetup -f >/dev/null 2>&1; then
   echo "$SHOWSKIP: losetup (no loop device on this system)"
   return 2>/dev/null
   exit
