@@ -4,10 +4,6 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# nice 无参数输出当前 nice 值（OHOS 上 nice 需要参数，跳过）
-[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing "current nice" "$C | grep -Eq '^[0-9]+$' && echo yes" "yes\n" "" ""
-# -n 调整后运行命令（OHOS 上 nice 作为命令名不被识别，跳过）
-[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing "-n value" "$C -n 5 nice" "5\n" "" ""
 ohosonly testing "runs command" "$C -n 1 echo ok" "ok\n" "" ""

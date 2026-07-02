@@ -4,7 +4,7 @@
  *
  * See http://opengroup.org/onlinepubs/9699919799/utilities/nice.html
 
-USE_NICE(NEWTOY(nice, "^<1n#", TOYFLAG_BIN))
+USE_NICE(NEWTOY(nice, "n#", TOYFLAG_BIN))
 
 config NICE
   bool "nice"
@@ -32,6 +32,11 @@ GLOBALS(
 void nice_main(void)
 {
   if (!toys.optflags) TT.n = 10;
+
+  if (!toys.optc) {
+    printf("%d\n", getpriority(PRIO_PROCESS, 0));
+    return;
+  }
 
   errno = 0;
   if (nice(TT.n)==-1 && errno) {
