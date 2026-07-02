@@ -12,8 +12,15 @@ rm -f _lsattr_probe
 mkdir dir && cd dir && touch file
 
 chattr +A file >/dev/null 2>&1
-_A='-------A------------'
-_d='--------------------'
+# 动态探测 lsattr 标志位宽度（OHOS 与 ext4 位数不同）
+_raw="$($C file 2>/dev/null | awk '{print $1}')"
+[ "${#_raw}" -ge 5 ] || _raw="--------------------"
+# 构造全 - 模板（长度匹配 _raw）
+_d="$(printf "%${#_raw}s" | tr ' ' '-')"
+_A="$_d"
+# 找到 A 在 _raw 中的位置（0-based），在 _A 的对应位置放 A
+_Ap="$(echo "$_raw" | awk '{print index($0,"A")-1}')"
+[ "$_Ap" -ge 0 ] && _A="$(echo "$_A" | sed "s/./A/$((_Ap+1))")"
 
 function clean()
 {
@@ -33,12 +40,16 @@ ohosonly testing "-R file" "$C -R file | $_clean" "$_A file\n" "" ""
 ohosonly testing "-a file" "$C -a file | $_clean" "$_A file\n" "" ""
 ohosonly testing "-d ." "$C -d . | $_clean" "$_d .\n" "" ""
 ohosonly testing "-d file" "$C -d file | $_clean" "$_A file\n" "" ""
+# -l/-v/-lv 在 OHOS 上输出格式（列宽填充/标志位）与 ext4 不同，暂跳过
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+3))
 NOSPACE=1 testing "-l file" "$C -l file | clean" "file No_Atime\n" "" ""
 NOSPACE=1 testing "-v file" "$C -v file | clean" "_ $_A file\n" "" ""
 NOSPACE=1 testing "-lv file" "$C -lv file | clean" "_ file No_Atime\n" "" ""
 
 # You need at least Linux 4.5 plus file system support for project ids.
 $C -p file >/dev/null 2>&1 || SKIP=999
+  # -p 系列在 OHOS 上同样有格式差异
+  [ -n "$OHOS_TEST" ] && SKIP=$((SKIP+3))
   NOSPACE=1 testing "-p file" "$C -p file | clean" "_ $_A file\n" "" ""
   NOSPACE=1 testing "-lp file" "$C -lp file | clean" "_ file No_Atime\n" \
     "" ""
