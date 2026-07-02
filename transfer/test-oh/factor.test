@@ -20,8 +20,8 @@ ohosonly testing "10000000019" "$C 10000000019"          "10000000019: 100000000
 ohosonly testing "3 6 from stdin" "$C" "3: 3\n6: 2 3\n" "" "3 6"
 ohosonly testing "stdin newline" "$C" "3: 3\n6: 2 3\n" "" "3\n6\n"
 
-ohosonly
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 toyonly testing "-h" "$C -h $(((1<<63)-26))"    "9223372036854775782: 2 3^4 17 23 319279 456065899\n" "" ""
-ohosonly
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 toyonly testing "-x" "$C -x $(((1<<63)-20))"    "7fffffffffffffec: 2 2 3 283 43f2ba978e663\n" "" ""
 

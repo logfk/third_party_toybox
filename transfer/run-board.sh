@@ -176,7 +176,7 @@ sync_bundle() {
     # 也收集 FILES_DEP: 注释（test_line 等间接引用的文件）
     while IFS= read -r d; do
       [ -n "$d" ] && deps="$deps $d"
-    done < <(grep -oE 'FILES_DEP:[[:space:]]*[^[:space:]]+([[:space:]]+[^[:space:]]+)*' "$@" 2>/dev/null | sed 's/^FILES_DEP:[[:space:]]*//' | tr ' ' '\n' | sort -u)
+    done < <(grep -h -oE 'FILES_DEP:[[:space:]]*[^[:space:]]+([[:space:]]+[^[:space:]]+)*' "$@" 2>/dev/null | sed 's/^FILES_DEP:[[:space:]]*//' | tr ' ' '\n' | sort -u)
     # 去重
     local uniq="" u
     for d in $deps; do
@@ -198,7 +198,8 @@ sync_bundle() {
             send_bin "$lf" "$REMOTE_ROOT_ARG/files$rel" "${rel#/}"
           done
         elif [ -f "$FILES_SRC/$d" ]; then
-          # 根文件
+          # 文件（可能在子目录中，确保父目录存在）
+          "$HDC" shell "mkdir -p $(dirname $REMOTE_ROOT_ARG/files/$d)" 2>/dev/null
           send_bin "$FILES_SRC/$d" "$REMOTE_ROOT_ARG/files/$d" "$d"
         else
           echo "    [SKIP] $d（本地不存在）"

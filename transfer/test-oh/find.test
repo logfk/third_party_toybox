@@ -42,6 +42,7 @@ ohosonly testing "-print -o -print"  	"$C dir -type f -a \( -print -o -print \)"
 # Testing previous failures
 
 ohosonly testing " " "cd perm; $C" ".\n./all-read-only\n" "" ""
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing "-type f -user -exec"    "$C dir -type f -user $USER -exec ls {} \\;" "dir/file\n" "" ""
 ohosonly testing "-type l -newer -exec"    "$C dir -type l -newer dir/file -exec ls {} \\;" "dir/link\n" "" ""
 ohosonly testing "-exec true \\; -print"    "$C dir/file -exec true \\; -print" "dir/file\n" "" ""

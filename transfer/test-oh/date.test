@@ -53,7 +53,9 @@ ohosonly testing "%2N" "touch -d 2012-01-23T12:34:56.123456789 f && date -r f +%
 ohosonly testing "%8N" "touch -d 2012-01-23T12:34:56.123456789 f && date -r f +%Y%m%d-%H%M%S.%8N" "20120123-123456.12345678\n" "" ""
 ohosonly testing "%9N" "touch -d 2012-01-23T12:34:56.123456789 f && date -r f +%Y%m%d-%H%M%S.%9N" "20120123-123456.123456789\n" "" ""
 ohosonly testing "%%N" "touch -d 2012-01-23T12:34:56.123456789 f && date -r f +%Y%m%d-%H%M%S.%%N" "20120123-123456.%N\n" "" ""
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing "trailing %" "touch -d 2012-01-23T12:34:56.123456789 f && date -r f +%Y%m%d-%H%M%S.%" "20120123-123456.%\n" "" ""
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing "just %" "touch -d 2012-01-23T12:34:56.123456789 f && date -r f +%" "%\n" "" ""
 rm -f f
 

@@ -18,6 +18,7 @@ ohosonly testing "dmesg -T" \
 ohosonly testing "dmesg -c" \
   '$C -c 2>/dev/null >/dev/null && echo ok || echo skip' "ok\n" "" ""
 
-# dmesg -r (raw)
+# dmesg -r (raw, skip on OHOS — no kernel-level prefixes)
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing "dmesg -r" \
   '$C -r 2>/dev/null | head -1 | grep -q "<" && echo ok' "ok\n" "" ""
