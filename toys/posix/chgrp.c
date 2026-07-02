@@ -70,6 +70,54 @@ static int do_chgrp(struct dirtree *node)
   return 0;
 }
 
+#ifdef TOYBOX_OH_ADAPT
+// Manual recursive chgrp for -R, avoids multiple dirtree_flagread calls
+// which crash on OHOS due to malloc hook issues with repeated alloc/free.
+static void chgrp_recurse(const char *path, int follow)
+{
+  struct stat st;
+  int rc;
+
+  rc = follow ? stat(path, &st) : lstat(path, &st);
+  if (rc) {
+    if (!FLAG(f)) perror_msg("'%s' to '%s:%s'", path, TT.owner_name,
+      TT.group_name);
+    toys.exitval = 1;
+    return;
+  }
+
+  rc = fchownat(AT_FDCWD, path, TT.owner, TT.group,
+    AT_SYMLINK_NOFOLLOW*(!(FLAG(L)|FLAG(H)) && (FLAG(h)|FLAG(R))));
+
+  if (rc || FLAG(v)) {
+    if (FLAG(v))
+      xprintf("%s %s%s%s %s\n", toys.which->name, TT.owner_name,
+        (toys.which->name[2]=='o' && *TT.group_name) ? ":" : "",
+        TT.group_name, path);
+    if (rc && !FLAG(f))
+      perror_msg("'%s' to '%s:%s'", path, TT.owner_name, TT.group_name);
+  }
+  toys.exitval |= !!rc;
+
+  if (FLAG(R) && S_ISDIR(st.st_mode)) {
+    DIR *dir = opendir(path);
+    struct dirent *entry;
+
+    if (!dir) {
+      if (!FLAG(f)) perror_msg("opendir '%s'", path);
+      return;
+    }
+    while ((entry = readdir(dir))) {
+      if (isdotdot(entry->d_name)) continue;
+      char *sub = xmprintf("%s/%s", path, entry->d_name);
+      chgrp_recurse(sub, FLAG(L));
+      free(sub);
+    }
+    closedir(dir);
+  }
+}
+#endif
+
 void chgrp_main(void)
 {
   int ischown = toys.which->name[2] == 'o';
@@ -93,6 +141,12 @@ void chgrp_main(void)
   if (TT.group_name && *TT.group_name)
     TT.group = xgetgid(TT.group_name);
 
+#ifdef TOYBOX_OH_ADAPT
+  if (FLAG(R)) {
+    for (s = toys.optargs + 1; *s; s++)
+      chgrp_recurse(*s, !!(toys.optflags & (FLAG_H|FLAG_L)));
+  } else
+#endif
   for (s=toys.optargs+1; *s; s++)
     dirtree_flagread(*s, DIRTREE_SYMFOLLOW*(FLAG(H)|FLAG(L)), do_chgrp);
 

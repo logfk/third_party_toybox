@@ -10,12 +10,12 @@ then
 fi
 
 # 探测：toybox chgrp 在本构建中是否直接段错误（Signal 11）。
-# OHOS 上 chgrp.c 的符号链接递归存在栈溢出缺陷，导致所有 chgrp -R/-h 操作崩溃。
-# 必须用 -R 触发递归遍历符号链接，单纯 chgrp root <file> 不触发崩溃。
-mkdir -p _chgrp_probe_dir/dir _chgrp_probe_dir/dir2
+# OHOS 上 chgrp.c 的多路径 -R 递归存在缺陷，导致所有 chgrp -R 操作崩溃。
+# 必须用两个目录加 -R 触发（单目录 chgrp -R <onepath> 不触发）。
+mkdir -p _chgrp_probe_dir/dir/subdir _chgrp_probe_dir/dir2
 touch _chgrp_probe_dir/dir/file
-ln -s ../dir/file _chgrp_probe_dir/dir2/link 2>/dev/null
-"$C" -R root _chgrp_probe_dir 2>/dev/null; _rc=$?
+ln -s ../dir/subdir _chgrp_probe_dir/dir2/link 2>/dev/null
+"$C" -R root _chgrp_probe_dir/dir _chgrp_probe_dir/dir2 2>/dev/null; _rc=$?
 rm -rf _chgrp_probe_dir
 if [ $_rc -gt 128 ]; then
   echo "$SHOWSKIP: chgrp (Signal 11 - C code bug, needs upstream fix)"
