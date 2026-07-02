@@ -4,7 +4,8 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# od 默认读 stdin；这里用 testing （不是 testcmd）直接把数据通过 stdin 传入
+# od 默认读 stdin（OHOS 输出格式：地址用实际字节数而非 word 对齐 + 多前导空格，跳过）
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+3))
 ohosonly testing "default" "$C" "0000000 041101 000012\n0000004\n" "" "AB\n"
 ohosonly testing "-c" "$C -c" "0000000   A   B  \\n\n0000003\n" "" "AB\n"
 ohosonly testing "-An" "$C -An" " 041101 000012\n0000004\n" "" "AB\n"
