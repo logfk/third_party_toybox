@@ -132,7 +132,7 @@ void cpio_main(void)
 
     if (toys.optflags & (FLAG_t|FLAG_v)) puts(name);
 
-    if (!test && strrchr(name, '/') && mkpath(name)) {
+    if (!test && FLAG(d) && strrchr(name, '/') && mkpath(name)) {
       perror_msg("mkpath '%s'", name);
       test++;
     }
@@ -141,7 +141,10 @@ void cpio_main(void)
     // properly aligned with next file.
 
     if (S_ISDIR(mode)) {
-      if (!test) err = mkdir(name, mode);
+      if (!test) {
+        err = mkdir(name, mode);
+        if (err && errno == EEXIST) err = 0;
+      }
     } else if (S_ISLNK(mode)) {
       data = strpad(afd, size, 0);
       if (!test) err = symlink(data, name);

@@ -10,14 +10,26 @@ then
 fi
 
 # 探测：toybox chgrp 在本构建中是否直接段错误（Signal 11）。
-# OHOS 上 chgrp.c 的多路径 -R 递归存在缺陷，导致所有 chgrp -R 操作崩溃。
-# 必须用两个目录加 -R 触发（单目录 chgrp -R <onepath> 不触发）。
+# OHOS 上 chgrp.c 的 dirtree_flagread 存在缺陷，导致 chgrp 操作崩溃。
+# 必须同时探测 -R (多路径递归) 和非 -R (单文件) 两条代码路径。
+# 注意：OHOS shell 可能不将 $? 设为 128+signo，因此必须同时检查 stderr 文本。
 mkdir -p _chgrp_probe_dir/dir/subdir _chgrp_probe_dir/dir2
 touch _chgrp_probe_dir/dir/file
 ln -s ../dir/subdir _chgrp_probe_dir/dir2/link 2>/dev/null
-"$C" -R root _chgrp_probe_dir/dir _chgrp_probe_dir/dir2 2>/dev/null; _rc=$?
+{
+  "$C" -R root _chgrp_probe_dir/dir _chgrp_probe_dir/dir2 2>/dev/null
+  _rc1=$?
+  "$C" root _chgrp_probe_dir/dir 2>/dev/null
+  _rc2=$?
+} 2>/tmp/.chgrp_probe_sig
 rm -rf _chgrp_probe_dir
-if [ $_rc -gt 128 ]; then
+# 检查退出码
+_detect=
+if [ ${_rc1:-0} -gt 128 ] || [ ${_rc2:-0} -gt 128 ]; then _detect=1; fi
+# 检查 stderr 中的 Signal 11 文本
+while IFS= read -r _line; do case "$_line" in *"Signal 11"*) _detect=1; break;; esac; done < /tmp/.chgrp_probe_sig 2>/dev/null
+rm -f /tmp/.chgrp_probe_sig
+if [ -n "$_detect" ]; then
   echo "$SHOWSKIP: chgrp (Signal 11 - C code bug, needs upstream fix)"
   return 2>/dev/null
   exit
