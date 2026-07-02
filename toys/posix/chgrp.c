@@ -142,13 +142,12 @@ void chgrp_main(void)
     TT.group = xgetgid(TT.group_name);
 
 #ifdef TOYBOX_OH_ADAPT
-  if (FLAG(R)) {
-    for (s = toys.optargs + 1; *s; s++)
-      chgrp_recurse(*s, !!(toys.optflags & (FLAG_H|FLAG_L)));
-  } else
-#endif
+  for (s = toys.optargs + 1; *s; s++)
+    chgrp_recurse(*s, !!(toys.optflags & (FLAG_H|FLAG_L)));
+#else
   for (s=toys.optargs+1; *s; s++)
     dirtree_flagread(*s, DIRTREE_SYMFOLLOW*(FLAG(H)|FLAG(L)), do_chgrp);
+#endif
 
   if (CFG_TOYBOX_FREE && ischown) free(own);
 }
