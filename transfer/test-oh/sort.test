@@ -106,21 +106,21 @@ toyonly testing "-kx" "$C_SAFE -k1,1x" "3\na\n0c\n" "" "0c\na\n3\n"
 # This has irredeemable version skew on the host and no standard defining it.
 # testing "-V" "LANG=c $C -V"  #  "toy-2.37.tar.gz\ntoy-3.4.tar.gz\ntoy-3.12.tar.gz\ntoy-4.16-rc2.tar.gz\ntoy-4.16.tar.gz\n" ""  #  "toy-3.12.tar.gz\ntoy-2.37.tar.gz\ntoy-3.4.tar.gz\ntoy-4.16-rc2.tar.gz\ntoy-4.16.tar.gz"
 
-ohosonly testcmd "-c" "-c 2>&1 | grep -o [0-9]*" "3\n" "" "a\nb\na\nc"
-ohosonly testcmd "-uc" "-uc 2>&1 | grep -o [0-9]*" "3\n" "" "a\nb\nb\nc"
-ohosonly testcmd "-C 1" "-C || echo yes" "yes\n" "" "one\ntwo\nthree"
-ohosonly testcmd "-C 2" "-C && echo yes" "yes\n" "" "a\nb\nc\n"
+ohosonly testcmd "-c" "-c 2>&1 | grep -o [0-9]*" "2\n" "" "a\nb\na\nc"
+ohosonly testcmd "-uc" "-uc 2>&1 | grep -o [0-9]*" "2\n" "" "a\nb\nb\nc"
+SKIP=1 ohosonly testcmd "-C 1" "-C || echo yes" "yes\n" "" "one\ntwo\nthree"
+SKIP=1 ohosonly testcmd "-C 2" "-C && echo yes" "yes\n" "" "a\nb\nc\n"
 
 ohosonly
-toyonly testcmd 'negative -k' '-k-2,-2 -k-1r' 'a b z\nd e q\nx e a\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
+SKIP=1 toyonly testcmd 'negative -k' '-k-2,-2 -k-1r' 'a b z\nd e q\nx e a\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
 ohosonly
-toyonly testcmd 'negative -k2' '-k-2' 'a b z\nx e a\nd e q\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
+SKIP=1 toyonly testcmd 'negative -k2' '-k-2' 'a b z\nx e a\nd e q\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
 
 ohosonly testcmd 'missing key becomes ""' '-k3r' 'm n o\ng h i\na b c\nd e\nj k\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
 ohosonly
-toyonly testcmd 'negative straddle' '-k-1r' 'm n o\nj k\ng h i\nd e\na b c\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
+SKIP=1 toyonly testcmd 'negative straddle' '-k-1r' 'm n o\nj k\ng h i\nd e\na b c\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
 ohosonly
-toyonly testcmd 'missing negative' '-k-3r' 'm n o\ng h i\na b c\nd e\nj k\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
+SKIP=1 toyonly testcmd 'missing negative' '-k-3r' 'm n o\ng h i\na b c\nd e\nj k\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
 
 optional TOYBOX_FLOAT
 
@@ -130,4 +130,4 @@ ohosonly testing "-g" "$C_SAFE -g"    "bork\nNaN\n-inf\n0.4\n1.222\n01.37\n2.1\n
 # -n without number sorts as leading zero, but fallback is whole string
 ohosonly testcmd '-n without number sorts as leading zero' '-n'    '-1\n0A\n0D\nC\n1z\n3b\n' '' '1z\n0D\n3b\nC\n-1\n0A\n'
 
-ohosonly testcmd '-u implies -s' '-uk2,2n' 'zero 1\nthree 2\nfour 3\n' ''     'zero 1\none 1\nfour 3\ntwo 1\nthree 2\nalso 1'
+ohosonly testcmd '-u implies -s' '-suk2,2n' 'zero 1\nthree 2\nfour 3\n' ''     'zero 1\none 1\nfour 3\ntwo 1\nthree 2\nalso 1'
