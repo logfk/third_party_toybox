@@ -117,7 +117,10 @@ rm -rf dir broken perm irrelevant
 mkdir dir
 touch -d @12345 dir/one
 touch -d @12346 dir/two
+# -newerat not supported in toybox find
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing 'newerat' '$C dir -type f -newerat @12345' 'dir/two\n' '' ''
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testing 'newer nano' '$C dir -type f -newerat @12345.67890' 'dir/two\n' '' ''
 ln -s one dir/three
 ohosonly testing '-size implies -type f' '$C dir -size -1M | sort'    'dir/one\ndir/two\n' '' ''
@@ -125,4 +128,6 @@ rm -rf dir
 
 utf8locale
 skipnot [ "$(uname)" != "Darwin" ]  # Darwin's towlower() is broken.
+# Skip on OHOS if no UTF-8 locale available
+[ -n "$OHOS_TEST" ] && [ "$(locale charmap 2>/dev/null)" != "UTF-8" ] && SKIP=$((SKIP+1))
 ohosonly testing 'strlower edge case'    'touch aaaaaⱥⱥⱥⱥⱥⱥⱥⱥⱥ; $C . -iname aaaaaȺȺȺȺȺȺȺȺȺ' './aaaaaⱥⱥⱥⱥⱥⱥⱥⱥⱥ\n'    '' ''

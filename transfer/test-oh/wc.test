@@ -5,6 +5,8 @@
 #testing "name" "command" "result" "infile" "stdin"
 
 utf8locale
+# Check if UTF-8 locale is available for multibyte tests
+[ -n "$OHOS_TEST" ] && [ "$(locale charmap 2>/dev/null)" != "UTF-8" ] && NOUTF8=1 || NOUTF8=0
 
 cat >file1 <<EOF
 some words	. 
@@ -28,10 +30,13 @@ ohosonly testcmd "multiple files" "input - file1" \
 
 #Tests for wc -m
 echo -n " " > file1
+[ $NOUTF8 -eq 1 ] && SKIP=$((SKIP+1))
 for i in $(seq 1 512); do echo -n "üüüüüüüüüüüüüüüü" >> file1; done
 ohosonly testcmd "-m" "-m file1" "8193 file1\n" "" ""
+[ $NOUTF8 -eq 1 ] && SKIP=$((SKIP+1))
 ohosonly testing "-m 2" 'cat "$FILES/utf8/test2.txt" | wc -m' "169\n" "" ""
 echo -n " " > file1
+[ $NOUTF8 -eq 1 ] && SKIP=$((SKIP+1))
 NOSPACE=1 testcmd "-mlw" "-mlw input" "1 2 11 input\n" "hello, 世界!\n" ""
 rm file1
 
@@ -49,5 +54,6 @@ ohosonly testcmd '-L 10' '-L' '1\n' '' 'w\xcc\x88\n'
 NOSPACE=1 testcmd '-Lm incoherence' '-Lm' '2 0\n' '' '\x01\n'
 
 # 25 wide chars, also testing field order
+[ $NOUTF8 -eq 1 ] && SKIP=$((SKIP+1))
 NOSPACE=1 testcmd '-cmlLw wide' '-cmlLw' '0 1 25 75 50\n' '' \
   "$(<"$FILES"/utf8/japan.txt)"
