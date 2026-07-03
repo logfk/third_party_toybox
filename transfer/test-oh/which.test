@@ -5,6 +5,6 @@
 #testing "name" "command" "result" "infile" "stdin"
 
 # which 查找 PATH 中的命令
-ohosonly testing "found builtin-ish" "$C sh && echo ok >/dev/null || echo yes" "yes\n" "" ""
+ohosonly testing "found" "$C ls >/dev/null 2>&1 && echo yes" "yes\n" "" ""
 ohosonly testing "missing [fail]" "$C no-such-cmd-xyz 2>/dev/null || echo yes" "yes\n" "" ""
-ohosonly testing "-a all matches" "$C -a sh | grep -c sh | grep -q . && echo yes" "yes\n" "" ""
+ohosonly testing "-a all matches" "$C -a sh 2>/dev/null | grep -c sh | grep -q . && echo yes" "yes\n" "" ""

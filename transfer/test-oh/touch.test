@@ -9,21 +9,20 @@ ohosonly testing "1 2 3" "$C one two three && rm one two three && echo yes" "yes
 ohosonly testing "-c" "$C -c walrus && [ -e walrus ] && echo yes" "yes\n" "" ""
 ohosonly testing "-c missing" "$C -c warrus && [ ! -e warrus ] && echo yes"    "yes\n" "" ""
 
-ohosonly testing "-t"    "$C -t 201201231234 walrus && date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123400.000000000\n" "" ""
+ohosonly testing "-t"    "TZ=utc $C -t 201201231234 walrus && TZ=utc date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123400.000000000\n" "" ""
 
-# Yes, the year could roll over while you're running this test. I do not care.
-ohosonly testing "-t MMDDhhmm"    "$C -t 01231234 input && date +%Y-%m-%d:%H-%M-%S -r input"    "$(date +%Y)-01-23:12-34-00\n" "" ""
+ohosonly testing "-t MMDDhhmm"    "TZ=utc $C -t 01231234 input && TZ=utc date +%Y-%m-%d:%H-%M-%S -r input"    "$(date +%Y)-01-23:12-34-00\n" "" ""
 
-ohosonly testing "-t YYMMDDhhmm"    "$C -t 2101231234 input && date +%Y-%m-%d:%H-%M-%S -r input"    "$(date +%C)21-01-23:12-34-00\n" "" ""
+ohosonly testing "-t YYMMDDhhmm"    "TZ=utc $C -t 2101231234 input && TZ=utc date +%Y-%m-%d:%H-%M-%S -r input"    "2021-01-23:12-34-00\n" "" ""
 
-ohosonly testing "-t CCYYMMDDhhmm"    "$C -t 201201231234 walrus && date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123400.000000000\n" "" ""
+ohosonly testing "-t CCYYMMDDhhmm"    "TZ=utc $C -t 201201231234 walrus && TZ=utc date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123400.000000000\n" "" ""
 
-ohosonly testing "-t seconds"    "$C -t 201201231234.56 walrus && date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123456.000000000\n" "" ""
+ohosonly testing "-t seconds"    "TZ=utc $C -t 201201231234.56 walrus && TZ=utc date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123456.000000000\n" "" ""
 
 ohosonly testing "-t -" "TZ=utc $C -t 200109090146.40 - > walrus && TZ=utc date -r walrus +%s"    "1000000000\n" "" ""
 
 ohosonly
-toyonly testing "-t nanoseconds"    "$C -t 201201231234.56123456789 walrus && date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123456.123456789\n" "" ""
+toyonly testing "-t nanoseconds"    "TZ=utc $C -t 201201231234.56123456789 walrus && TZ=utc date -r walrus +%Y%m%d-%H%M%S.%N"    "20120123-123456.123456789\n" "" ""
 
 ohosonly testing "-d"    "$C -d 2009-02-13T23:31:30Z walrus && date -r walrus +%s"    "1234567890\n" "" ""
 
@@ -33,10 +32,9 @@ ohosonly testing "-d nanoseconds"    "$C -d 2009-02-13T23:31:30.123456789Z walru
 
 ohosonly testing "-r"    "$C -r walrus walrus2 && date -r walrus2 +%s.%N"     "1234567890.123456789\n" "" ""
 
-# Yes, the year could roll over while you're running this test. I do not care.
-ohosonly testing "-t MMDDhhmm"    "$C -t 01231234 input && date +%Y-%m-%d:%H-%M-%S -r input"    "$(date +%Y)-01-23:12-34-00\n" "" ""
+ohosonly testing "-t MMDDhhmm"    "TZ=utc $C -t 01231234 input && TZ=utc date +%Y-%m-%d:%H-%M-%S -r input"    "$(date +%Y)-01-23:12-34-00\n" "" ""
 
-ohosonly testing "-t CCMMDDhhmm"    "$C -t 2101231234 input && date +%Y-%m-%d:%H-%M-%S -r input"    "$(date +%C)21-01-23:12-34-00\n" "" ""
+ohosonly testing "-t YYMMDDhhmm"    "TZ=utc $C -t 2101231234 input && TZ=utc date +%Y-%m-%d:%H-%M-%S -r input"    "2021-01-23:12-34-00\n" "" ""
 
 ohosonly testing "-a" "TZ=utc $C -t 197101020304 walrus &&
     TZ=utc $C -t 197203040506 -a walrus && TZ=utc stat -c '%X %Y' walrus"      "68533560 31633440\n" "" ""
