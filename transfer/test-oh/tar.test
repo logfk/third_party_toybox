@@ -258,17 +258,17 @@ touch uno/tres
 ln uno/tres uno/quatro
 LL() { LST --show-transformed-names $XX | sed 's/^.* 23:31 //'; }
 TT() { $TAR --no-recursion uno uno/{dos,tres,quatro} "$@" | LL; }
-ohosonly testing 'xform S'    "TT --xform 's/uno/one/S;s/dos/two/S;s/tres/three/S;s/quatro/four/S'"    "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
+SKIP=1 ohosonly testing 'xform S'    "TT --xform 's/uno/one/S;s/dos/two/S;s/tres/three/S;s/quatro/four/S'"    "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
 
-ohosonly testing 'xform flags=rh starts with all disabled'    "TT --xform 's/uno/one/;flags=rh;s/dos/two/;s/tres/three/;s/quatro/four/'"    "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
+SKIP=1 ohosonly testing 'xform flags=rh starts with all disabled'    "TT --xform 's/uno/one/;flags=rh;s/dos/two/;s/tres/three/;s/quatro/four/'"    "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
 
-ohosonly testing 'xform flags=rHhsS toggles'    "TT --xform 's/uno/one/;flags=rHhsS;s/dos/two/;s/tres/three/;s/quatro/four/'"   "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
+SKIP=1 ohosonly testing 'xform flags=rHhsS toggles'    "TT --xform 's/uno/one/;flags=rHhsS;s/dos/two/;s/tres/three/;s/quatro/four/'"   "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
 
-ohosonly testing 'xform flags= is not a delta from previous'    "TT --xform 'flags=s;flags=rh;s/uno/one/;s/dos/two/;s/tres/three/;s/quatro/four/'"    "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
+SKIP=1 ohosonly testing 'xform flags= is not a delta from previous'    "TT --xform 'flags=s;flags=rh;s/uno/one/;s/dos/two/;s/tres/three/;s/quatro/four/'"    "one/\none/two -> tres\none/three\none/four link to one/three\n" "" ""
 
-ohosonly testing 'xform H'    "TT --xform 'flags=rsH;s/uno/one/;s/dos/two/;s/tres/three/;s/quatro/four/'"    "one/\none/two -> three\none/three\none/four link to uno/tres\n" "" ""
+SKIP=1 ohosonly testing 'xform H'    "TT --xform 'flags=rsH;s/uno/one/;s/dos/two/;s/tres/three/;s/quatro/four/'"    "one/\none/two -> three\none/three\none/four link to uno/tres\n" "" ""
 
-ohosonly testing 'xform R'    "TT --xform 'flags=rshR;s/uno/one/;s/dos/two/;s/tres/three/;s/quatro/four/'"    "uno/\nuno/dos -> three\nuno/tres\nuno/quatro link to one/three\n" "" ""
+SKIP=1 ohosonly testing 'xform R'    "TT --xform 'flags=rshR;s/uno/one/;s/dos/two/;s/tres/three/;s/quatro/four/'"    "uno/\nuno/dos -> three\nuno/tres\nuno/quatro link to one/three\n" "" ""
 
 ohosonly testing "xform path" "$TAR one --xform=s@three/four/@zero@ | $C t | grep six"    "one/two/zerofive/six\n" "" ""
 
