@@ -119,12 +119,19 @@ sync_bundle() {
       echo "  [FAIL] $(basename "$1")"; tfail=$((tfail+1)); return 1
     fi
   }
-  # 二进制：base64 分块传输（同 send_text 机制）。
-  # 不用 hdc file send：其远端路径在 MSYS2 下用 // 前缀会静默失败
-  # （hdc 返回 0 但文件未落地），blkid/bzcat 测试曾因此全部 "No such file"。
-  # base64 是纯 ASCII，不受 CRLF / 路径转换影响，且 build-bundle.sh 已验证可行。
+  # 二进制：优先用 stdin pipe（单次 hdc shell 调用），失败则 base64 分块。
+  # 不用 hdc file send 做默认方案：因 Win/MSYS2 下 //data/… 可能假成功。
   send_bin() {
     local src="$1" dst="$2" label="${3:-$(basename "$1")}" b64 chunk off total first
+    # 尝试：stdin pipe — 通过 hdc shell stdin 直接发送 base64 流
+    # 这只需要 1-2 次 hdc shell 调用（取决于 base64 -d 是否在推送的 toybox 里）。
+    if base64 "$src" 2>/dev/null | "$HDC" shell "base64 -d > '$dst'" 2>/dev/null; then
+      if "$HDC" shell "test -s '$dst'" 2>/dev/null; then
+        echo "    [OK] $label"; return 0
+      fi
+    fi
+    # stdin pipe 可能不支持（某些 hdc 版本不转发 stdin），回退到分块
+    echo "    stdin pipe 失败，回退 base64 分块..." >&2
     # 注意：二进制不能像 send_text 那样 tr -d '\r'，原样 base64
     b64=$(base64 -w0 "$src" 2>/dev/null) || { echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1; }
     total=${#b64}; off=0; first=true
@@ -132,17 +139,18 @@ sync_bundle() {
       "$HDC" shell "echo -n '' > $dst" 2>/dev/null && { echo "    [OK] $label"; return 0; }
       echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1
     fi
+    # 用更大块（50000 字节）减少 hdc 调用次数
     while [ $off -lt $total ]; do
-      chunk="${b64:$off:8000}"
+      chunk="${b64:$off:50000}"
       if $first; then
         "$HDC" shell "printf '%s' '$chunk' > $REMOTE_ROOT_ARG/.b64b" 2>/dev/null
         first=false
       else
         "$HDC" shell "printf '%s' '$chunk' >> $REMOTE_ROOT_ARG/.b64b" 2>/dev/null
       fi
-      off=$((off + 8000))
+      off=$((off + 50000))
     done
-    if "$HDC" shell "$TOYBOX_CMD base64 -d < $REMOTE_ROOT_ARG/.b64b > $dst && rm -f $REMOTE_ROOT_ARG/.b64b" 2>/dev/null; then
+    if "$HDC" shell "$TOYBOX_CMD base64 -d < $REMOTE_ROOT_ARG/.b64b > '$dst' && rm -f $REMOTE_ROOT_ARG/.b64b" 2>/dev/null; then
       echo "    [OK] $label"; return 0
     else
       echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1
@@ -151,7 +159,29 @@ sync_bundle() {
 
   # 先推送 toybox 二进制
   echo "推送 toybox ($(du -h "$TOYBOX_SRC" | cut -f1)) 到主板..."
-  send_bin "$TOYBOX_SRC" "$TOYBOX_CMD" "toybox" || exit 1
+  _send_toybox() {
+    # 用 hdc file send 推送大二进制（比 base64 分块快得多）。
+    # MSYS2 下需要阻止路径转换：用 MSYS2_ARG_CONV_EXCL 跳过转换，
+    # 再用 cygpath -w 把本地路径转成 Windows 原生格式。
+    local src="$1" dst="$2" label="${3:-toybox}"
+    if [ -n "$(uname -s | grep -iE 'mingw|msys')" ]; then
+      local win_src
+      win_src="$(cygpath -w "$src" 2>/dev/null)" || win_src="$src"
+      MSYS2_ARG_CONV_EXCL="*" "$HDC" file send "$win_src" "$dst" 2>/dev/null
+    else
+      "$HDC" file send "$src" "$dst" 2>/dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      # 验证文件是否真正落地（hdc file send 在 Win 上可能假成功）
+      if "$HDC" shell "test -f $dst" 2>/dev/null; then
+        echo "    [OK] $label"; return 0
+      fi
+    fi
+    # hdc file send 失败时回退到 base64 分块
+    echo "    hdc file send 失败，回退到 base64 分块..." >&2
+    send_bin "$1" "$2" "$3"
+  }
+  _send_toybox "$TOYBOX_SRC" "$TOYBOX_CMD" "toybox" || exit 1
   "$HDC" shell "chmod +x $REMOTE_ROOT_ARG/toybox" 2>/dev/null
   echo "toybox 路径: $REMOTE_ROOT/toybox (推送版本)"
 
