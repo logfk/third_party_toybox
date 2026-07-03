@@ -59,12 +59,17 @@ if ! "$HDC" list targets 2>&1 | grep -q "."; then
 fi
 echo "主板连接正常"
 
-# 固定使用推送版 toybox
+# 固定使用推送版 toybox（自动推送本地编译的二进制）
+TOYBOX_SRC="$TOP/../toybox"
+[ ! -f "$TOYBOX_SRC" ] && TOYBOX_SRC="$(find "$TOP/.." -maxdepth 1 -name toybox -type f 2>/dev/null | head -1)"
 TOYBOX_CMD="$REMOTE_ROOT_ARG/toybox"
-if ! "$HDC" shell "test -f $REMOTE_ROOT_ARG/toybox && echo ok" 2>/dev/null | grep -q ok; then
-  echo "警告: 未找到 $REMOTE_ROOT/toybox，请先推送："
-  echo "  hdc file send toybox $REMOTE_ROOT_ARG/toybox"
-  echo "  hdc shell \"chmod +x $REMOTE_ROOT_ARG/toybox\""
+if [ -f "$TOYBOX_SRC" ]; then
+  echo "推送 toybox ($(du -h "$TOYBOX_SRC" | cut -f1)) 到主板..."
+  send_bin "$TOYBOX_SRC" "$TOYBOX_CMD" "toybox"
+  "$HDC" shell "chmod +x $REMOTE_ROOT_ARG/toybox" 2>/dev/null
+else
+  echo "错误: 未找到本地 toybox 二进制，请先编译" >&2
+  exit 1
 fi
 echo "toybox 路径: $REMOTE_ROOT/toybox (推送版本)"
 

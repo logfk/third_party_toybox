@@ -55,7 +55,6 @@ void passwd_main(void)
 {
   uid_t myuid = getuid();
   struct passwd *pw = 0;
-  struct spwd *sp;
   char *pass, *name, *encrypted = 0, salt[32];
 
   // If we're root or not -lud, load specified user. Exit if not allowed.
@@ -68,7 +67,15 @@ void passwd_main(void)
   // Get password from /etc/passwd or /etc/shadow
   // TODO: why still support non-shadow passwords...?
   name = pw->pw_name;
-  if (*(pass = pw->pw_passwd)=='x' && (sp = getspnam(name))) pass = sp->sp_pwdp;
+#ifndef TOYBOX_OH_ADAPT
+  {
+    struct spwd *sp;
+    if (*(pass = pw->pw_passwd)=='x' && (sp = getspnam(name))) pass = sp->sp_pwdp;
+    else pass = pw->pw_passwd;
+  }
+#else
+  pass = pw->pw_passwd;
+#endif
 
   if (FLAG(l)) {
     if (*pass=='!') error_exit("already locked");
@@ -104,8 +111,12 @@ void passwd_main(void)
   }
 
   // Update the passwd
+#ifdef TOYBOX_OH_ADAPT
+  if (update_password("/etc/passwd", name, encrypted, 1)) error_msg("Failure");
+#else
   if (update_password(*pw->pw_passwd=='x' ? "/etc/shadow" : "/etc/passwd",
     name, encrypted, 1)) error_msg("Failure");
+#endif
   else fprintf(stderr, "Success\n");
 
   memset(toybuf, 0, sizeof(toybuf));
