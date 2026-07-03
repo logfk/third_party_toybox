@@ -59,19 +59,11 @@ if ! "$HDC" list targets 2>&1 | grep -q "."; then
 fi
 echo "主板连接正常"
 
-# 固定使用推送版 toybox（自动推送本地编译的二进制）
+# 固定使用推送版 toybox（实际在 sync_bundle 中推送）
 TOYBOX_SRC="$TOP/../toybox"
 [ ! -f "$TOYBOX_SRC" ] && TOYBOX_SRC="$(find "$TOP/.." -maxdepth 1 -name toybox -type f 2>/dev/null | head -1)"
+[ ! -f "$TOYBOX_SRC" ] && { echo "错误: 未找到本地 toybox 二进制，请先编译" >&2; exit 1; }
 TOYBOX_CMD="$REMOTE_ROOT_ARG/toybox"
-if [ -f "$TOYBOX_SRC" ]; then
-  echo "推送 toybox ($(du -h "$TOYBOX_SRC" | cut -f1)) 到主板..."
-  send_bin "$TOYBOX_SRC" "$TOYBOX_CMD" "toybox"
-  "$HDC" shell "chmod +x $REMOTE_ROOT_ARG/toybox" 2>/dev/null
-else
-  echo "错误: 未找到本地 toybox 二进制，请先编译" >&2
-  exit 1
-fi
-echo "toybox 路径: $REMOTE_ROOT/toybox (推送版本)"
 
 # ====== 确定测试文件列表 ======
 if [ $# -eq 0 ]; then
@@ -100,8 +92,6 @@ fi
 sync_bundle() {
   echo ""
   echo "===== 同步测试包到板端 ====="
-
-  "$HDC" shell "rm -rf $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files && mkdir -p $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files" 2>/dev/null
 
   local tok=0 tfail=0
   # 文本：base64 编码后分块写到板端 .b64，再解码。兼容任意大小，不受 CRLF 影响。
@@ -158,6 +148,14 @@ sync_bundle() {
       echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1
     fi
   }
+
+  # 先推送 toybox 二进制
+  echo "推送 toybox ($(du -h "$TOYBOX_SRC" | cut -f1)) 到主板..."
+  send_bin "$TOYBOX_SRC" "$TOYBOX_CMD" "toybox" || exit 1
+  "$HDC" shell "chmod +x $REMOTE_ROOT_ARG/toybox" 2>/dev/null
+  echo "toybox 路径: $REMOTE_ROOT/toybox (推送版本)"
+
+  "$HDC" shell "rm -rf $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files && mkdir -p $REMOTE_ROOT_ARG/test-oh $REMOTE_ROOT_ARG/files" 2>/dev/null
 
   # 1) 框架（板端命名为 testing.sh）+ 入口
   send_text "$SCRIPT_DIR/runtest.sh" "$REMOTE_ROOT_ARG/testing.sh"
