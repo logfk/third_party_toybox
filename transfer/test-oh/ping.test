@@ -10,9 +10,9 @@
 ohosonly testing "ping -c 1 localhost" \
   '$C -c 1 -W 1 127.0.0.1 2>&1 | grep -q "127.0.0.1" && echo ok' "ok\n" "" ""
 
-# ping -s 65500 (large buffer) - requires root
-ohosonly testing "ping -s 65500 large buffer" \
-  '$C -c 1 -s 65500 -W 1 127.0.0.1 2>&1 | grep -q "bytes" && echo ok' "ok\n" "" ""
+# ping -s <max> (large buffer) - toybox 选项限制 -s 最大 4064
+ohosonly testing "ping -s large buffer" \
+  '$C -c 1 -s 4064 -W 1 127.0.0.1 2>&1 | grep -q "bytes" && echo ok' "ok\n" "" ""
 
 # ping -4 (IPv4)
 ohosonly testing "ping -4" \
