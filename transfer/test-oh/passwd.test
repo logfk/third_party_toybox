@@ -8,7 +8,7 @@
 
 # passwd --help (verify command exists)
 ohosonly testing "passwd help" \
-  '$C --help 2>/dev/null && echo ok' "ok\n" "" ""
+  '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
 
 # passwd -l (lock account, runs as root, write to /etc/passwd will fail on OHOS)
 ohosonly testing "passwd -l lock" \
