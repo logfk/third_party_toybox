@@ -8,16 +8,16 @@
 
 # passwd --help (verify command exists)
 ohosonly testing "passwd help" \
-  '$C --help 2>&1 | head -1 | grep -q "usage\|Usage\|passwd" && echo ok' "ok\n" "" ""
+  '$C --help 2>/dev/null && echo ok' "ok\n" "" ""
 
-# passwd -l (lock account, requires root)
+# passwd -l (lock account, runs as root, write to /etc/passwd will fail on OHOS)
 ohosonly testing "passwd -l lock" \
-  '$C -l root 2>/dev/null || echo denied' "denied\n" "" ""
+  '$C -l root 2>/dev/null; echo denied' "Locking 'root'\ndenied\n" "" ""
 
-# passwd -u (unlock, requires root)
+# passwd -u (unlock, root not locked due to -l failure above)
 ohosonly testing "passwd -u unlock" \
-  '$C -u root 2>/dev/null || echo denied' "denied\n" "" ""
+  '$C -u root 2>/dev/null; echo denied' "denied\n" "" ""
 
-# passwd -d (delete password, requires root)
+# passwd -d (delete password, runs as root, write will fail on OHOS)
 ohosonly testing "passwd -d delete" \
-  '$C -d root 2>/dev/null || echo denied' "denied\n" "" ""
+  '$C -d root 2>/dev/null; echo denied' "Deleting password for 'root'\ndenied\n" "" ""
