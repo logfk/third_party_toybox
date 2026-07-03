@@ -119,19 +119,10 @@ sync_bundle() {
       echo "  [FAIL] $(basename "$1")"; tfail=$((tfail+1)); return 1
     fi
   }
-  # 二进制：优先用 stdin pipe（单次 hdc shell 调用），失败则 base64 分块。
+  # 二进制：用 base64 分块（跳过 stdin pipe，MSYS2 下 pipe 到 hdc 可能死锁）。
   # 不用 hdc file send 做默认方案：因 Win/MSYS2 下 //data/… 可能假成功。
   send_bin() {
     local src="$1" dst="$2" label="${3:-$(basename "$1")}" b64 chunk off total first
-    # 尝试：stdin pipe — 通过 hdc shell stdin 直接发送 base64 流
-    # 这只需要 1-2 次 hdc shell 调用（取决于 base64 -d 是否在推送的 toybox 里）。
-    if base64 "$src" 2>/dev/null | "$HDC" shell "base64 -d > '$dst'" 2>/dev/null; then
-      if "$HDC" shell "test -s '$dst'" 2>/dev/null; then
-        echo "    [OK] $label"; return 0
-      fi
-    fi
-    # stdin pipe 可能不支持（某些 hdc 版本不转发 stdin），回退到分块
-    echo "    stdin pipe 失败，回退 base64 分块..." >&2
     # 注意：二进制不能像 send_text 那样 tr -d '\r'，原样 base64
     b64=$(base64 -w0 "$src" 2>/dev/null) || { echo "    [FAIL] $label"; tfail=$((tfail+1)); return 1; }
     total=${#b64}; off=0; first=true
