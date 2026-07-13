@@ -1,0 +1,25 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# mountpoint checks if a directory is a mountpoint
+ohosonly testcmd "help" \
+  "--help 2>&1 | grep -qi 'mountpoint' && echo ok" "ok\n" "" ""
+
+# / is always a mountpoint
+ohosonly testcmd "root is mountpoint" \
+  "$C / && echo yes" "yes\n" "" ""
+
+# -q quiet mode on / (should return 0)
+ohosonly testcmd "-q /" \
+  "$C -q / && echo yes" "yes\n" "" ""
+
+# -d prints device number for /
+ohosonly testcmd "-d root" \
+  "$C -d / 2>&1 | grep -q ':' && echo ok" "ok\n" "" ""
+
+# non-mountpoint directory (tmp dir)
+ohosonly testcmd "tmpdir not mountpoint" \
+  "mkdir /tmp/test_mp_00001 && $C /tmp/test_mp_00001 2>&1 | grep -q 'not a' && echo ok; rm -rf /tmp/test_mp_00001" "ok\n" "" ""

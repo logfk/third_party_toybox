@@ -366,4 +366,56 @@ tar cpf tar.tgz dir/file
 
 fi
 
+# === Flag tests for untested flags ===
+
+# -c: create archive (already used above but add standalone test)
+mkdir -p _tar_testdir
+echo data > _tar_testdir/_tar_tfile
+ohosonly testing "tar -c create archive" \
+  '$C -cf _tar_test.tar _tar_testdir/_tar_tfile && $C tf _tar_test.tar | grep -q "_tar_tfile" && echo ok' "ok\n" "" ""
+rm -rf _tar_testdir _tar_test.tar
+
+# -t: list archive contents
+mkdir -p _tar_testdir
+echo content > _tar_testdir/_tar_listme
+ohosonly testing "tar -t list contents" \
+  '$C -cf _tar_test.tar _tar_testdir && $C -t -f _tar_test.tar | grep -q "_tar_listme" && echo ok' "ok\n" "" ""
+rm -rf _tar_testdir _tar_test.tar
+
+# -v: verbose listing/creation
+mkdir -p _tar_testdir
+echo content > _tar_testdir/_tar_vfile
+ohosonly testing "tar -tv verbose list" \
+  '$C -cf _tar_test.tar _tar_testdir && $C -tvf _tar_test.tar | grep -q "_tar_vfile" && echo ok' "ok\n" "" ""
+rm -rf _tar_testdir _tar_test.tar
+
+# -f: specify archive file
+mkdir -p _tar_testdir
+echo testdata > _tar_testdir/_tar_ffile
+ohosonly testing "tar -f specify file" \
+  '$C -cf _tar_custom.tar _tar_testdir/_tar_ffile && $C -tf _tar_custom.tar | grep -q "_tar_ffile" && echo ok' "ok\n" "" ""
+rm -rf _tar_testdir _tar_custom.tar
+
+# -C: change directory during extract
+mkdir -p _tar_extractdir
+echo "hello" > _tar_srcfile
+ohosonly testing "tar -C extract to dir" \
+  '$C -cf _tar_test.tar _tar_srcfile && $C -C _tar_extractdir -xf _tar_test.tar && cat _tar_extractdir/_tar_srcfile' "hello\n" "" ""
+rm -rf _tar_extractdir _tar_test.tar _tar_srcfile
+
+# -z: gzip compression
+mkdir -p _tar_testdir
+echo gzdata > _tar_testdir/_tar_gzfile
+ohosonly testing "tar -z create gzip" \
+  '$C -czf _tar_test.tgz _tar_testdir/_tar_gzfile && $C -tzf _tar_test.tgz | grep -q "_tar_gzfile" && echo ok' "ok\n" "" ""
+rm -rf _tar_testdir _tar_test.tgz
+
+# -j: bzip2 compression
+skipnot command -v bzip2 2>/dev/null
+mkdir -p _tar_testdir
+echo bzdata > _tar_testdir/_tar_bzfile
+ohosonly testing "tar -j create bzip2" \
+  '$C -cjf _tar_test.tbz2 _tar_testdir/_tar_bzfile && $C -tjf _tar_test.tbz2 | grep -q "_tar_bzfile" && echo ok' "ok\n" "" ""
+rm -rf _tar_testdir _tar_test.tbz2
+
 rm -f save.dat

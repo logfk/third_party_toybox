@@ -17,3 +17,25 @@ ohosonly testing "ps sort by %CPU" \
 # ps -T (thread display)
 ohosonly testing "ps -T" \
   '$C -T 2>/dev/null | head -1 | grep -q "PID" && echo ok' "ok\n" "" ""
+
+# === Flag tests for untested flags ===
+
+# -a: all processes with terminal (not just own user)
+ohosonly testing "ps -a shows processes" \
+  '$C -a 2>/dev/null | head -1 | grep -q "PID\|TTY\|CMD" && echo ok' "ok\n" "" ""
+
+# -u: user-oriented format
+ohosonly testing "ps -u user format" \
+  '$C -u 2>/dev/null | head -1 | grep -q "PID" && echo ok' "ok\n" "" ""
+
+# -o: custom output format
+ohosonly testing "ps -o custom format" \
+  '$C -eo pid,comm 2>/dev/null | head -1 | grep -q "PID" && echo ok' "ok\n" "" ""
+
+# -l: long format listing
+ohosonly testing "ps -l long format" \
+  '$C -l 2>/dev/null | head -1 | grep -q "F\|S" && echo ok' "ok\n" "" ""
+
+# -A: show all processes
+ohosonly testing "ps -A all processes" \
+  '$C -A 2>/dev/null | head -1 | grep -q "PID" && echo ok' "ok\n" "" ""

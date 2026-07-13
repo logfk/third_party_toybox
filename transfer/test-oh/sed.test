@@ -177,3 +177,30 @@ ohosonly testcmd 'count match' '"s/./&X/4"' '0123X45\n' '' '012345\n'
 #echo blah | sed/sed -f <(echo -e "1a\\\\\nboom")
 #echo merp | sed/sed "1a\\
 #hello"
+
+# === Flag tests for untested flags ===
+
+# -i: in-place editing
+ohosonly testing "sed -i in-place edit" \
+  '$C -i s/foo/bar/ input && cat input' "baz\nbar\n" "foo\nbaz\nfoo\n" ""
+
+# -i with backup
+ohosonly testing "sed -i with backup" \
+  '$C -i.bak s/hello/world/ input && cat input' "world\n" "hello\n" ""
+rm -f input.bak
+
+# -e: explicit script (already tested above, but add clear standalone)
+ohosonly testing "sed -e explicit script replace" \
+  '$C -e "s/one/1/" -e "s/two/2/"' "1\n2\nthree\n" "" "one\ntwo\nthree"
+
+# -r: extended regex (ERE - no backslash escaping for parens)
+ohosonly testing "sed -r extended regex" \
+  '$C -rn "s/(hello) (world)/\\1 \\2/"' "hello world\n" "" "hello world"
+
+ohosonly testing "sed -r ERE plus quantifier" \
+  '$C -rn "s/ab+/X/"' "aXc\n" "" "abbc"
+
+# -n: quiet (suppress pattern space output) - already well tested above
+# Add one more clear standalone
+ohosonly testing "sed -n suppress output" \
+  '$C -n 2p' "two\n" "" "one\ntwo\nthree"

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# sntp requires network for actual queries; test via error cases and flag recognition
+
+ohosonly testing "no args fails" \
+  '$C 2>&1 | grep -q "Need" && echo yes' "yes\n" "" ""
+ohosonly testing "--help recognized" \
+  '$C --help 2>&1 | grep -q "sntp" && echo yes' "yes\n" "" ""
+ohosonly testing "bad flag fails" \
+  '$C --badflag 2>&1 && echo BAD || echo yes' "yes\n" "" ""
+ohosonly testing "-q with no server" \
+  '$C -q 2>&1 | grep -q "Need" && echo yes' "yes\n" "" ""
+ohosonly testing "-s and -a exclusive" \
+  '$C -s -a 2>&1 && echo BAD || echo yes' "yes\n" "" ""
+ohosonly testing "-p port parsing" \
+  '$C -p 1234 2>&1 | grep -q "Need" && echo yes' "yes\n" "" ""

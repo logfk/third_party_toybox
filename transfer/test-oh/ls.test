@@ -18,3 +18,66 @@ ohosonly testcmd "dirs after files -s (mixed args)" \
   "-s adir afile bdir bfile" "0 afile\n0 bfile\n\nadir:\ntotal 0\n\nbdir:\ntotal 0\n" "" ""
 
 rm -rf adir bdir afile bfile
+
+# === Flag tests for untested flags ===
+
+# -a: show hidden files (dotfiles)
+mkdir -p _ls_testdir
+touch _ls_testdir/visible _ls_testdir/.hidden
+ohosonly testing "ls -a shows hidden files" \
+  '$C -a _ls_testdir' "\\.hidden\nvisible\n" "" ""
+rm -rf _ls_testdir
+
+# -l: long listing format
+mkdir -p _ls_testdir
+touch _ls_testdir/llfile
+ohosonly testing "ls -l shows long format" \
+  '$C -l _ls_testdir/llfile | grep -q "^-.*llfile" && echo ok' "ok\n" "" ""
+rm -rf _ls_testdir
+
+# -r: reverse sort order
+mkdir -p _ls_testdir
+touch _ls_testdir/cfile _ls_testdir/afile _ls_testdir/bfile
+ohosonly testing "ls -r reverse sort" \
+  '$C -1 _ls_testdir' "afile\nbfile\ncfile\n" "" ""
+ohosonly testing "ls -1r reverse sort order" \
+  '$C -1r _ls_testdir' "cfile\nbfile\nafile\n" "" ""
+rm -rf _ls_testdir
+
+# -t: sort by time (newest first)
+mkdir -p _ls_testdir
+touch _ls_testdir/oldfile
+sleep 0.1
+touch _ls_testdir/newfile
+ohosonly testing "ls -t time sort newest first" \
+  '$C -1t _ls_testdir' "newfile\noldfile\n" "" ""
+rm -rf _ls_testdir
+
+# -S: sort by size (largest first)
+mkdir -p _ls_testdir
+echo "small" > _ls_testdir/smallfile
+dd if=/dev/urandom of=_ls_testdir/bigfile bs=1024 count=10 2>/dev/null
+ohosonly testing "ls -S size sort largest first" \
+  '$C -1S _ls_testdir' "bigfile\nsmallfile\n" "" ""
+rm -rf _ls_testdir
+
+# -R: recursive listing
+mkdir -p _ls_testdir/sub
+touch _ls_testdir/sub/deepfile
+ohosonly testing "ls -R recursive shows subdir" \
+  '$C -R _ls_testdir | grep -q "sub:" && echo ok' "ok\n" "" ""
+rm -rf _ls_testdir
+
+# -1: one entry per line
+mkdir -p _ls_testdir
+touch _ls_testdir/x _ls_testdir/y
+ohosonly testing "ls -1 one per line" \
+  '$C -1 _ls_testdir' "x\ny\n" "" ""
+rm -rf _ls_testdir
+
+# -C: column display (default, multi-column)
+mkdir -p _ls_testdir
+touch _ls_testdir/a _ls_testdir/b
+ohosonly testing "ls -C column display" \
+  '$C -C _ls_testdir | wc -l | tr -d " "' "1\n" "" ""
+rm -rf _ls_testdir

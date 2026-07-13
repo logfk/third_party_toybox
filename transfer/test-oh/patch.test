@@ -134,3 +134,50 @@ import java.util.Iterator;
  import java.util.Arrays;
  import java.util.Iterator;
 "
+
+# === Flag tests for untested flags ===
+
+# -p: strip path components
+mkdir -p _patch_dirstrip
+echo "oldcontent" > _patch_dirstrip/_patch_tfile
+ohosonly testing "patch -p0 strip none" \
+  '$C -p0 -d _patch_dirstrip < _patch_stddata && cat _patch_dirstrip/_patch_tfile' "newcontent\n" "" \
+"--- _patch_tfile
++++ _patch_tfile
+@@ -1 +1 @@
+-oldcontent
++newcontent
+"
+rm -rf _patch_dirstrip _patch_stddata
+
+# -R: reverse (undo) a patch
+echo "linetwo" > _patch_revfile
+ohosonly testing "patch -R reverse" \
+  '$C -R < _patch_revdata && cat _patch_revfile' "lineone\n" "" \
+"--- _patch_revfile
++++ _patch_revfile
+@@ -1 +1 @@
+-lineone
++linetwo
+"
+rm -f _patch_revfile _patch_revdata
+
+# -d: apply patch from different directory
+mkdir -p _patch_subdir
+echo "before" > _patch_subdir/_patch_dfile
+ohosonly testing "patch -d directory" \
+  '$C -d _patch_subdir -p0 < _patch_dtestdata && cat _patch_subdir/_patch_dfile' "after\n" "" \
+"--- _patch_dfile
++++ _patch_dfile
+@@ -1 +1 @@
+-before
++after
+"
+rm -rf _patch_subdir _patch_dtestdata
+
+# -i: read patch from specified file
+echo "modified" > _patch_ifile
+printf "--- _patch_ifile\n+++ _patch_ifile\n@@ -1 +1 @@\n-modified\n+fromifile\n" > _patch_idata
+ohosonly testing "patch -i input file" \
+  '$C -i _patch_idata && cat _patch_ifile' "fromifile\n" "" ""
+rm -f _patch_ifile _patch_idata

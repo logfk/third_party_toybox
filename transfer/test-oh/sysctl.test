@@ -1,0 +1,13 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# sysctl requires /proc/sys access
+ohosonly testcmd "show all" "-a 2>/dev/null | grep -q . && echo yes || echo skip" "yes\n" "" ""
+ohosonly testcmd "names only" "-a -n 2>/dev/null | grep -q . && echo yes || echo skip" "yes\n" "" ""
+ohosonly testcmd "values only" "-a -N 2>/dev/null | grep -q . && echo yes || echo skip" "yes\n" "" ""
+ohosonly testcmd "no args" "" "sysctl: Needs 1 arg\n" "" ""
+ohosonly testcmd "unknown key" "nosuchkey 2>&1 | grep -q unknown" "" "" ""
+ohosonly testcmd "unknown key -e" "-e nosuchkey 2>/dev/null && echo yes || echo skip" "yes\n" "" ""

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# chrt shows min/max priorities (no root required)
+ohosonly testcmd "show priorities" "-m 2>/dev/null | grep -q SCHED && echo yes || echo skip" "yes\n" "" ""
+
+# chrt queries current process (no root required)
+ohosonly testcmd "query self" "-p $$ 2>/dev/null | grep -q 'current' && echo yes || echo skip" "yes\n" "" ""
+
+# chrt requires priority or -p flag
+ohosonly testcmd "no args shows usage" "" "chrt: no PRIORITY\n" "" ""

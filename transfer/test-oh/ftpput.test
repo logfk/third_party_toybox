@@ -1,0 +1,21 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# ftpput --help (verify command recognizes help)
+ohosonly testing "ftpput --help" \
+  '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
+
+# ftpput without arguments (should show usage/error)
+ohosonly testing "ftpput no args" \
+  '$C 2>&1 | head -1 | grep -qi "usage\|host\|ftpput" && echo ok || echo skip' "ok\n" "" ""
+
+# ftpput connection to non-existent server (expect error, should not hang)
+ohosonly testing "ftpput bad host" \
+  '$C -u anonymous -P test 127.0.0.1 /dev/null /tmp/test_ftp_upload 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "ok\n" "" ""
+
+# ftpput -v (verbose, connection attempt)
+ohosonly testing "ftpput verbose" \
+  '$C -v 127.0.0.1 /dev/null /tmp/test_ftp_upload 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "ok\n" "" ""

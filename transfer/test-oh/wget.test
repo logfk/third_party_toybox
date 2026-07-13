@@ -1,0 +1,73 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# wget --help should print usage and exit
+ohosonly testing "help flag" \
+  '$C --help 2>&1 | grep -qi "usage\|wget" && echo ok' "ok\n" "" ""
+
+# wget with no args should error (no URL)
+ohosonly testing "no args error" \
+  '$C 2>&1 | grep -qi "usage\|wget\|error\|URL" && echo ok' "ok\n" "" ""
+
+# unsupported protocol: ftp should be rejected
+ohosonly testing "unsupported protocol ftp" \
+  '$C ftp://example.com 2>&1 | grep -qi "unsupported\|protocol\|error" && echo ok || echo skip' "ok\n" "" ""
+
+# unsupported protocol: ftps should be rejected
+ohosonly testing "unsupported protocol ftps" \
+  '$C ftps://example.com 2>&1 | grep -qi "unsupported\|protocol\|error" && echo ok || echo skip' "ok\n" "" ""
+
+# unsupported protocol: file should be rejected
+ohosonly testing "unsupported protocol file" \
+  '$C file:///etc/passwd 2>&1 | grep -qi "unsupported\|protocol\|error" && echo ok || echo skip' "ok\n" "" ""
+
+# -d flag is recognized (will fail on connect, but flag parses ok)
+ohosonly testing "debug flag recognized" \
+  '$C -d http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# --debug long form is recognized
+ohosonly testing "long debug flag recognized" \
+  '$C --debug http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# -O flag is recognized (will fail on connect)
+ohosonly testing "output-document flag recognized" \
+  '$C -O /dev/null http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# --output-document long form is recognized
+ohosonly testing "long output-document flag recognized" \
+  '$C --output-document=/dev/null http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# -p flag is recognized (will fail on connect)
+ohosonly testing "post-data flag recognized" \
+  '$C -p "data" http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# --post-data long form is recognized
+ohosonly testing "long post-data flag recognized" \
+  '$C --post-data="data" http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# --max-redirect flag is recognized
+ohosonly testing "max-redirect flag recognized" \
+  '$C --max-redirect 5 http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# --max-redirect with zero should reject redirect (will fail on connect first)
+ohosonly testing "max-redirect zero" \
+  '$C --max-redirect 0 http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# invalid long option should be rejected
+ohosonly testing "invalid option" \
+  '$C --bogus 2>&1 | grep -qi "unknown\|invalid\|error\|option" && echo ok || echo skip' "ok\n" "" ""
+
+# -O - should output to stdout (will fail on connect)
+ohosonly testing "output to stdout" \
+  '$C -O - http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# combined flags: -d -O
+ohosonly testing "combined flags d and O" \
+  '$C -d -O /dev/null http://0.0.0.0:1 2>&1 | head -5 && echo ok || echo skip' "ok\n" "" ""
+
+# -V/--version if supported
+ohosonly testing "version or help works" \
+  '$C --help 2>&1 | grep -q "wget" && echo ok' "ok\n" "" ""

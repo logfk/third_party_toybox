@@ -1,0 +1,17 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# su --help (verify command recognizes help)
+ohosonly testing "su --help" \
+  '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
+
+# su without arguments as non-root (should prompt or fail gracefully)
+ohosonly testing "su no args" \
+  '$C -c id 2>&1 | head -1 | grep -qi "password\|usage\|No\." && echo ok || echo skip' "ok\n" "" ""
+
+# su -c command (non-root, expect denial)
+ohosonly testing "su -c cmd" \
+  '$C root -c "echo test" 2>&1 | head -1 | grep -qi "password\|No\.\|denied\|den" && echo ok || echo skip' "ok\n" "" ""

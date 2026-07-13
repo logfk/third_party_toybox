@@ -1,0 +1,65 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# blockdev requires a real block device and often root access.
+# Tests that need an actual block device use || echo skip for graceful fallback.
+
+# Find a usable block device on the system
+BD=""
+for d in /dev/block/sda /dev/sda /dev/mmcblk0 /dev/vda; do
+  [ -b "$d" ] && BD="$d" && break
+done
+
+# Error: no options → "need --option"
+ohosonly testcmd "no options" "" "blockdev: need --option\n" "" ""
+ohosonly testing "no options via C" '$C "" 2>&1 | head -1' "blockdev: need --option\n" "" ""
+
+# Error: --setro on non-block device should fail
+ohosonly testcmd "setro non-block" "--setro /dev/null 2>&1 | head -1" "blockdev: unable to open '/dev/null'\n" "" ""
+ohosonly testing "setro non-existent" '$C --setro /nonexistent/block 2>&1 | head -1' "blockdev: unable to open '/nonexistent/block'\n" "" ""
+
+# --help
+ohosonly testcmd "help" "--help 2>&1 | grep -c 'blockdev'" "1\n" "" ""
+ohosonly testing "help via C" '$C --help 2>&1 | grep -c blockdev' "1\n" "" ""
+
+# Tests that require an actual block device
+if [ -n "$BD" ]; then
+  ohosonly testcmd "getss" "--getss $BD" "512\n" "" "" || echo skip
+  ohosonly testcmd "getbsz" "--getbsz $BD" "4096\n" "" "" || echo skip
+  ohosonly testcmd "getsz" "--getsz $BD" "" "" "" || echo skip
+  ohosonly testcmd "getsize" "--getsize $BD" "" "" "" || echo skip
+  ohosonly testcmd "getsize64" "--getsize64 $BD" "" "" "" || echo skip
+  ohosonly testcmd "getro" "--getro $BD" "0\n" "" "" || echo skip
+  ohosonly testcmd "getra" "--getra $BD" "" "" "" || echo skip
+  ohosonly testing "help via C on $BD" '$C --getss '"$BD"' 2>&1 | grep -c 512' "1\n" "" "" || echo skip
+else
+  echo "$SHOWSKIP: blockdev device tests (no block device found)"
+fi
+
+# Root-only tests: setro/setrw/setra/flushbufs/rereadpt need write access
+if [ "$(id -u)" -eq 0 ] && [ -n "$BD" ]; then
+  ohosonly testcmd "setro" "--setro $BD 2>&1; echo \$?" "0\n" "" "" || echo skip
+  ohosonly testcmd "setrw" "--setrw $BD 2>&1; echo \$?" "0\n" "" "" || echo skip
+  ohosonly testcmd "setra" "--setra 1024 $BD 2>&1; echo \$?" "0\n" "" "" || echo skip
+  ohosonly testcmd "flushbufs" "--flushbufs $BD 2>&1; echo \$?" "0\n" "" "" || echo skip
+  ohosonly testcmd "rereadpt" "--rereadpt $BD 2>&1; echo \$?" "0\n" "" "" || echo skip
+  ohosonly testcmd "getro after setro" "--setro $BD 2>/dev/null; --getro $BD" "1\n" "" "" || echo skip
+  ohosonly testcmd "getro after setrw" "--setrw $BD 2>/dev/null; --getro $BD" "0\n" "" "" || echo skip
+else
+  echo "$SHOWSKIP: blockdev root/set tests (not root or no block device)"
+fi
+
+# Multiple devices (if more than one block device available)
+BD2=""
+for d in /dev/block/sdb /dev/sdb /dev/mmcblk1 /dev/vdb; do
+  [ -b "$d" ] && BD2="$d" && break
+done
+
+if [ -n "$BD2" ]; then
+  ohosonly testcmd "multiple devices getss" "--getss $BD $BD2" "512\n512\n" "" "" || echo skip
+else
+  echo "$SHOWSKIP: blockdev multiple device tests (need 2+ block devices)"
+fi

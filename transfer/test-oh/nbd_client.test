@@ -1,0 +1,20 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# nbd-client requires network block device; tests skip without hardware
+ohosonly testcmd "help" \
+  "--help 2>&1 | grep -qi 'nbd' && echo ok" "ok\n" "" ""
+
+# no args should error (needs HOST PORT DEVICE)
+ohosonly testing "no args" "$C 2>&1; echo \$?" "1\n" "" ""
+
+# -n no daemonize flag (still needs host/port/device)
+ohosonly testcmd "-n flag" \
+  "$C -n 127.0.0.1 10809 /dev/nbd0 2>&1; echo \$?" "" "" ""
+
+# -b block size flag
+ohosonly testcmd "-b blocksize" \
+  "$C -b 2048 127.0.0.1 10809 /dev/nbd0 2>&1; echo \$?" "" "" ""

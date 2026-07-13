@@ -25,3 +25,36 @@ ohosonly testcmd "mv -v to directory" \
   '-v src3 subdir && echo ok' \
   "renamed 'src3' -> 'subdir/src3'\nok\n" "" ""
 rm -rf src3 subdir
+
+# === Flag tests for untested flags ===
+
+# -i: interactive (prompts before overwrite)
+echo oldcontent > _mv_src
+echo newcontent > _mv_dst
+ohosonly testcmd "mv -i prompts before overwrite" \
+  '-i _mv_src _mv_dst && cat _mv_dst' \
+  "newcontent\n" "" "y\n"
+rm -f _mv_src _mv_dst
+
+# -f: force (no prompting, overwrite silently)
+echo content_a > _mv_src
+echo content_b > _mv_dst
+ohosonly testcmd "mv -f force overwrite" \
+  '-f _mv_src _mv_dst && cat _mv_dst' \
+  "content_a\n" "" ""
+rm -f _mv_src _mv_dst
+
+# -v: verbose between directories
+mkdir -p _mv_srcdir _mv_dstdir
+touch _mv_srcdir/_mv_file
+ohosonly testcmd "mv -v between dirs" \
+  '-v _mv_srcdir/_mv_file _mv_dstdir && echo ok' \
+  "renamed '_mv_srcdir/_mv_file' -> '_mv_dstdir/_mv_file'\nok\n" "" ""
+rm -rf _mv_srcdir _mv_dstdir
+
+# Basic move still works (regression check)
+echo data > _mv_data
+ohosonly testcmd "mv basic move" \
+  '_mv_data _mv_moved && cat _mv_moved' \
+  "data\n" "" ""
+rm -f _mv_moved

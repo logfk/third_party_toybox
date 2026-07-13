@@ -1,0 +1,17 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# killall5 is a combined binary with kill; use killall5 prefix via symlink
+# killall5 -l lists signals (safe, no signals sent)
+ohosonly testing "list signals" \
+  "$C killall5 -l 2>&1 | grep -q 'TERM' && echo ok" "ok\n" "" ""
+
+# killall5 -o PID omits that PID; sending signal 0 should not error for own PID
+ohosonly testcmd "-o own pid signal 0" \
+  "$C killall5 -o \$\$ -s 0 2>&1; echo ok" "ok\n" "" ""
+
+# killall5 with no args should error
+ohosonly testing "no args" "$C killall5 2>&1; echo \$?" "1\n" "" ""

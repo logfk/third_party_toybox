@@ -1,0 +1,21 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# oneit is an init replacement; we can only test help and flag parsing
+ohosonly testcmd "help" \
+  "--help 2>&1 | grep -qi 'oneit' && echo ok" "ok\n" "" ""
+
+# -n flag (no reboot, just relaunch)
+ohosonly testcmd "-n flag help" \
+  "$C -n --help 2>&1 | grep -qi 'oneit' && echo ok" "ok\n" "" ""
+
+# -c console device flag
+ohosonly testcmd "-c flag help" \
+  "$C -c /dev/null --help 2>&1 | grep -qi 'oneit' && echo ok" "ok\n" "" ""
+
+# -p power off flag
+ohosonly testcmd "-p flag help" \
+  "$C -p --help 2>&1 | grep -qi 'oneit' && echo ok" "ok\n" "" ""

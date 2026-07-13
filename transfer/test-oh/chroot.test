@@ -1,0 +1,13 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+ohosonly testcmd "help" "--help 2>&1 | grep -qi 'chroot' && echo ok" "ok\n" "" ""
+
+# no args should fail
+ohosonly testcmd "no args" "$C 2>/dev/null; echo \$?" "125\n" "" ""
+
+# non-existent root should fail
+ohosonly testcmd "bad root" "$C /nonexistent true 2>/dev/null; echo \$?" "125\n" "" ""

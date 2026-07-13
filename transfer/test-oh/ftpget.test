@@ -1,0 +1,25 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# ftpget --help (verify command recognizes help)
+ohosonly testing "ftpget --help" \
+  '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
+
+# ftpget without arguments (should show usage/error)
+ohosonly testing "ftpget no args" \
+  '$C 2>&1 | head -1 | grep -qi "usage\|host\|ftpget" && echo ok || echo skip' "ok\n" "" ""
+
+# ftpget connection to non-existent server (expect error, should not hang)
+ohosonly testing "ftpget bad host" \
+  '$C -g -u anonymous -P test 127.0.0.1 nonexistent /dev/null 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "ok\n" "" ""
+
+# ftpget -v (verbose, connection attempt)
+ohosonly testing "ftpget verbose" \
+  '$C -v 127.0.0.1 nonexistent /dev/null 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "ok\n" "" ""
+
+# ftpget -l (list, connection to localhost)
+ohosonly testing "ftpget list" \
+  '$C -l 127.0.0.1 2>&1 | head -1 | grep -qi "connect\|error\|refused\|total\|drw" && echo ok || echo skip' "ok\n" "" ""

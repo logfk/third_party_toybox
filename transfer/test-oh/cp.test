@@ -132,3 +132,53 @@ rm -rf one two a b
 #      without -d in directory
 
 umask $OLDUMASK
+
+# === Flag tests for untested flags ===
+
+# -v: verbose output
+echo hello > _cp_testfile
+ohosonly testing "cp -v verbose output" \
+  '$C -v _cp_testfile _cp_testdst && echo done' \
+  "'_cp_testfile' -> '_cp_testdst'\ndone\n" "" ""
+rm -f _cp_testfile _cp_testdst
+
+# -R: recursive copy directory
+mkdir -p _cp_testdir/sub
+echo data > _cp_testdir/file
+echo deep > _cp_testdir/sub/deepfile
+ohosonly testing "cp -R recursive dir copy" \
+  '$C -R _cp_testdir _cp_testdst && cat _cp_testdst/file && cat _cp_testdst/sub/deepfile' \
+  "data\ndeep\n" "" ""
+rm -rf _cp_testdir _cp_testdst
+
+# -a: archive mode (preserve all + recursive)
+mkdir -p _cp_testdir
+echo data > _cp_testdir/afile
+ohosonly testing "cp -a archive copy" \
+  '$C -a _cp_testdir _cp_testdst && cat _cp_testdst/afile' \
+  "data\n" "" ""
+rm -rf _cp_testdir _cp_testdst
+
+# -L: follow symlinks (copy target, not link)
+echo real > _cp_realfile
+ln -sf _cp_realfile _cp_link
+ohosonly testing "cp -L follows symlink" \
+  '$C -L _cp_link _cp_testdst && stat -c %F _cp_testdst' \
+  "regular file\n" "" ""
+rm -f _cp_realfile _cp_link _cp_testdst
+
+# -i: interactive (prompts before overwrite) - test with stdin
+echo old > _cp_overwrite
+echo new > _cp_newfile
+ohosonly testing "cp -i prompts on overwrite" \
+  '$C -i _cp_newfile _cp_overwrite && cat _cp_overwrite' \
+  "new\n" "" "y\n"
+rm -f _cp_overwrite _cp_newfile
+
+# -n: no-clobber (don't overwrite)
+echo original > _cp_noclobber
+echo fresh > _cp_fresh
+ohosonly testing "cp -n no clobber" \
+  '$C -n _cp_fresh _cp_noclobber && cat _cp_noclobber' \
+  "original\n" "" ""
+rm -f _cp_noclobber _cp_fresh

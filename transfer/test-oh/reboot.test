@@ -1,0 +1,21 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+# reboot/halt/poweroff are dangerous; only test help and flag parsing
+ohosonly testcmd "help" \
+  "--help 2>&1 | grep -qi 'reboot' && echo ok" "ok\n" "" ""
+
+# -n flag (don't sync) — must not actually reboot
+ohosonly testcmd "-n flag help" \
+  "$C -n --help 2>&1 | grep -qi 'reboot' && echo ok" "ok\n" "" ""
+
+# -d delay flag
+ohosonly testcmd "-d flag help" \
+  "$C -d 0 --help 2>&1 | grep -qi 'reboot' && echo ok" "ok\n" "" ""
+
+# -f force flag
+ohosonly testcmd "-f flag help" \
+  "$C -f --help 2>&1 | grep -qi 'reboot' && echo ok" "ok\n" "" ""

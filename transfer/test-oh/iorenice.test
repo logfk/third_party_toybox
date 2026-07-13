@@ -1,0 +1,13 @@
+#!/bin/bash
+
+[ -f testing.sh ] && . testing.sh
+
+#testing "name" "command" "result" "infile" "stdin"
+
+ohosonly testcmd "help" "--help 2>&1 | grep -qi 'iorenice' && echo ok" "ok\n" "" ""
+
+# no args should fail (needs PID)
+ohosonly testcmd "no args" "$C 2>/dev/null; echo \$?" "1\n" "" ""
+
+# query current process IO priority
+ohosonly testcmd "query self" "$C $$ 2>/dev/null | grep -qi 'class' && echo ok" "ok\n" "" ""
