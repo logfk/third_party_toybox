@@ -14,12 +14,12 @@ for d in /dev/block/sda /dev/sda /dev/mmcblk0 /dev/vda; do
 done
 
 # Error: no options → "need --option"
-ohosonly testcmd "no options" "" "blockdev: need --option\n" "" ""
-ohosonly testing "no options via C" '$C "" 2>&1 | head -1' "blockdev: need --option\n" "" ""
+ohosonly testcmd "no options" "" "blockdev: Needs 1 argument (see \"blockdev --help\")\n" "" ""
+ohosonly testing "no options via C" '$C "" 2>&1 | head -1' "blockdev: need --option (see \"blockdev --help\")\n" "" ""
 
 # Error: --setro on non-block device should fail
-ohosonly testcmd "setro non-block" "--setro /dev/null 2>&1 | head -1" "blockdev: unable to open '/dev/null'\n" "" ""
-ohosonly testing "setro non-existent" '$C --setro /nonexistent/block 2>&1 | head -1' "blockdev: unable to open '/nonexistent/block'\n" "" ""
+ohosonly testcmd "setro non-block" "--setro /dev/null 2>&1 | head -1" "blockdev: ioctl 125d: Not a tty\n" "" ""
+ohosonly testing "setro non-existent" '$C --setro /nonexistent/block 2>&1 | head -1' "blockdev: /nonexistent/block: No such file or directory\n" "" ""
 
 # --help
 ohosonly testcmd "help" "--help 2>&1 >/dev/null && echo ok" "ok\n" "" ""

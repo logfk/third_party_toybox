@@ -13,5 +13,5 @@ ohosonly testcmd "no args" "2>/dev/null && echo ok || echo fail" "fail\n" "" ""
 # -p $$ queries current process IO priority (may not be supported on OHOS)
 ohosonly testing "query self" "$C -p $$ 2>/dev/null | grep -qi 'best-effort\|realtime\|idle\|unknown' && echo ok || echo skip" "skip\n" "" ""
 
-# -c 2 -n 5 echo test sets IO class and runs command (may fail without I/O scheduling)
-ohosonly testing "set class run cmd" "$C -c 2 -n 5 echo ok 2>/dev/null || echo skip" "skip\n" "" ""
+# -c 2 -n 5 echo test sets IO class and runs command
+ohosonly testing "set class run cmd" "$C -c 2 -n 5 echo ok 2>/dev/null || echo skip" "ok\n" "" ""

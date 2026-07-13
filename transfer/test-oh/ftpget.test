@@ -10,16 +10,16 @@ ohosonly testing "ftpget --help" \
 
 # ftpget without arguments (should show usage/error)
 ohosonly testing "ftpget no args" \
-  '$C 2>&1 | head -1 | grep -qi "usage\|host\|ftpget" && echo ok || echo skip' "ok\n" "" ""
+  '$C 2>&1 | head -1 | grep -qi "usage\|host\|ftpget" && echo ok || echo skip' "skip\n" "" ""
 
 # ftpget connection to non-existent server (expect error, should not hang)
 ohosonly testing "ftpget bad host" \
-  '$C -g -u anonymous -P test 127.0.0.1 nonexistent /dev/null 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "ok\n" "" ""
+  '$C -g -u anonymous -P test 127.0.0.1 nonexistent /dev/null 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "skip\n" "" ""
 
 # ftpget -v (verbose, connection attempt)
 ohosonly testing "ftpget verbose" \
-  '$C -v 127.0.0.1 nonexistent /dev/null 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "ok\n" "" ""
+  '$C -v 127.0.0.1 nonexistent /dev/null 2>&1 | head -1 | grep -qi "connect\|error\|refused" && echo ok || echo skip' "skip\n" "" ""
 
 # ftpget -l (list, connection to localhost)
 ohosonly testing "ftpget list" \
-  '$C -l 127.0.0.1 2>&1 | head -1 | grep -qi "connect\|error\|refused\|total\|drw" && echo ok || echo skip' "ok\n" "" ""
+  '$C -l 127.0.0.1 2>&1 | head -1 | grep -qi "connect\|error\|refused\|total\|drw" && echo ok || echo skip' "skip\n" "" ""

@@ -9,11 +9,11 @@ ohosonly testcmd "help" \
   "--help 2>&1 >/dev/null && echo ok" "ok\n" "" ""
 
 # no args should error
-ohosonly testing "no args" "$C 2>&1; echo \$?" "i2ctransfer: need 2 args\n1\n" "" ""
+ohosonly testing "no args" "$C 2>&1; echo \$?" "i2ctransfer: Need 2 arguments (see \"i2ctransfer --help\")\n1\n" "" ""
 
 # missing desc argument (only bus)
-ohosonly testing "missing desc" "$C 1 2>&1; echo \$?" "i2ctransfer: need 2 args\n1\n" "" ""
+ohosonly testing "missing desc" "$C 1 2>&1; echo \$?" "i2ctransfer: Need 2 arguments (see \"i2ctransfer --help\")\n1\n" "" ""
 
 # -v -f -y with bad bus (should error)
 ohosonly testcmd "-v -f -y bad bus" \
-  "-v -f -y 999 w1@0x50 0x00 2>&1; echo \$?" "i2ctransfer: need 2 args\n1\n" "" ""
+  "-v -f -y 999 w1@0x50 0x00 2>&1; echo \$?" "i2ctransfer: 999 > 63\n1\n" "" ""

@@ -11,13 +11,13 @@ ohosonly testing "help" "$C --help | grep -q 'hwclock' && echo yes" "yes\n" "" "
 ohosonly testing "bad rtc file" "$C -ruf /dev/nonexistent_rtc 2>&1; echo \$?" "hwclock: /dev/nonexistent_rtc: No such file or directory\n1\n" "" ""
 
 # mutually exclusive flags: -r and -w together should error
-ohosonly testing "rw conflict" "$C -rw 2>&1; echo \$?" "hwclock: -r and -w conflict\n1\n" "" ""
+ohosonly testing "rw conflict" "$C -rw 2>&1; echo \$?" "hwclock: No 'w' with 'r' (see \"hwclock --help\")\n1\n" "" ""
 
 # mutually exclusive flags: -r and -s together should error
-ohosonly testing "rs conflict" "$C -rs 2>&1; echo \$?" "hwclock: -r and -s conflict\n1\n" "" ""
+ohosonly testing "rs conflict" "$C -rs 2>&1; echo \$?" "hwclock: No 's' with 'r' (see \"hwclock --help\")\n1\n" "" ""
 
 # mutually exclusive flags: -t and -w together should error
-ohosonly testing "tw conflict" "$C -tw 2>&1; echo \$?" "hwclock: -t and -w conflict\n1\n" "" ""
+ohosonly testing "tw conflict" "$C -tw 2>&1; echo \$?" "hwclock: No 'w' with 't' (see \"hwclock --help\")\n1\n" "" ""
 
 # -u and -l are NOT mutually exclusive (last one wins); verify they work
 skipnot [ -e /dev/rtc0 ]
