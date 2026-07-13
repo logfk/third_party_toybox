@@ -15,7 +15,9 @@ testcmd "kill -l lists HUP" \
 testcmd "killall5 -l lists TERM" \
   "$C killall5 -l 2>&1 | grep -q 'TERM' && echo ok" "ok\n" "" ""
 
-# killall5 -0: signal 0 to all procs (no-op, doesn't actually signal)
+# killall5 -0: signal 0 to all procs; risky on OHOS (may trigger reboot)
+# skip entirely on OHOS board
+[ -n "$OHOS_TEST" ] && SKIP=$((SKIP+1))
 ohosonly testcmd "killall5 -0 safe" \
   "$C killall5 -0 2>/dev/null && echo ok" "ok\n" "" ""
 

@@ -6,7 +6,7 @@
 
 # killall5 can cause board reboot via killall racing with the test harness;
 # skip entirely on OHOS board.
-SKIP=
+SKIP=99
 
 # killall5 -l lists signals (safe, no signals sent)
 ohosonly testcmd "list signals" \
