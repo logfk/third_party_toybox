@@ -11,9 +11,9 @@ ohosonly testcmd "help" \
 # no args should error
 ohosonly testing "no args" "$C >/dev/null 2>&1 && echo BAD || echo ok" "ok\n" "" ""
 
-# -c NUM flag (specify VT number) — requires real console
+# -c NUM flag (specify VT number) — succeeds on this board
 ohosonly testing "-c flag" \
-  "$C -c 1 /bin/true >/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""
+  "$C -c 1 /bin/true >/dev/null 2>&1 && echo ok || echo skip" "ok\n" "" ""
 
 # -s switch to new VT — requires real console
 ohosonly testing "-s flag" \

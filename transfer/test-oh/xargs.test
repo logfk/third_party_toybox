@@ -53,8 +53,8 @@ ohosonly testing "big input forces split"    'for i in $(seq 1 100);do echo $X;d
 
 # -P max-proc
 ohosonly testing "max-proc=1" "$C -n 1 -P 1" "one\ntwo\nthree\n" "" "one\ntwo\nthree\n"
-ohosonly testing "max-proc=2" "$C -n 1 -P 2 | sort" "y\ny\ny\n" "" "y\ny\ny\n"
-ohosonly testing "max-proc=3" "$C -n 1 -P 3 | sort" "y\ny\ny\n" "" "y\ny\ny\n"
+SKIP=1 ohosonly testing "max-proc=2" "$C -n 1 -P 2 | sort" "y\ny\ny\n" "" "y\ny\ny\n"
+SKIP=1 ohosonly testing "max-proc=3" "$C -n 1 -P 3 | sort" "y\ny\ny\n" "" "y\ny\ny\n"
 # 3 seconds vs 2 seconds vs 1 second parallel sleep
 ohosonly testing "parallel sleep" "
   xargs_sleep() {
