@@ -141,7 +141,7 @@ import java.util.Iterator;
 mkdir -p _patch_dirstrip
 echo "oldcontent" > _patch_dirstrip/_patch_tfile
 ohosonly testing "patch -p0 strip none" \
-  '$C -p0 -d _patch_dirstrip && cat _patch_dirstrip/_patch_tfile' "newcontent\n" "" \
+  '$C -p0 -d _patch_dirstrip >/dev/null && cat _patch_dirstrip/_patch_tfile' "newcontent\n" "" \
 "--- _patch_tfile
 +++ _patch_tfile
 @@ -1 +1 @@
@@ -153,7 +153,7 @@ rm -rf _patch_dirstrip
 # -R: reverse (undo) a patch
 echo "linetwo" > _patch_revfile
 ohosonly testing "patch -R reverse" \
-  '$C -R && cat _patch_revfile' "lineone\n" "" \
+  '$C -R >/dev/null && cat _patch_revfile' "lineone\n" "" \
 "--- _patch_revfile
 +++ _patch_revfile
 @@ -1 +1 @@
@@ -166,7 +166,7 @@ rm -f _patch_revfile
 mkdir -p _patch_subdir
 echo "before" > _patch_subdir/_patch_dfile
 ohosonly testing "patch -d directory" \
-  '$C -d _patch_subdir -p0 && cat _patch_subdir/_patch_dfile' "after\n" "" \
+  '$C -d _patch_subdir -p0 >/dev/null && cat _patch_subdir/_patch_dfile' "after\n" "" \
 "--- _patch_dfile
 +++ _patch_dfile
 @@ -1 +1 @@

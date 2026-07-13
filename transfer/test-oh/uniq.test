@@ -17,4 +17,4 @@ ohosonly testcmd "-u" "-u input" "c\n" "a\na\nb\nb\nc\n" ""
 # -i 忽略大小写
 ohosonly testcmd "-i" "-i input" "a\n" "a\nA\n" ""
 # -f 跳过前 N 字段
-ohosonly testcmd "-f1" "-f1 input" "x a\ny b\n" "1 a\n2 a\n3 b\n4 b\n" ""
+ohosonly testcmd "-f1" "-f1 input" "1 a\n3 b\n" "1 a\n2 a\n3 b\n4 b\n" ""

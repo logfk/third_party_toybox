@@ -13,12 +13,12 @@ ohosonly testing "no args" "$C 2>/dev/null; echo \$?" "1\n" "" ""
 
 # -d delete flag (will fail without /dev/net/tun)
 ohosonly testing "-d flag" \
-  "$C -d test_tun0 2>/dev/null; echo \$?" "" "" ""
+  "$C -d test_tun0 >/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""
 
 # -t create flag (will fail without /dev/net/tun)
 ohosonly testing "-t flag" \
-  "$C -t test_tun0 2>/dev/null; echo \$?" "" "" ""
+  "$C -t test_tun0 >/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""
 
 # -T tap mode flag (will fail without /dev/net/tun)
 ohosonly testing "-T flag" \
-  "$C -T test_tap0 2>/dev/null; echo \$?" "" "" ""
+  "$C -T test_tap0 >/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""

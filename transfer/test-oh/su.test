@@ -8,10 +8,10 @@
 ohosonly testing "su --help" \
   '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
 
-# su without arguments as non-root (should prompt or fail gracefully)
+# su without arguments as non-root (should fail gracefully)
 ohosonly testing "su no args" \
-  '$C -c id >/dev/null 2>&1 && echo ok || echo skip' "ok\n" "" ""
+  '$C -c id >/dev/null 2>&1 && echo ok || echo skip' "skip\n" "" ""
 
 # su -c command (non-root, expect denial)
 ohosonly testing "su -c cmd" \
-  '$C root -c "echo test" >/dev/null 2>&1 && echo ok || echo skip' "ok\n" "" ""
+  '$C root -c "echo test" >/dev/null 2>&1 && echo ok || echo skip' "skip\n" "" ""

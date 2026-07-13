@@ -191,14 +191,14 @@ rm -f input.bak
 
 # -e: explicit script (already tested above, but add clear standalone)
 ohosonly testing "sed -e explicit script replace" \
-  '$C -e "s/one/1/" -e "s/two/2/"' "1\n2\nthree\n" "" "one\ntwo\nthree"
+  '$C -e "s/one/1/" -e "s/two/2/"' "1\n2\nthree\n" "" "one\ntwo\nthree\n"
 
-# -r: extended regex (ERE - no backslash escaping for parens)
-ohosonly testing "sed -r extended regex" \
-  '$C -rn "s/(hello) (world)/\\1 \\2/p"' "hello world\n" "" "hello world"
+# -E: extended regex (ERE - no backslash escaping for parens, -r alias not available)
+ohosonly testing "sed -E extended regex" \
+  '$C -En "s/(hello) (world)/\1 \2/p"' "hello world\n" "" "hello world"
 
-ohosonly testing "sed -r ERE plus quantifier" \
-  '$C -rn "s/ab+/X/p"' "aXc\n" "" "abbc"
+ohosonly testing "sed -E ERE plus quantifier" \
+  '$C -En "s/ab+/X/p"' "aXc\n" "" "abbc"
 
 # -n: quiet (suppress pattern space output) - already well tested above
 # Add one more clear standalone

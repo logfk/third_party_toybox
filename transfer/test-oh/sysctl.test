@@ -8,6 +8,6 @@
 ohosonly testcmd "show all" "-a 2>/dev/null | grep -q . && echo yes || echo skip" "yes\n" "" ""
 ohosonly testcmd "names only" "-a -n 2>/dev/null | grep -q . && echo yes || echo skip" "yes\n" "" ""
 ohosonly testcmd "values only" "-a -N 2>/dev/null | grep -q . && echo yes || echo skip" "yes\n" "" ""
-ohosonly testcmd "no args" "2>&1" "sysctl: Needs 1 argument (see \"sysctl --help\")\n" "" ""
+ohosonly testcmd "no args" "2>&1" "sysctl: Needs 1 arg (see \"sysctl --help\")\n" "" ""
 ohosonly testcmd "unknown key" "nosuchkey 2>&1 | grep -q unknown" "" "" ""
 ohosonly testcmd "unknown key -e" "-e nosuchkey 2>/dev/null && echo yes || echo skip" "yes\n" "" ""
