@@ -195,10 +195,10 @@ ohosonly testing "sed -e explicit script replace" \
 
 # -E: extended regex (ERE - no backslash escaping for parens, -r alias not available)
 ohosonly testing "sed -E extended regex" \
-  '$C -E -n "s/(hello) (world)/\1 \2/p"' "hello world\n" "" "hello world"
+  '$C -E -n "s/(hello) (world)/\1 \2/p"' "hello world\n" "" "hello world\n"
 
 ohosonly testing "sed -E ERE plus quantifier" \
-  '$C -E -n "s/ab+/X/p"' "aXc\n" "" "abbc"
+  '$C -E -n "s/ab+/X/p"' "Xc\n" "" "abbc\n"
 
 # -n: quiet (suppress pattern space output) - already well tested above
 # Add one more clear standalone

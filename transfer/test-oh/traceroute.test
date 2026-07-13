@@ -8,7 +8,7 @@
 
 # traceroute help
 ohosonly testing "traceroute help" \
-  '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
+  '$C --help 2>&1 | head -1 | grep -qi "usage\|traceroute" && echo ok' "ok\n" "" ""
 
 # traceroute -s with source address (requires root & network)
 ohosonly testing "traceroute -s" \
