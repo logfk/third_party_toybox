@@ -33,55 +33,55 @@ rm -f binary2.txt
 
 # -i: case insensitive matching
 printf "Hello\nworld\nHELLO\n" > _grep_test.txt
-ohosonly testing "grep -i case insensitive" \
-  '-i hello _grep_test.txt' "Hello\nHELLO\n" "" ""
+ohosonly testcmd "grep -i case insensitive" \
+  "-i hello _grep_test.txt" "Hello\nHELLO\n" "" ""
 rm -f _grep_test.txt
 
 # -v: invert match
 printf "apple\nbanana\ncherry\n" > _grep_test.txt
-ohosonly testing "grep -v invert match" \
-  '-v banana _grep_test.txt' "apple\ncherry\n" "" ""
+ohosonly testcmd "grep -v invert match" \
+  "-v banana _grep_test.txt" "apple\ncherry\n" "" ""
 rm -f _grep_test.txt
 
 # -c: count matching lines
 printf "yes\nno\nyes\nmaybe\nyes\n" > _grep_test.txt
-ohosonly testing "grep -c count matches" \
-  '-c yes _grep_test.txt' "3\n" "" ""
+ohosonly testcmd "grep -c count matches" \
+  "-c yes _grep_test.txt" "3\n" "" ""
 rm -f _grep_test.txt
 
 # -l: print filenames with matches
 printf "target\n" > _grep_match.txt
 printf "nothing here\n" > _grep_nomatch.txt
-ohosonly testing "grep -l files with match" \
-  '-l target _grep_match.txt _grep_nomatch.txt' "_grep_match.txt\n" "" ""
+ohosonly testcmd "grep -l files with match" \
+  "-l target _grep_match.txt _grep_nomatch.txt" "_grep_match.txt\n" "" ""
 rm -f _grep_match.txt _grep_nomatch.txt
 
 # -n: print line numbers
 printf "alpha\nbeta\ngamma\n" > _grep_test.txt
-ohosonly testing "grep -n line numbers" \
-  '-n beta _grep_test.txt' "2:beta\n" "" ""
+ohosonly testcmd "grep -n line numbers" \
+  "-n beta _grep_test.txt" "2:beta\n" "" ""
 rm -f _grep_test.txt
 
 # -w: match whole words only
 printf "cat\ncatch\nwildcat\n" > _grep_test.txt
-ohosonly testing "grep -w word match only" \
-  '-w cat _grep_test.txt' "cat\n" "" ""
+ohosonly testcmd "grep -w word match only" \
+  "-w cat _grep_test.txt" "cat\n" "" ""
 rm -f _grep_test.txt
 
 # -x: match whole lines only
 printf "hello\nhello world\nhi\n" > _grep_test.txt
-ohosonly testing "grep -x exact line match" \
-  '-x hello _grep_test.txt' "hello\n" "" ""
+ohosonly testcmd "grep -x exact line match" \
+  "-x hello _grep_test.txt" "hello\n" "" ""
 rm -f _grep_test.txt
 
 # -q: quiet (no output, just exit code)
 printf "found\n" > _grep_test.txt
-ohosonly testing "grep -q quiet mode" \
-  '-q found _grep_test.txt && echo yes' "yes\n" "" ""
+ohosonly testcmd "grep -q quiet mode" \
+  "-q found _grep_test.txt && echo yes" "yes\n" "" ""
 rm -f _grep_test.txt
 
 # -e: explicit pattern
 printf "foo\nbar\n" > _grep_test.txt
-ohosonly testing "grep -e explicit pattern" \
-  '-e foo _grep_test.txt' "foo\n" "" ""
+ohosonly testcmd "grep -e explicit pattern" \
+  "-e foo _grep_test.txt" "foo\n" "" ""
 rm -f _grep_test.txt

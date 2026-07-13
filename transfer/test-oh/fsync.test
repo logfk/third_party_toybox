@@ -9,20 +9,20 @@ ohosonly testcmd "help" \
   "--help 2>&1 | grep -qi 'fsync' && echo ok" "ok\n" "" ""
 
 # no args should error
-ohosonly testing "no args" "$C 2>&1; echo \$?" "1\n" "" ""
+ohosonly testing "no args" "$C 2>&1; echo \$?" "fsync: need filename\n1\n" "" ""
 
-# sync a real file
-echo "test data" > /tmp/test_fsync_00001
+# sync a real file (use current dir, /tmp may be read-only on OHOS)
+echo "test data" > _fsync_test_00001
 ohosonly testcmd "sync file" \
-  "$C /tmp/test_fsync_00001 && echo ok" "ok\n" "" ""
-rm -f /tmp/test_fsync_00001
+  "_fsync_test_00001 && echo ok" "ok\n" "" ""
+rm -f _fsync_test_00001
 
 # -d flag (fdatasync only)
-echo "test data" > /tmp/test_fsync_00002
+echo "test data" > _fsync_test_00002
 ohosonly testcmd "-d sync file" \
-  "$C -d /tmp/test_fsync_00002 && echo ok" "ok\n" "" ""
-rm -f /tmp/test_fsync_00002
+  "-d _fsync_test_00002 && echo ok" "ok\n" "" ""
+rm -f _fsync_test_00002
 
 # nonexistent file should error
 ohosonly testcmd "bad file" \
-  "$C /tmp/nonexistent_fsync_file 2>&1; echo \$?" "" "" ""
+  "_nonexistent_fsync 2>&1; echo \$?" "fsync: _nonexistent_fsync: No such file or directory\n1\n" "" ""

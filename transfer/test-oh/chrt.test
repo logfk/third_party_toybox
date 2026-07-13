@@ -10,5 +10,5 @@ ohosonly testcmd "show priorities" "-m 2>/dev/null | grep -q SCHED && echo yes |
 # chrt queries current process (no root required)
 ohosonly testcmd "query self" "-p $$ 2>/dev/null | grep -q 'current' && echo yes || echo skip" "yes\n" "" ""
 
-# chrt requires priority or -p flag
-ohosonly testcmd "no args shows usage" "" "chrt: no PRIORITY\n" "" ""
+# chrt requires priority or -p flag (error goes to stderr)
+ohosonly testcmd "no args shows usage" "2>&1 | grep -q PRIORITY && echo ok || echo fail" "ok\n" "" ""

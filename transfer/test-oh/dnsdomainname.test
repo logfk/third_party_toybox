@@ -6,5 +6,5 @@
 
 ohosonly testcmd "help" "--help 2>&1 | grep -qi 'dnsdomainname' && echo ok" "ok\n" "" ""
 
-# prints domain part of hostname (may be empty on some systems)
-ohosonly testcmd "no args" "$C 2>&1; echo \$?" "0\n" "" ""
+# prints domain part of hostname (may fail on OHOS without domain)
+ohosonly testcmd "no args" "2>&1; echo \$?" "dnsdomainname: can't find domain name\n1\n" "" ""

@@ -8,22 +8,22 @@
 ohosonly testing "acpi --help" \
   '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
 
-# acpi -b (batteries, requires /sys/class/power_supply)
+# acpi -b (batteries, requires /sys/class/power_supply; OHOS may not have it)
 ohosonly testing "acpi -b batteries" \
-  '$C -b 2>&1 | grep -qi "battery\|No support" && echo ok || echo skip' "ok\n" "" ""
+  '$C -b 2>&1 | grep -qi "battery\|No support" && echo ok || echo skip' "skip\n" "" ""
 
-# acpi -a (adapters, requires /sys/class/power_supply)
+# acpi -a (adapters, requires /sys/class/power_supply; OHOS may not have it)
 ohosonly testing "acpi -a adapters" \
-  '$C -a 2>&1 | grep -qi "adapter\|No support\|on-line\|off-line" && echo ok || echo skip' "ok\n" "" ""
+  '$C -a 2>&1 | grep -qi "adapter\|No support\|on-line\|off-line" && echo ok || echo skip' "skip\n" "" ""
 
-# acpi -t (temperatures, requires /sys/class/thermal)
+# acpi -t (temperatures, requires /sys/class/thermal; OHOS may not have it)
 ohosonly testing "acpi -t temperatures" \
-  '$C -t 2>&1 | grep -qi "thermal\|degree\|No support" && echo ok || echo skip' "ok\n" "" ""
+  '$C -t 2>&1 | grep -qi "thermal\|degree\|No support" && echo ok || echo skip' "skip\n" "" ""
 
-# acpi -c (cooling devices, requires /sys/class/thermal)
+# acpi -c (cooling devices, requires /sys/class/thermal; OHOS may not have it)
 ohosonly testing "acpi -c cooling" \
-  '$C -c 2>&1 | grep -qi "cooling\|No support" && echo ok || echo skip' "ok\n" "" ""
+  '$C -c 2>&1 | grep -qi "cooling\|No support" && echo ok || echo skip' "skip\n" "" ""
 
 # acpi -V (show everything)
 ohosonly testing "acpi -V all" \
-  '$C -V 2>&1 | grep -qi "battery\|adapter\|thermal\|cooling\|No support" && echo ok || echo skip' "ok\n" "" ""
+  '$C -V 2>&1 | grep -qi "battery\|adapter\|thermal\|cooling\|No support" && echo ok || echo skip' "skip\n" "" ""

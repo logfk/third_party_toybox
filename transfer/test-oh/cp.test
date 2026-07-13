@@ -135,11 +135,11 @@ umask $OLDUMASK
 
 # === Flag tests for untested flags ===
 
-# -v: verbose output
+# -v: verbose output (actual format includes "cp " prefix)
 echo hello > _cp_testfile
 ohosonly testing "cp -v verbose output" \
   '$C -v _cp_testfile _cp_testdst && echo done' \
-  "'_cp_testfile' -> '_cp_testdst'\ndone\n" "" ""
+  "cp '_cp_testfile' -> '_cp_testdst'\ndone\n" "" ""
 rm -f _cp_testfile _cp_testdst
 
 # -R: recursive copy directory
