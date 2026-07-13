@@ -9,12 +9,12 @@ ohosonly testcmd "help" \
   "--help 2>&1 | grep -qi 'nbd' && echo ok" "ok\n" "" ""
 
 # no args should error (needs HOST PORT DEVICE)
-ohosonly testing "no args" "$C 2>&1; echo \$?" "1\n" "" ""
+ohosonly testing "no args" "$C 2>/dev/null; echo \$?" "1\n" "" ""
 
 # -n no daemonize flag (still needs host/port/device)
-ohosonly testcmd "-n flag" \
-  "$C -n 127.0.0.1 10809 /dev/nbd0 2>&1; echo \$?" "" "" ""
+ohosonly testing "-n flag" \
+  "$C -n 127.0.0.1 10809 /dev/nbd0 2>/dev/null; echo \$?" "" "" ""
 
 # -b block size flag
-ohosonly testcmd "-b blocksize" \
-  "$C -b 2048 127.0.0.1 10809 /dev/nbd0 2>&1; echo \$?" "" "" ""
+ohosonly testing "-b blocksize" \
+  "$C -b 2048 127.0.0.1 10809 /dev/nbd0 2>/dev/null; echo \$?" "" "" ""

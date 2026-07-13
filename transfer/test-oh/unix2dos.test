@@ -5,7 +5,7 @@
 #testing "name" "command" "result" "infile" "stdin"
 
 printf 'a\nb\n' >lf.txt
-ohosonly testing "lf->crlf" "$C lf.txt && od -An -c lf.txt" "   a  \\r  \\n   b  \\r  \\n\n" "" ""
+ohosonly testing "lf->crlf" "$C lf.txt && od -An -c lf.txt" "   a  \\\\r  \\\\n   b  \\\\r  \\\\n\n" "" ""
 rm -f lf.txt
 
-ohosonly testing "stdin" "$C | od -An -c" "   a  \\r  \\n   b  \\r  \\n\n" "" "a\nb\n"
+ohosonly testing "stdin" "$C | od -An -c" "   a  \\\\r  \\\\n   b  \\\\r  \\\\n\n" "" "a\nb\n"

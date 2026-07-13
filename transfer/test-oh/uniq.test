@@ -5,16 +5,16 @@
 #testing "name" "command" "result" "infile" "stdin"
 
 # 基本去重
-ohosonly testcmd "basic" "" "a\nb\nc\n" "a\na\na\nb\nb\nc\n" ""
+ohosonly testcmd "basic" "input" "a\nb\nc\n" "a\na\na\nb\nb\nc\n" ""
 ohosonly testcmd "empty input" "" "" "" ""
-ohosonly testcmd "single line" "" "x\n" "x\n" ""
+ohosonly testcmd "single line" "input" "x\n" "x\n" ""
 # -c 计数
-ohosonly testcmd "-c" "-c" "      3 a\n      2 b\n      1 c\n" "a\na\na\nb\nb\nc\n" ""
+ohosonly testcmd "-c" "-c input" "      3 a\n      2 b\n      1 c\n" "a\na\na\nb\nb\nc\n" ""
 # -d 仅重复行
-ohosonly testcmd "-d" "-d" "a\nb\n" "a\na\nb\nb\nc\n" ""
+ohosonly testcmd "-d" "-d input" "a\nb\n" "a\na\nb\nb\nc\n" ""
 # -u 仅唯一行
-ohosonly testcmd "-u" "-u" "c\n" "a\na\nb\nb\nc\n" ""
+ohosonly testcmd "-u" "-u input" "c\n" "a\na\nb\nb\nc\n" ""
 # -i 忽略大小写
-ohosonly testcmd "-i" "-i" "a\n" "a\nA\n" ""
+ohosonly testcmd "-i" "-i input" "a\n" "a\nA\n" ""
 # -f 跳过前 N 字段
-ohosonly testcmd "-f1" "-f1" "x a\ny b\n" "1 a\n2 a\n3 b\n4 b\n" ""
+ohosonly testcmd "-f1" "-f1 input" "x a\ny b\n" "1 a\n2 a\n3 b\n4 b\n" ""

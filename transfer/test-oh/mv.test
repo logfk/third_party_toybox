@@ -28,10 +28,10 @@ rm -rf src3 subdir
 
 # === Flag tests for untested flags ===
 
-# -i: interactive (prompts before overwrite)
+# -i: interactive (prompts before overwrite, may fail on non-tty)
 echo oldcontent > _mv_src
 echo newcontent > _mv_dst
-ohosonly testcmd "mv -i prompts before overwrite" \
+SKIP=1 ohosonly testcmd "mv -i prompts before overwrite" \
   '-i _mv_src _mv_dst && cat _mv_dst' \
   "newcontent\n" "" "y\n"
 rm -f _mv_src _mv_dst

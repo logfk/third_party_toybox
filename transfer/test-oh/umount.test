@@ -11,8 +11,8 @@ ohosonly testing "no args fails" \
 ohosonly testing "--help recognized" \
   '$C --help 2>&1 | grep -q "umount" && echo yes' "yes\n" "" ""
 ohosonly testing "nonexistent path fails" \
-  '$C /nonexistent 2>&1 && echo BAD || echo yes' "yes\n" "" ""
+  '$C /nonexistent >/dev/null 2>&1 && echo BAD || echo yes' "yes\n" "" ""
 ohosonly testing "-v nonexistent" \
-  '$C -v /nonexistent 2>&1 && echo BAD || echo yes' "yes\n" "" ""
+  '$C -v /nonexistent >/dev/null 2>&1 && echo BAD || echo yes' "yes\n" "" ""
 ohosonly testing "-f nonexistent" \
-  '$C -f /nonexistent 2>&1 && echo BAD || echo yes' "yes\n" "" ""
+  '$C -f /nonexistent >/dev/null 2>&1 && echo BAD || echo yes' "yes\n" "" ""

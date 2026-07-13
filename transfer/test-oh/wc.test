@@ -51,7 +51,7 @@ ohosonly testcmd '-L 7' '-L' '9\n' '' 'abc\td\n'
 ohosonly testcmd '-L 8' '-L' '4\n' '' 'abc\bd\n'
 ohosonly testcmd '-L 9' '-L' '0\n' '' '\x01\n'
 ohosonly testcmd '-L 10' '-L' '1\n' '' 'w\xcc\x88\n'
-NOSPACE=1 testcmd '-Lm incoherence' '-Lm' '2 0\n' '' '\x01\n'
+ohosonly testcmd '-Lm incoherence' '-Lm' '      2       0\n' '' '\x01\n'
 
 # 25 wide chars, also testing field order
 [ $NOUTF8 -eq 1 ] && SKIP=$((SKIP+1))

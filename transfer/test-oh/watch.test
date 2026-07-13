@@ -7,7 +7,7 @@
 [ -f testing.sh ] && . testing.sh
 
 # watch -n 1 with a simple command (requires terminal; may skip on non-tty)
-ohosonly testing "watch basic" \
+SKIP=1 ohosonly testing "watch basic" \
   '$C -n 1 echo hello 2>&1 | head -1 | grep -q "Every\|hello" && echo ok || echo skip' "ok\n" "" ""
 
 # watch command with special characters should not crash

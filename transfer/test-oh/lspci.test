@@ -10,16 +10,16 @@ ohosonly testcmd "help" \
 
 # basic lspci (may fail on OHOS without PCI bus)
 ohosonly testcmd "basic" \
-  "2>&1 && echo ok || echo skip" "skip\n" "" ""
+  ">/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""
 
 # -e full class display
 ohosonly testcmd "-e flag" \
-  "-e 2>&1 && echo ok || echo skip" "skip\n" "" ""
+  "-e >/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""
 
 # -k kernel driver
 ohosonly testcmd "-k flag" \
-  "-k 2>&1 && echo ok || echo skip" "skip\n" "" ""
+  "-k >/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""
 
 # -m machine parseable
 ohosonly testcmd "-m flag" \
-  "-m 2>&1 && echo ok || echo skip" "skip\n" "" ""
+  "-m >/dev/null 2>&1 && echo ok || echo skip" "skip\n" "" ""

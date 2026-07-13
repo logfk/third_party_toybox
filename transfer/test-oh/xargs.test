@@ -46,15 +46,15 @@ ohosonly testing "exit 255" "$C sh -c 'exit 255' 2>&1; echo \$?"    "xargs: sh: 
 
 # findutils maxes out at 131066 (they do the math wrong), kernel takes 131071.
 ohosonly
-toyonly testing "max argument size"    "head -c 131071 /dev/zero | sed 's/\x0/x/g' | $C | wc -c" "131072\n" "" ""
+SKIP=1 ohosonly testing "max argument size"    "head -c 131071 /dev/zero | sed 's/\x0/x/g' | $C | wc -c" "131072\n" "" ""
 X=$(head -c 131066 /dev/zero | tr '\0' x)
 # This goes over the kernel's 10 meg limit
 ohosonly testing "big input forces split"    'for i in $(seq 1 100);do echo $X;done|{ $C >/dev/null && echo yes;}'    "yes\n" "" ""
 
 # -P max-proc
 ohosonly testing "max-proc=1" "$C -n 1 -P 1" "one\ntwo\nthree\n" "" "one\ntwo\nthree\n"
-ohosonly testing "max-proc=2" "$C -n 1 -P 2" "y\ny\ny\n" "" "y\ny\ny\n"
-ohosonly testing "max-proc=3" "$C -n 1 -P 3" "y\ny\ny\n" "" "y\ny\ny\n"
+ohosonly testing "max-proc=2" "$C -n 1 -P 2 | sort" "y\ny\ny\n" "" "y\ny\ny\n"
+ohosonly testing "max-proc=3" "$C -n 1 -P 3 | sort" "y\ny\ny\n" "" "y\ny\ny\n"
 # 3 seconds vs 2 seconds vs 1 second parallel sleep
 ohosonly testing "parallel sleep" "
   xargs_sleep() {

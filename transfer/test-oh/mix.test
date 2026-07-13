@@ -9,17 +9,17 @@ ohosonly testcmd "help" \
   "--help 2>&1 | grep -qi 'mix' && echo ok" "ok\n" "" ""
 
 # no args opens /dev/mixer (will fail if not present)
-ohosonly testcmd "no args" \
-  "$C 2>&1; echo \$?" "" "" ""
+ohosonly testing "no args" \
+  "$C 2>/dev/null; echo \$?" "1\n" "" ""
 
 # -d指定不存在的设备
-ohosonly testcmd "-d bad device" \
-  "$C -d /dev/nonexistent_mixer 2>&1; echo \$?" "" "" ""
+ohosonly testing "-d bad device" \
+  "$C -d /dev/nonexistent_mixer 2>/dev/null; echo \$?" "1\n" "" ""
 
 # -c channel name (needs /dev/mixer)
-ohosonly testcmd "-c channel" \
-  "$C -c vol 2>&1; echo \$?" "" "" ""
+ohosonly testing "-c channel" \
+  "$C -c vol 2>/dev/null; echo \$?" "1\n" "" ""
 
 # -l volume level (needs /dev/mixer)
-ohosonly testcmd "-l level" \
-  "$C -l 50 2>&1; echo \$?" "" "" ""
+ohosonly testing "-l level" \
+  "$C -l 50 2>/dev/null; echo \$?" "1\n" "" ""

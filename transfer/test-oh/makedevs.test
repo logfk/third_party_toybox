@@ -9,7 +9,7 @@ ohosonly testcmd "help" \
   "--help 2>&1 | grep -qi 'makedevs' && echo ok" "ok\n" "" ""
 
 # no args should error (needs rootdir)
-ohosonly testing "no args" "$C 2>&1; echo \$?" "1\n" "" ""
+ohosonly testing "no args" "$C 2>/dev/null; echo \$?" "1\n" "" ""
 
 # create temp dir and a simple device table
 mkdir -p /tmp/test_makedevs_00001

@@ -182,7 +182,7 @@ ohosonly testcmd 'count match' '"s/./&X/4"' '0123X45\n' '' '012345\n'
 
 # -i: in-place editing
 ohosonly testing "sed -i in-place edit" \
-  '$C -i s/foo/bar/ input && cat input' "baz\nbar\n" "foo\nbaz\nfoo\n" ""
+  '$C -i s/foo/bar/ input && cat input' "bar\nbaz\nbar\n" "foo\nbaz\nfoo\n" ""
 
 # -i with backup
 ohosonly testing "sed -i with backup" \
@@ -195,10 +195,10 @@ ohosonly testing "sed -e explicit script replace" \
 
 # -r: extended regex (ERE - no backslash escaping for parens)
 ohosonly testing "sed -r extended regex" \
-  '$C -rn "s/(hello) (world)/\\1 \\2/"' "hello world\n" "" "hello world"
+  '$C -rn "s/(hello) (world)/\\1 \\2/p"' "hello world\n" "" "hello world"
 
 ohosonly testing "sed -r ERE plus quantifier" \
-  '$C -rn "s/ab+/X/"' "aXc\n" "" "abbc"
+  '$C -rn "s/ab+/X/p"' "aXc\n" "" "abbc"
 
 # -n: quiet (suppress pattern space output) - already well tested above
 # Add one more clear standalone

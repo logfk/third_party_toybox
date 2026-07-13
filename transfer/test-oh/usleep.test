@@ -10,4 +10,4 @@ ohosonly testcmd "help" "--help 2>&1 | grep -qi 'usleep' && echo ok" "ok\n" "" "
 ohosonly testcmd "no args" "$C 2>/dev/null; echo \$?" "1\n" "" ""
 
 # sleep 1 microsecond
-ohosonly testcmd "1us" "$C 1 && echo ok" "ok\n" "" ""
+ohosonly testing "1us" "$C 1 && echo ok" "ok\n" "" ""

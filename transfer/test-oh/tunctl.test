@@ -9,16 +9,16 @@ ohosonly testcmd "help" \
   "--help 2>&1 | grep -qi 'tunctl' && echo ok" "ok\n" "" ""
 
 # no args should error (needs NAME)
-ohosonly testing "no args" "$C 2>&1; echo \$?" "1\n" "" ""
+ohosonly testing "no args" "$C 2>/dev/null; echo \$?" "1\n" "" ""
 
 # -d delete flag (will fail without /dev/net/tun)
-ohosonly testcmd "-d flag" \
-  "$C -d test_tun0 2>&1; echo \$?" "" "" ""
+ohosonly testing "-d flag" \
+  "$C -d test_tun0 2>/dev/null; echo \$?" "" "" ""
 
 # -t create flag (will fail without /dev/net/tun)
-ohosonly testcmd "-t flag" \
-  "$C -t test_tun0 2>&1; echo \$?" "" "" ""
+ohosonly testing "-t flag" \
+  "$C -t test_tun0 2>/dev/null; echo \$?" "" "" ""
 
 # -T tap mode flag (will fail without /dev/net/tun)
-ohosonly testcmd "-T flag" \
-  "$C -T test_tap0 2>&1; echo \$?" "" "" ""
+ohosonly testing "-T flag" \
+  "$C -T test_tap0 2>/dev/null; echo \$?" "" "" ""
