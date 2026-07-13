@@ -3,15 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OHOS Toybox Test Report - Interactive</title>
+<title>OHOS Toybox Test Report</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#0f0f23;color:#e0e0e0;line-height:1.6}
-.container{max-width:920px;margin:0 auto;padding:20px}
+.container{max-width:960px;margin:0 auto;padding:20px}
 @media(max-width:600px){.container{padding:10px}}
 header{text-align:center;padding:30px 0;border-bottom:1px solid #2a2a4e;margin-bottom:30px}
 header h1{font-size:1.8em;color:#e8e8ff;margin-bottom:6px;font-weight:700}
 header .sub{color:#888;font-size:0.9em}
+
+/* Input area */
 .input-area{background:#161638;border-radius:12px;padding:20px;margin-bottom:24px}
 .input-area textarea{width:100%;min-height:200px;background:#0a0a1e;color:#e0e0e0;border:1px solid #2a2a4e;border-radius:8px;padding:14px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;resize:vertical;outline:none;transition:border-color .3s}
 .input-area textarea:focus{border-color:#4e4e8e}
@@ -20,6 +22,11 @@ header .sub{color:#888;font-size:0.9em}
 .btn:hover{background:#3e3e7e}
 .btn.primary{background:#4a4a8a;font-weight:600}
 .btn.primary:hover{background:#5a5aaa}
+#output{display:none}
+.error-msg{background:#2b0d0d;color:#f44336;padding:14px;border-radius:8px;margin-bottom:20px}
+.hidden{display:none!important}
+
+/* Summary cards */
 .summary{background:#161638;border-radius:12px;padding:24px;margin-bottom:24px}
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media(max-width:600px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
@@ -42,6 +49,8 @@ header .sub{color:#888;font-size:0.9em}
 .status-banner{text-align:center;padding:12px;border-radius:8px;margin:16px 0 0;font-size:1.05em;font-weight:600}
 .status-banner.success{background:#0d2b1a;color:#4caf50}
 .status-banner.has-fail{background:#2b0d0d;color:#f44336}
+
+/* Board support */
 .section{background:#161638;border-radius:12px;padding:24px;margin-bottom:20px}
 .section-title{font-size:1.15em;color:#e8e8ff;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #2a2a4e}
 .board-list{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
@@ -49,41 +58,77 @@ header .sub{color:#888;font-size:0.9em}
 .board-list li.ok{background:#0d2b1a;color:#4caf50;border:1px solid #1a5a2a}
 .board-list li.no{background:#2b0d0d;color:#f44336;border:1px solid #5a1a1a}
 .badge-ok,.badge-no{font-weight:bold;font-size:0.9em}
-.results{display:flex;flex-direction:column;gap:8px}
-.result{padding:10px 14px;border-radius:6px;font-size:0.9em;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
-.result.pass{background:rgba(76,175,80,0.08);border-left:3px solid #4caf50}
-.result.fail{background:rgba(244,67,54,0.08);border-left:3px solid #f44336}
-.result.skip{background:rgba(255,152,0,0.08);border-left:3px solid #ff9800}
-.badge{flex-shrink:0;display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75em;font-weight:bold;text-transform:uppercase}
-.badge-pass{background:#4caf50;color:#fff}
-.badge-fail{background:#f44336;color:#fff}
-.badge-skip{background:#ff9800;color:#000}
-.result-text{flex:1;padding-top:2px}
-details{width:100%;margin-top:4px}
-details summary{cursor:pointer;color:#888;font-size:0.85em;padding:4px 0;user-select:none}
-details summary:hover{color:#ccc}
-.fail-detail{margin-top:8px;padding:12px;background:#0a0a1e;border-radius:6px;overflow-x:auto}
-.fail-cmd{margin-bottom:8px}
-.fail-cmd code{display:block;padding:8px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#e0e0e0;word-break:break-all;white-space:pre-wrap;margin-top:4px}
-.fail-diff{padding:10px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#d0d0d0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;margin-top:4px}
+
+/* Navigation bar */
+.nav-bar{background:#161638;border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.nav-bar .back-btn{background:#2e2e5e;color:#e0e0ff;border:none;border-radius:6px;padding:8px 16px;font-size:0.9em;cursor:pointer;transition:background .2s;white-space:nowrap}
+.nav-bar .back-btn:hover{background:#3e3e7e}
+.nav-bar .breadcrumb{color:#888;font-size:0.9em}
+.nav-bar .breadcrumb span{color:#e0e0ff;font-weight:600}
+.nav-bar .breadcrumb .sep{margin:0 8px;color:#555}
+
+/* Command list grid */
+.command-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+@media(max-width:600px){.command-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:400px){.command-grid{grid-template-columns:1fr}}
+.command-card{background:#1a1a3e;border-radius:10px;padding:16px;cursor:pointer;transition:background .2s,transform .1s;border:1px solid #2a2a4e;position:relative}
+.command-card:hover{background:#22224e;transform:translateY(-2px);border-color:#4e4e8e}
+.command-card .cmd-name{font-weight:600;color:#e8e8ff;margin-bottom:8px;font-size:1em}
+.command-card .cmd-stats{display:flex;gap:8px;flex-wrap:wrap}
+.command-card .stat-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;font-size:0.75em;font-weight:600}
+.command-card .stat-badge.pass{background:#0d2b1a;color:#4caf50;border:1px solid #1a5a2a}
+.command-card .stat-badge.fail{background:#2b0d0d;color:#f44336;border:1px solid #5a1a1a}
+.command-card .stat-badge.skip{background:#2b2b0d;color:#ff9800;border:1px solid #5a5a1a}
+.command-card .stat-badge.total{background:#1e1e4a;color:#aaa;border:1px solid #3a3a5e}
+
+/* Command detail header */
+.cmd-header{background:#161638;border-radius:12px;padding:24px;margin-bottom:20px}
+.cmd-header .cmd-title{font-size:1.3em;color:#e8e8ff;font-weight:700;margin-bottom:8px}
+.cmd-header .cmd-name-monospace{font-family:'Consolas','Courier New',monospace;color:#888;font-size:0.9em}
+.cmd-header .cmd-summary-stats{display:flex;gap:12px;margin-top:12px}
+.cmd-header .cmd-summary-stats .stat{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:4px;font-size:0.85em}
+.cmd-header .cmd-summary-stats .stat.pass{background:#0d2b1a;color:#4caf50}
+.cmd-header .cmd-summary-stats .stat.fail{background:#2b0d0d;color:#f44336}
+.cmd-header .cmd-summary-stats .stat.skip{background:#2b2b0d;color:#ff9800}
+
+/* Test case list */
+.test-list{display:flex;flex-direction:column;gap:8px}
+.test-row{background:#161638;border-radius:10px;padding:14px 18px;font-size:0.9em;display:flex;align-items:flex-start;gap:12px;border-left:3px solid transparent;transition:background .2s}
+.test-row:hover{background:#1a1a3e}
+.test-row.pass{border-left-color:#4caf50}
+.test-row.fail{border-left-color:#f44336;background:#1e1010}
+.test-row.fail:hover{background:#2a1515}
+.test-row.skip{border-left-color:#ff9800;background:#1e1e10}
+.test-row.skip:hover{background:#2a2a15}
+.test-row .badge{flex-shrink:0;display:inline-block;padding:2px 8px;border-radius:3px;font-size:0.75em;font-weight:bold;text-transform:uppercase;min-width:44px;text-align:center}
+.test-row .badge-pass{background:#4caf50;color:#fff}
+.test-row .badge-fail{background:#f44336;color:#fff}
+.test-row .badge-skip{background:#ff9800;color:#000}
+.test-row .test-desc{flex:1;padding-top:2px}
+.test-row .test-desc .test-purpose{color:#aaa;font-size:0.85em;margin-top:3px;display:block}
+.test-row .test-detail-toggle{background:none;border:none;color:#888;cursor:pointer;font-size:0.85em;padding:2px 8px;border-radius:4px;transition:color .2s;flex-shrink:0}
+.test-row .test-detail-toggle:hover{color:#e0e0e0;background:#2a2a4e}
+.test-row .test-detail{width:100%;margin-top:8px;padding:12px;background:#0a0a1e;border-radius:6px;overflow-x:auto;display:none;order:5}
+.test-row .test-detail.open{display:block}
+.test-row .fail-cmd{margin-bottom:8px}
+.test-row .fail-cmd code{display:block;padding:8px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#e0e0e0;word-break:break-all;white-space:pre-wrap;margin-top:4px}
+.test-row .fail-diff{padding:10px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#d0d0d0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;margin-top:4px}
+
 footer{text-align:center;padding:20px;color:#555;font-size:0.85em}
-#output{display:none}
-.error-msg{background:#2b0d0d;color:#f44336;padding:14px;border-radius:8px;margin-bottom:20px}
-.hidden{display:none}
 </style>
 </head>
 <body>
 <div class="container">
   <header>
     <h1>OHOS Toybox Test Report</h1>
-    <div class="sub">Interactive Parser — Paste test output below</div>
+    <div class="sub">Interactive Drill-Down Report — Paste test output below</div>
   </header>
 
   <div class="input-area">
     <textarea id="inputText" placeholder="将 run-board.sh 的输出粘贴到这里...&#10;&#10;例如:&#10;==========================================&#10;  OHOS Toybox 板端测试运行器&#10;==========================================&#10;主板连接正常&#10;&#10;===== 检查主板命令支持 =====&#10;  [OK] bunzip2&#10;  [OK] cut&#10;..."></textarea>
     <div class="btn-row">
       <button class="btn primary" onclick="parseAndRender()">生成报告</button>
-      <button class="btn" onclick="document.getElementById('inputText').value='';document.getElementById('output').style.display='none'">清除</button>
+      <button class="btn" onclick="clearAll()">清除</button>
       <button class="btn" onclick="loadSample()">加载示例</button>
     </div>
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid #2a2a4e">
@@ -97,10 +142,12 @@ footer{text-align:center;padding:20px;color:#555;font-size:0.85em}
 
   <div id="output"></div>
 
-  <footer>OHOS Toybox Test Report &mdash; Interactive Version</footer>
+  <footer>OHOS Toybox Test Report &mdash; Drill-Down Version</footer>
 </div>
 
 <script>
+var reportData = null;
+
 function escHtml(s) {
     return String(s)
         .replace(/&/g, '&amp;')
@@ -109,35 +156,26 @@ function escHtml(s) {
         .replace(/"/g, '&quot;');
 }
 
-function parseAndRender() {
-    var text = document.getElementById('inputText').value;
-    var output = document.getElementById('output');
-    
-    if (!text.trim()) {
-        output.style.display = 'block';
-        output.innerHTML = '<div class="error-msg">错误: 请粘贴测试输出</div>';
-        return;
-    }
-    
-    var lines = text.split('\\n');
+function parseLog(text) {
+    var lines = text.split('\n');
     var boardOk = [], boardNo = [];
     var sections = [], results = [], resSection = [], failCmd = [], failDiff = [];
     var curSidx = -1, curRidx = -1;
     var inBoard = false, inFail = false;
-    
+
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
-        
+
         if (line.indexOf('检查主板命令支持') !== -1) {
             inBoard = true;
             continue;
         }
-        
+
         if (inBoard) {
-            var m = line.match(/^\\s*\\[OK\\]\\s+(.+)$/);
+            var m = line.match(/^\s*\[OK\]\s+(.+)$/);
             if (m) { boardOk.push(m[1]); continue; }
-            m = line.match(/^\\s*\\[--\\]\\s+(.+)$/);
-            if (m) { 
+            m = line.match(/^\s*\[--\]\s+(.+)$/);
+            if (m) {
                 var c = m[1].replace(' (不支持)', '');
                 boardNo.push(c); continue;
             }
@@ -148,11 +186,11 @@ function parseAndRender() {
                 continue;
             }
         }
-        
+
         if (line === '==========================================') {
             inFail = false;
             if (i + 1 < lines.length) {
-                var nm = lines[i+1].match(/^\\s*测试:\\s+(.+)$/);
+                var nm = lines[i+1].match(/^\s*测试:\s+(.+)$/);
                 if (nm) {
                     curSidx = sections.length;
                     sections.push(nm[1]);
@@ -162,7 +200,7 @@ function parseAndRender() {
             }
             continue;
         }
-        
+
         if (line.indexOf('PASS:') === 0) {
             inFail = false;
             curRidx = results.length;
@@ -190,48 +228,57 @@ function parseAndRender() {
             failDiff.push('');
             continue;
         }
-        
+
         if (inFail && curRidx >= 0) {
             if (failCmd[curRidx] === '') {
                 failCmd[curRidx] = line;
             } else {
-                failDiff[curRidx] = (failDiff[curRidx] || '') + line + '\\n';
+                failDiff[curRidx] = (failDiff[curRidx] || '') + line + '\n';
             }
         }
     }
-    
-    // Count
+
+    return { boardOk: boardOk, boardNo: boardNo, sections: sections,
+             results: results, resSection: resSection,
+             failCmd: failCmd, failDiff: failDiff };
+}
+
+function countResults(results) {
     var pass = 0, fail = 0, skip = 0;
-    for (var ri = 0; ri < results.length; ri++) {
-        if (results[ri].type === 'PASS') pass++;
-        else if (results[ri].type === 'FAIL') fail++;
-        else if (results[ri].type === 'SKIP') skip++;
+    for (var i = 0; i < results.length; i++) {
+        if (results[i].type === 'PASS') pass++;
+        else if (results[i].type === 'FAIL') fail++;
+        else if (results[i].type === 'SKIP') skip++;
     }
-    var total = pass + fail + skip;
-    var pp = total > 0 ? Math.round(pass * 100 / total) : 0;
-    var fp = total > 0 ? Math.round(fail * 100 / total) : 0;
-    var sp = total > 0 ? Math.round(skip * 100 / total) : 0;
-    
-    var statusText = fail > 0 ? '失败数: ' + fail : '全部通过!';
-    var statusClass = fail > 0 ? 'has-fail' : 'success';
-    
-    var now = new Date();
-    var ts = now.getFullYear() + '-' + 
-        String(now.getMonth()+1).padStart(2,'0') + '-' + 
-        String(now.getDate()).padStart(2,'0') + ' ' +
-        String(now.getHours()).padStart(2,'0') + ':' +
-        String(now.getMinutes()).padStart(2,'0') + ':' +
-        String(now.getSeconds()).padStart(2,'0');
-    
+    return { pass: pass, fail: fail, skip: skip, total: pass+fail+skip };
+}
+
+function getCmdStats(sectionIdx, results, resSection) {
+    var cmdResults = [];
+    for (var ri = 0; ri < results.length; ri++) {
+        if (resSection[ri] === sectionIdx) cmdResults.push(results[ri]);
+    }
+    return countResults(cmdResults);
+}
+
+function renderDashboard(data) {
+    var stats = countResults(data.results);
+    var total = stats.total;
+    var pp = total > 0 ? Math.round(stats.pass * 100 / total) : 0;
+    var fp = total > 0 ? Math.round(stats.fail * 100 / total) : 0;
+    var sp = total > 0 ? Math.round(stats.skip * 100 / total) : 0;
+    var statusText = stats.fail > 0 ? '失败数: ' + stats.fail : '全部通过!';
+    var statusClass = stats.fail > 0 ? 'has-fail' : 'success';
     var h = '';
+
+    // Summary
     h += '<div class="summary">';
     h += '<div class="summary-grid">';
     h += '<div class="summary-item total"><div class="num">' + total + '</div><div class="lbl">总计</div></div>';
-    h += '<div class="summary-item pass"><div class="num">' + pass + '</div><div class="lbl">通过</div></div>';
-    h += '<div class="summary-item fail"><div class="num">' + fail + '</div><div class="lbl">失败</div></div>';
-    h += '<div class="summary-item skip"><div class="num">' + skip + '</div><div class="lbl">跳过</div></div>';
+    h += '<div class="summary-item pass"><div class="num">' + stats.pass + '</div><div class="lbl">通过</div></div>';
+    h += '<div class="summary-item fail"><div class="num">' + stats.fail + '</div><div class="lbl">失败</div></div>';
+    h += '<div class="summary-item skip"><div class="num">' + stats.skip + '</div><div class="lbl">跳过</div></div>';
     h += '</div>';
-    
     if (total > 0) {
         h += '<div class="progress-bar">';
         if (pp > 0) h += '<div class="progress-segment progress-pass" style="width:' + pp + '%"></div>';
@@ -241,52 +288,169 @@ function parseAndRender() {
     }
     h += '<div class="status-banner ' + statusClass + '">' + statusText + '</div>';
     h += '</div>';
-    
-    // Board check
-    if (boardOk.length > 0 || boardNo.length > 0) {
+
+    // Board support
+    if (data.boardOk.length > 0 || data.boardNo.length > 0) {
         h += '<div class="section"><h2 class="section-title">主板命令支持</h2><ul class="board-list">';
-        for (var bi = 0; bi < boardOk.length; bi++) {
-            h += '<li class="ok"><span class="badge-ok">OK</span> ' + escHtml(boardOk[bi]) + '</li>';
+        for (var bi = 0; bi < data.boardOk.length; bi++) {
+            h += '<li class="ok"><span class="badge-ok">OK</span> ' + escHtml(data.boardOk[bi]) + '</li>';
         }
-        for (var bi = 0; bi < boardNo.length; bi++) {
-            h += '<li class="no"><span class="badge-no">--</span> ' + escHtml(boardNo[bi]) + '</li>';
+        for (var bi = 0; bi < data.boardNo.length; bi++) {
+            h += '<li class="no"><span class="badge-no">--</span> ' + escHtml(data.boardNo[bi]) + '</li>';
         }
         h += '</ul></div>';
     }
-    
-    // Sections
-    for (var si = 0; si < sections.length; si++) {
-        h += '<div class="section">';
-        h += '<h2 class="section-title">测试: ' + escHtml(sections[si]) + '</h2>';
-        h += '<div class="results">';
-        
-        for (var ri = 0; ri < results.length; ri++) {
-            if (resSection[ri] !== si) continue;
-            var r = results[ri];
-            h += '<div class="result ' + r.type.toLowerCase() + '">';
-            h += '<span class="badge badge-' + r.type.toLowerCase() + '">' + r.type + '</span>';
-            h += '<span class="result-text">' + escHtml(r.desc) + '</span>';
-            
-            if (r.type === 'FAIL' && failCmd[ri]) {
-                h += '<details><summary>查看详情</summary><div class="fail-detail">';
-                h += '<div class="fail-cmd"><strong>命令:</strong><code>' + escHtml(failCmd[ri]) + '</code></div>';
-                if (failDiff[ri]) {
-                    h += '<pre class="fail-diff">' + escHtml(failDiff[ri]) + '</pre>';
-                }
-                h += '</div></details>';
-            }
-            
-            h += '</div>';
-        }
-        
-        h += '</div></div>';
+
+    // Command grid
+    h += '<div class="section"><h2 class="section-title">命令列表 <span style="color:#888;font-weight:400;font-size:0.85em">(' + data.sections.length + ' 个命令)</span></h2>';
+    h += '<div class="command-grid">';
+    for (var si = 0; si < data.sections.length; si++) {
+        var cmdStats = getCmdStats(si, data.results, data.resSection);
+        var cmdName = data.sections[si];
+        h += '<div class="command-card" onclick="showCommand(' + si + ')" title="点击查看 ' + escHtml(cmdName) + ' 的测试详情">';
+        h += '<div class="cmd-name">' + escHtml(cmdName) + '</div>';
+        h += '<div class="cmd-stats">';
+        h += '<span class="stat-badge total">' + cmdStats.total + ' 项</span>';
+        if (cmdStats.pass > 0) h += '<span class="stat-badge pass">' + cmdStats.pass + ' PASS</span>';
+        if (cmdStats.fail > 0) h += '<span class="stat-badge fail">' + cmdStats.fail + ' FAIL</span>';
+        if (cmdStats.skip > 0) h += '<span class="stat-badge skip">' + cmdStats.skip + ' SKIP</span>';
+        h += '</div>';
+        h += '</div>';
     }
-    
-    h += '<footer>Generated: ' + ts + '</footer>';
-    
-    output.style.display = 'block';
-    output.innerHTML = h;
+    h += '</div></div>';
+
+    h += '<footer>Generated: ' + new Date().toLocaleString() + '</footer>';
+    return h;
 }
+
+function renderCommandDetail(sectionIdx, data) {
+    var cmdName = data.sections[sectionIdx];
+    var cmdStats = getCmdStats(sectionIdx, data.results, data.resSection);
+    var h = '';
+
+    // Nav bar
+    h += '<div class="nav-bar">';
+    h += '<button class="back-btn" onclick="showDashboard()">&larr; 返回总览</button>';
+    h += '<div class="breadcrumb"><span>测试总览</span><span class="sep">/</span><span>' + escHtml(cmdName) + '</span></div>';
+    h += '</div>';
+
+    // Command header
+    h += '<div class="cmd-header">';
+    h += '<div class="cmd-title">' + escHtml(cmdName) + '</div>';
+    h += '<div class="cmd-name-monospace">命令测试详情</div>';
+    h += '<div class="cmd-summary-stats">';
+    h += '<span class="stat total" style="background:#1e1e4a;color:#aaa">总计: ' + cmdStats.total + '</span>';
+    if (cmdStats.pass > 0) h += '<span class="stat pass">通过: ' + cmdStats.pass + '</span>';
+    if (cmdStats.fail > 0) h += '<span class="stat fail">失败: ' + cmdStats.fail + '</span>';
+    if (cmdStats.skip > 0) h += '<span class="stat skip">跳过: ' + cmdStats.skip + '</span>';
+    h += '</div></div>';
+
+    // Test cases
+    h += '<h2 style="font-size:1em;color:#e8e8ff;margin-bottom:12px">测试用例</h2>';
+    h += '<div class="test-list">';
+    for (var ri = 0; ri < data.results.length; ri++) {
+        if (data.resSection[ri] !== sectionIdx) continue;
+        var r = data.results[ri];
+        var rtypeLower = r.type.toLowerCase();
+        h += '<div class="test-row ' + rtypeLower + '">';
+        h += '<span class="badge badge-' + rtypeLower + '">' + r.type + '</span>';
+
+        // Test description
+        var testName = r.desc;
+        var purpose = inferPurpose(cmdName, testName);
+        h += '<div class="test-desc">';
+        h += '<span class="test-purpose">' + escHtml(testName) + '</span>';
+        if (purpose) {
+            h += '<span class="test-purpose" style="color:#777;font-size:0.8em;margin-top:2px">' + escHtml(purpose) + '</span>';
+        }
+        h += '</div>';
+
+        // Detail toggle for FAIL
+        if (r.type === 'FAIL' && data.failCmd[ri]) {
+            var detailId = 'detail-' + sectionIdx + '-' + ri;
+            h += '<button class="test-detail-toggle" onclick="toggleDetail(\'' + detailId + '\')">详情</button>';
+            h += '</div>';  // close test-row
+            h += '<div id="' + detailId + '" class="test-detail">';
+            h += '<div class="fail-cmd"><strong>命令:</strong><code>' + escHtml(data.failCmd[ri]) + '</code></div>';
+            if (data.failDiff[ri]) {
+                h += '<pre class="fail-diff">' + escHtml(data.failDiff[ri]) + '</pre>';
+            }
+            h += '</div>';
+        } else {
+            h += '</div>';  // close test-row
+        }
+    }
+    h += '</div>';
+
+    h += '<footer>Generated: ' + new Date().toLocaleString() + '</footer>';
+    return h;
+}
+
+// Infer the purpose of a test from its description and command name
+function inferPurpose(cmd, testDesc) {
+    var known = {
+        'help': '验证 --help 参数能正常输出用法说明',
+        'no args': '验证无参数时输出错误信息并返回非零退出码',
+        'bad flag': '验证无效参数被正确拒绝',
+        'invalid': '验证无效输入被正确拒绝',
+        'usage': '验证命令用法说明'
+    };
+    var lower = testDesc.toLowerCase();
+    for (var key in known) {
+        if (lower.indexOf(key) !== -1) return known[key];
+    }
+    var dashes = testDesc.match(/^(-[a-z]|--[a-z][a-z-]+)/);
+    if (dashes) {
+        return '测试 ' + escHtml(dashes[1]) + ' 参数功能';
+    }
+    return '';
+}
+
+// --- Navigation ---
+
+function showDashboard() {
+    if (!reportData) return;
+    var output = document.getElementById('output');
+    output.innerHTML = renderDashboard(reportData);
+    output.style.display = 'block';
+}
+
+function showCommand(sectionIdx) {
+    if (!reportData) return;
+    var output = document.getElementById('output');
+    output.innerHTML = renderCommandDetail(sectionIdx, reportData);
+    output.style.display = 'block';
+    window.scrollTo(0, 0);
+}
+
+function toggleDetail(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+}
+
+// --- Main entry ---
+
+function parseAndRender() {
+    var text = document.getElementById('inputText').value;
+    var output = document.getElementById('output');
+
+    if (!text.trim()) {
+        output.style.display = 'block';
+        output.innerHTML = '<div class="error-msg">错误: 请粘贴测试输出</div>';
+        return;
+    }
+
+    reportData = parseLog(text);
+    if (reportData.sections.length === 0 && reportData.boardOk.length === 0) {
+        output.style.display = 'block';
+        output.innerHTML = '<div class="error-msg">错误: 未能识别任何测试数据。请确认粘贴的是 run-board.sh 的输出。</div>';
+        return;
+    }
+
+    showDashboard();
+}
+
+// --- Utilities ---
 
 function loadReportFile() {
     var file = document.getElementById('fileInput').files[0];
@@ -299,8 +463,14 @@ function loadReportFile() {
     reader.readAsText(file);
 }
 
+function clearAll() {
+    document.getElementById('inputText').value = '';
+    document.getElementById('output').style.display = 'none';
+    reportData = null;
+}
+
 function loadSample() {
-    document.getElementById('inputText').value = 
+    document.getElementById('inputText').value =
 '==========================================\n' +
 '  OHOS Toybox 板端测试运行器\n' +
 '  hdc:      hdc\n' +
@@ -321,9 +491,9 @@ function loadSample() {
 '  [OK] mv\n' +
 '  [OK] mktemp\n' +
 '  [OK] ps\n' +
-'  [--] lsof\n' +
-'  [--] netstat\n' +
-'  [--] watch\n' +
+'  [--] lsof (不支持)\n' +
+'  [--] netstat (不支持)\n' +
+'  [--] watch (不支持)\n' +
 '\n' +
 '==========================================\n' +
 '  测试: bunzip2\n' +
@@ -349,17 +519,29 @@ function loadSample() {
 '==========================================\n' +
 '  测试: killall\n' +
 '==========================================\n' +
-'FAIL: killall kill -l lists HUP\n' +
-"echo -ne '' | /data/toybox-test/toybox killall /data/toybox-test/toybox killall -l 2>&1 | tr ' ' '\\n' | grep -q 'HUP' && echo ok\n" +
-'--- expected    2026-06-29 15:30:09.806311000 +0800\n' +
-'+++ actual      2026-06-29 15:30:09.974697900 +0800\n' +
+'PASS: killall help\n' +
+'PASS: killall -l lists signals\n' +
+'SKIP: killall kill -l lists HUP\n' +
+'PASS: killall basic\n' +
+'\n' +
+'==========================================\n' +
+'  测试: ls\n' +
+'==========================================\n' +
+'PASS: ls basic\n' +
+'PASS: ls -a\n' +
+'PASS: ls -l\n' +
+'FAIL: ls -C\n' +
+"echo -ne '' | /data/toybox-test/toybox ls -C _ls_testdir | wc -l | tr -d ' '\n" +
+'--- expected    2026-06-29 15:30:14.512847000 +0800\n' +
+'+++ actual      2026-06-29 15:30:14.625041800 +0800\n' +
 '@@ -1 +1 @@\n' +
-'-ok\n' +
-'+/bin/sh: tr: inaccessible or not found\n' +
+'-1\n' +
+'+2\n' +
 '\n' +
 '==========================================\n' +
 '  全部通过!\n' +
 '==========================================\n';
+    parseAndRender();
 }
 </script>
 </body>
