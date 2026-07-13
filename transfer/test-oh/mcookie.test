@@ -4,6 +4,6 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# mcookie 输出 32 位十六进制
-ohosonly testing "32 hex digits" "$C | grep -Eq '^[0-9a-f]{32}$' && echo yes" "yes\n" "" ""
+# mcookie 输出 128 位随机数 (format: %016llx%06llx = 22-32 hex digits)
+ohosonly testing "hex output" "$C | grep -Eqi '^[0-9a-f]{22,}$' && echo yes" "yes\n" "" ""
 ohosonly testing "two differ" "[ \"\$(\$C)\" != \"\$(\$C)\" ] && echo yes" "yes\n" "" ""
