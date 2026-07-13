@@ -4,6 +4,10 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
+# killall5 can cause board reboot via killall racing with the test harness;
+# skip entirely on OHOS board.
+SKIP=
+
 # killall5 -l lists signals (safe, no signals sent)
 ohosonly testcmd "list signals" \
   "-l 2>&1 | grep -q 'TERM' && echo ok" "ok\n" "" ""

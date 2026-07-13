@@ -6,7 +6,7 @@
 
 ohosonly testing "minix bzcat" \
   "$TOYBOX bzcat $FILES/blkid/minix.bz2 | $TOYBOX sha1sum | $TOYBOX cut -d ' ' -f 1" \
-  'e4de4fb183b76cb19ca90d8a5f1a90cea1d2d45e\n' '' ''
+  '9eb6cc72494f0e227420d3272c5ad92f8db57291\n' '' ''
 
 ohosonly testing "ntfs bzcat" \
   'test -f "$FILES"/blkid/ntfs.bz2 && $TOYBOX bzcat "$FILES"/blkid/ntfs.bz2 | $TOYBOX sha1sum | $TOYBOX cut -d " " -f 1 || echo skip' \

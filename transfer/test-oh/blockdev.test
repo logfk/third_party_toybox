@@ -14,7 +14,7 @@ for d in /dev/block/sda /dev/sda /dev/mmcblk0 /dev/vda; do
 done
 
 # Error: no options → "need --option"
-ohosonly testcmd "no options" "" "blockdev: Needs 1 argument (see \"blockdev --help\")\n" "" ""
+ohosonly testcmd "no options" "2>&1" "blockdev: Needs 1 argument (see \"blockdev --help\")\n" "" ""
 ohosonly testing "no options via C" '$C "" 2>&1 | head -1' "blockdev: need --option (see \"blockdev --help\")\n" "" ""
 
 # Error: --setro on non-block device should fail

@@ -7,4 +7,4 @@
 ohosonly testcmd "help" "--help 2>&1 | grep -qi 'dnsdomainname' && echo ok" "ok\n" "" ""
 
 # prints domain part of hostname (may succeed or fail depending on platform)
-ohosonly testcmd "no args" "2>&1 && echo ok || echo skip" "ok\n" "" ""
+ohosonly testcmd "no args" ">/dev/null 2>&1 && echo ok || echo skip" "ok\n" "" ""

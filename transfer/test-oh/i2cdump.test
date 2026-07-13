@@ -14,4 +14,4 @@ ohosonly testcmd "no args" "2>/dev/null && echo ok || echo fail" "fail\n" "" ""
 ohosonly testcmd "missing chip" "0 2>/dev/null && echo ok || echo fail" "fail\n" "" ""
 
 # dump on bus 0 chip 0x50 (needs I2C hardware)
-ohosonly testing "dump bus 0 chip 0x50" "$C -y 0 0x50 2>/dev/null && echo ok || echo skip" "ok\n" "" ""
+ohosonly testing "dump bus 0 chip 0x50" "$C -y 0 0x50 >/dev/null 2>&1 && echo ok || echo skip" "ok\n" "" ""
