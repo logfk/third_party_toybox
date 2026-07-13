@@ -25,7 +25,7 @@ rm -rf adir bdir afile bfile
 mkdir -p _ls_testdir
 touch _ls_testdir/visible _ls_testdir/.hidden
 ohosonly testing "ls -a shows hidden files" \
-  '$C -a _ls_testdir' ".\n..\n\\.hidden\nvisible\n" "" ""
+  '$C -a _ls_testdir' ".\n..\n.hidden\nvisible\n" "" ""
 rm -rf _ls_testdir
 
 # -l: long listing format

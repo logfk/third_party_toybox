@@ -11,10 +11,10 @@ ohosonly testcmd "help" \
 # no args should error (needs HOST PORT DEVICE)
 ohosonly testing "no args" "$C 2>/dev/null; echo \$?" "1\n" "" ""
 
-# -n no daemonize flag (still needs host/port/device)
+# -n no daemonize flag (will fail to connect, but flag is recognized)
 ohosonly testing "-n flag" \
-  "$C -n 127.0.0.1 10809 /dev/nbd0 2>/dev/null; echo \$?" "" "" ""
+  "$C -n 127.0.0.1 10809 /dev/nbd0 >/dev/null 2>&1 && echo ok || echo skip" "ok\n" "" ""
 
 # -b block size flag
 ohosonly testing "-b blocksize" \
-  "$C -b 2048 127.0.0.1 10809 /dev/nbd0 2>/dev/null; echo \$?" "" "" ""
+  "$C -b 2048 127.0.0.1 10809 /dev/nbd0 >/dev/null 2>&1 && echo ok || echo skip" "ok\n" "" ""
