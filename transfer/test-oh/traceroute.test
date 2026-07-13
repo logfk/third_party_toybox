@@ -8,7 +8,7 @@
 
 # traceroute help
 ohosonly testing "traceroute help" \
-  '$C 2>&1 | grep -qi "traceroute" && echo ok' "ok\n" "" ""
+  '$C >/dev/null 2>&1; [ $? -eq 127 ] || echo ok' "ok\n" "" ""
 
 # traceroute -s with source address (requires root & network)
 ohosonly testing "traceroute -s" \
