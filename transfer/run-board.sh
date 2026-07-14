@@ -93,6 +93,9 @@ sync_bundle() {
   echo ""
   echo "===== 同步测试包到板端 ====="
 
+  # 确保板端根目录存在（上次清理后可能不存在）
+  "$HDC" shell "mkdir -p $REMOTE_ROOT_ARG" 2>/dev/null
+
   local tok=0 tfail=0
   # 文本：base64 编码后分块写到板端 .b64，再解码。兼容任意大小，不受 CRLF 影响。
   send_text() {
