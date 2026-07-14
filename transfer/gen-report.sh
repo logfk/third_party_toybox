@@ -337,11 +337,11 @@ header .sub{color:#888;font-size:0.9em}
 .test-row .test-desc .test-purpose{color:#aaa;font-size:0.85em;margin-top:3px;display:block}
 .test-row .test-detail-toggle{background:none;border:1px solid #3a3a5e;color:#888;cursor:pointer;font-size:0.78em;padding:2px 8px;border-radius:4px;transition:color .2s,background .2s;flex-shrink:0;white-space:nowrap}
 .test-row .test-detail-toggle:hover{color:#e0e0e0;background:#2a2a4e;border-color:#5a5a8e}
-.test-row .test-detail{width:100%;margin-top:8px;padding:12px;background:#0a0a1e;border-radius:6px;overflow-x:auto;display:none;order:5}
-.test-row .test-detail.open{display:block}
-.test-row .fail-cmd{margin-bottom:8px}
-.test-row .fail-cmd code{display:block;padding:8px;background:#12122a;border-radius:4px;font-family:"Consolas","Courier New",monospace;font-size:0.85em;color:#e0e0e0;word-break:break-all;white-space:pre-wrap;margin-top:4px}
-.test-row .fail-diff{padding:10px;background:#12122a;border-radius:4px;font-family:"Consolas","Courier New",monospace;font-size:0.85em;color:#d0d0d0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;margin-top:4px}
+.test-detail{width:100%;margin-top:8px;margin-left:-14px;margin-right:-14px;padding:12px 14px;background:#0a0a1e;border-radius:0 0 6px 6px;overflow-x:auto;display:none}
+.test-detail.open{display:block}
+.fail-cmd{margin-bottom:8px}
+.fail-cmd code{display:block;padding:8px;background:#12122a;border-radius:4px;font-family:"Consolas","Courier New",monospace;font-size:0.85em;color:#e0e0e0;word-break:break-all;white-space:pre-wrap;margin-top:4px}
+.fail-diff{padding:10px;background:#12122a;border-radius:4px;font-family:"Consolas","Courier New",monospace;font-size:0.85em;color:#d0d0d0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;margin-top:4px}
 .detail-log{background:#0a0a1e;border:1px solid #1a1a3e;border-radius:6px;padding:12px;font-family:"Consolas","Courier New",monospace;font-size:0.82em;color:#c0c0c0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;max-height:360px;overflow-y:auto;margin-top:6px}
 .toggle-all-btn{background:#2a2a4e;color:#aaa;border:1px solid #3a3a5e;border-radius:4px;padding:2px 10px;font-size:0.8em;cursor:pointer;margin-left:8px}
 .toggle-all-btn:hover{color:#e0e0e0;background:#3a3a5e}
