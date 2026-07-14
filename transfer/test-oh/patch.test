@@ -4,7 +4,7 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-SKIP=1 ohosonly testing "dry run doesn't create file"    "$C --dry-run >/dev/null && [ ! -e bork ] && echo yes" "yes\n" "" "
+ohosonly testing "dry run doesn't create file"    "$C --dry-run >/dev/null && [ ! -e bork ] && echo yes" "yes\n" "" "
 --- /dev/null
 +++ bork
 @@ -0,0 +1,1 @@
@@ -89,7 +89,7 @@ ohosonly testing "quoted name" "$C > /dev/null && cat 'fruit bat'"    "hello\n" 
 
 ohosonly testing "bad quote" "$C 2>&1" "" "" '--- "filename'
 
-SKIP=1 ohosonly testing "dry run doesn't delete file"    "$C --dry-run > /dev/null && [ -e 'fruit bat' ] && echo yes" "yes\n" "" '
+ohosonly testing "dry run doesn't delete file"    "$C --dry-run > /dev/null && [ -e 'fruit bat' ] && echo yes" "yes\n" "" '
 --- "fruit bat"
 +++ /dev/null
 @@ -1 +0,0 @@
@@ -106,7 +106,7 @@ ohosonly testing "delete file"    "$C > /dev/null && [ ! -e 'fruit bat' ] && ech
 # todo bork bork2
 
 # We hit a bug, test the bugfix.
-SKIP=1 ohosonly testing "fuzz" "$C > /dev/null && cat input"  "blah blah
+ohosonly testing "fuzz" "$C > /dev/null && cat input"  "blah blah
  */
 package org.yaml.snakeyaml.representer;
 

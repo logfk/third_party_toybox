@@ -108,19 +108,19 @@ toyonly testing "-kx" "$C_SAFE -k1,1x" "3\na\n0c\n" "" "0c\na\n3\n"
 
 ohosonly testcmd "-c" "-c 2>&1 | grep -o [0-9]*" "2\n" "" "a\nb\na\nc"
 ohosonly testcmd "-uc" "-uc 2>&1 | grep -o [0-9]*" "2\n" "" "a\nb\nb\nc"
-SKIP=1 ohosonly testcmd "-C 1" "-C || echo yes" "yes\n" "" "one\ntwo\nthree"
-SKIP=1 ohosonly testcmd "-C 2" "-C && echo yes" "yes\n" "" "a\nb\nc\n"
+ohosonly testcmd "-C 1" "-C || echo yes" "yes\n" "" "one\ntwo\nthree"
+ohosonly testcmd "-C 2" "-C && echo yes" "yes\n" "" "a\nb\nc\n"
 
 ohosonly
-SKIP=1 toyonly testcmd 'negative -k' '-k-2,-2 -k-1r' 'a b z\nd e q\nx e a\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
+toyonly testcmd 'negative -k' '-k-2,-2 -k-1r' 'a b z\nd e q\nx e a\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
 ohosonly
-SKIP=1 toyonly testcmd 'negative -k2' '-k-2' 'a b z\nx e a\nd e q\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
+toyonly testcmd 'negative -k2' '-k-2' 'a b z\nx e a\nd e q\nb m n\n'    '' 'a b z\nd e q\nb m n\nx e a\n'
 
 ohosonly testcmd 'missing key becomes ""' '-k3r' 'm n o\ng h i\na b c\nd e\nj k\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
 ohosonly
-SKIP=1 toyonly testcmd 'negative straddle' '-k-1r' 'm n o\nj k\ng h i\nd e\na b c\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
+toyonly testcmd 'negative straddle' '-k-1r' 'm n o\nj k\ng h i\nd e\na b c\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
 ohosonly
-SKIP=1 toyonly testcmd 'missing negative' '-k-3r' 'm n o\ng h i\na b c\nd e\nj k\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
+toyonly testcmd 'missing negative' '-k-3r' 'm n o\ng h i\na b c\nd e\nj k\n'    '' 'a b c\nd e\ng h i\nj k\nm n o\n'
 
 optional TOYBOX_FLOAT
 

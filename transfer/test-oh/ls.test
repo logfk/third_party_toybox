@@ -78,6 +78,6 @@ rm -rf _ls_testdir
 # -C: column display (default, multi-column)
 mkdir -p _ls_testdir
 touch _ls_testdir/a _ls_testdir/b
-SKIP=1 ohosonly testing "ls -C column display" \
+ohosonly testing "ls -C column display" \
   '$C -C _ls_testdir | wc -l | tr -d " "' "1\n" "" ""
 rm -rf _ls_testdir

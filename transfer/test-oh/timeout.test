@@ -35,9 +35,9 @@ ohosonly testcmd "trap-and-exit --preserve-status" \
 rm loop.sh
 
 ohosonly
-SKIP=1 toyonly testcmd "-i" \
+toyonly testcmd "-i" \
   "-i 1 sh -c 'for i in .25 .50 2; do sleep \$i; echo hello; done'" \
   "hello\nhello\n" "" ""
-SKIP=1 ohosonly testing '-v' "{ timeout -v .1 sleep 3;} 2>&1 | egrep -o 'TERM|sleep'" \
+ohosonly testing '-v' "{ timeout -v .1 sleep 3;} 2>&1 | egrep -o 'TERM|sleep'" \
   'TERM\nsleep\n' '' ''
 

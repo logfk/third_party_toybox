@@ -280,6 +280,19 @@ for testfile in "$@"; do
 done
 rm -f "$TMP_OUT"
 
+# ====== 清理板端测试文件 ======
+if [ "${NO_CLEANUP:-0}" != "1" ]; then
+  echo ""
+  echo "===== 清理板端测试文件 ====="
+  if "$HDC" shell "rm -rf $REMOTE_ROOT_ARG" 2>/dev/null; then
+    echo "  已删除 $REMOTE_ROOT"
+  else
+    echo "  警告: 清理失败，请手动删除 $REMOTE_ROOT"
+  fi
+else
+  echo "NO_CLEANUP=1，保留板端测试文件"
+fi
+
 echo ""
 echo "=========================================="
 [ "$TOTAL_FAIL" -eq 0 ] && echo "  全部通过!" || echo "  失败: $TOTAL_FAIL"

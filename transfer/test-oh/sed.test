@@ -154,7 +154,7 @@ ohosonly testcmd '\n too high' '-E "s/(.*)/\2/p" 2>/dev/null || echo OK' "OK\n" 
 ohosonly
 toyonly testcmd 's///x' '"s/(hello )?(world)/\2/x"' "world" "" "hello world"
 
-SKIP=1
+
 # Performance test
 X=x; Y=20; while [ $Y -gt 0 ]; do X=$X$X; Y=$(($Y-1)); done
 ohosonly testing 'megabyte s/x/y/g (20 sec timeout)'    "timeout 20 $C 's/x/y/g' | sha1sum"    '138c1fa7c3f64186203b0192fb4abdb33cb4e98a  -\n' '' "$X\n"
