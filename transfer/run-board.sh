@@ -37,7 +37,10 @@ HDC="${HDC:-hdc}"
 # 报告输出目录
 REPORT_DIR="$TOP/_reports"
 mkdir -p "$REPORT_DIR"
-REPORT_LOG="$REPORT_DIR/report-$(date +%Y%m%d-%H%M%S).log"
+RUN_TS="$(date +%Y%m%d-%H%M%S)"
+RUN_DIR="$REPORT_DIR/run-$RUN_TS"
+mkdir -p "$RUN_DIR/commands"
+REPORT_LOG="$RUN_DIR/log.txt"
 
 # 所有输出同时写入日志（供 gen-report.sh 解析）
 exec > >(tee -a "$REPORT_LOG") 2>&1
@@ -46,7 +49,7 @@ echo "=========================================="
 echo "  OHOS Toybox 板端测试运行器（板端执行模式）"
 echo "  hdc:      $HDC"
 echo "  测试目录: $TEST_OH_DIR"
-echo "  日志文件: $REPORT_LOG"
+echo "  输出目录: $RUN_DIR"
 echo "=========================================="
 
 # 检查 hdc 连接
@@ -313,11 +316,14 @@ echo "=========================================="
 [ "$TOTAL_FAIL" -eq 0 ] && echo "  全部通过!" || echo "  失败: $TOTAL_FAIL"
 echo "=========================================="
 
-# 生成 HTML 报告（gen-report.sh 解析本日志）
-REPORT_HTML="$REPORT_DIR/report-$(date +%Y%m%d-%H%M%S).html"
-"$TOP/gen-report.sh" < "$REPORT_LOG" > "$REPORT_HTML" 2>/dev/null \
-  && echo "报告已生成: $REPORT_HTML" \
+# 生成多页面 HTML 报告
+"$TOP/gen-report.sh" "$RUN_DIR" < "$REPORT_LOG" 2>/dev/null \
+  && echo "报告已生成: $RUN_DIR/" \
   || echo "报告生成失败"
 
-chmod 644 "$REPORT_LOG" "$REPORT_HTML" 2>/dev/null
+# 生成主索引页面
+"$TOP/gen-index.sh" "$REPORT_DIR" 2>/dev/null
+
+chmod 644 "$RUN_DIR/log.txt" "$RUN_DIR/stats.txt" "$RUN_DIR/data.json" 2>/dev/null
+chmod 644 "$RUN_DIR/index.html" "$RUN_DIR/commands/"*.html 2>/dev/null
 exit $TOTAL_FAIL
