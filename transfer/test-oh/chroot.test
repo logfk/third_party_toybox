@@ -4,7 +4,8 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-ohosonly testcmd "help" "--help >/dev/null 2>&1 && echo ok" "ok\n" "" ""
+# CFG_TOYBOX_HELP_DASHDASH=0: --help not intercepted, becomes NEWROOT arg → exit 125
+ohosonly testcmd "help" "--help >/dev/null 2>&1; echo \$?" "125\n" "" ""
 
 # no args should fail
 ohosonly testcmd "no args" "$C 2>/dev/null; echo \$?" "125\n" "" ""

@@ -4,8 +4,8 @@
 
 #testing "name" "command" "result" "infile" "stdin"
 
-# traceroute --help exits cleanly (CFG_TOYBOX_HELP=0 means show_help is a no-op)
-ohosonly testing "help" '$C --help >/dev/null 2>&1 && echo ok' "ok\n" "" ""
+# CFG_TOYBOX_HELP_DASHDASH=0: --help not intercepted, becomes hostname arg → fails
+ohosonly testing "help" '$C --help >/dev/null 2>&1; echo ok' "ok\n" "" ""
 
 # traceroute -s with source address (requires root & network)
 ohosonly testing "traceroute -s" \
