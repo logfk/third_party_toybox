@@ -127,7 +127,7 @@ for ((_i=0; _i<${#INPUT[@]}; _i++)); do
                 DTL_CMD+=("$_DTL_CMD"); DTL_NAME+=("$_DTL_NAME")
                 DTL_RESULT+=("$_DTL_RES"); DTL_TEXT+=("$_DTL_BUF")
             }
-            _rest="${_line#*[...] }"
+            _rest="${_line#*] }"
             _DTL_RES="${_rest%% *}"
             _name_rest="${_rest#* }"
             _DTL_NAME="${_name_rest%%|*}"; _DTL_NAME="${_DTL_NAME% }"

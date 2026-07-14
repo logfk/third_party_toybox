@@ -113,6 +113,7 @@ header .sub{color:#888;font-size:0.9em}
 .test-row .fail-cmd{margin-bottom:8px}
 .test-row .fail-cmd code{display:block;padding:8px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#e0e0e0;word-break:break-all;white-space:pre-wrap;margin-top:4px}
 .test-row .fail-diff{padding:10px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#d0d0d0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;margin-top:4px}
+.test-row .detail-log{background:#0a0a1e;border:1px solid #1a1a3e;border-radius:6px;padding:12px;font-family:'Consolas','Courier New',monospace;font-size:0.82em;color:#c0c0c0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;max-height:360px;overflow-y:auto;margin-top:6px}
 
 footer{text-align:center;padding:20px;color:#555;font-size:0.85em}
 </style>
@@ -238,9 +239,48 @@ function parseLog(text) {
         }
     }
 
+    var details = [];
+    var inDetail = false, detailCmd = '', detailName = '', detailResult = '', detailText = '';
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        var dm = line.match(/^===== DETAIL: (.+?) =====$/);
+        if (dm) {
+            if (inDetail && detailName) {
+                details.push({cmd: detailCmd, name: detailName, result: detailResult, text: detailText});
+            }
+            inDetail = true;
+            detailCmd = dm[1];
+            detailName = '';
+            detailResult = '';
+            detailText = '';
+            continue;
+        }
+        if (inDetail) {
+            var lm = line.match(/^\[(.+?)\]\s+(PASS|FAIL|SKIP)\s+(.+?)\s*\|/);
+            if (lm) {
+                if (detailName) {
+                    details.push({cmd: detailCmd, name: detailName, result: detailResult, text: detailText});
+                }
+                detailResult = lm[2];
+                detailName = lm[3];
+                detailText = line + '\n';
+            } else if (line.substring(0, 2) === '  ' || line === '') {
+                detailText += line + '\n';
+            } else {
+                if (detailName) {
+                    details.push({cmd: detailCmd, name: detailName, result: detailResult, text: detailText});
+                }
+                inDetail = false;
+            }
+        }
+    }
+    if (inDetail && detailName) {
+        details.push({cmd: detailCmd, name: detailName, result: detailResult, text: detailText});
+    }
+
     return { boardOk: boardOk, boardNo: boardNo, sections: sections,
              results: results, resSection: resSection,
-             failCmd: failCmd, failDiff: failDiff };
+             failCmd: failCmd, failDiff: failDiff, details: details };
 }
 
 function countResults(results) {
@@ -346,7 +386,7 @@ function renderCommandDetail(sectionIdx, data) {
     h += '</div></div>';
 
     // Test cases
-    h += '<h2 style="font-size:1em;color:#e8e8ff;margin-bottom:12px">测试用例</h2>';
+    h += '<h2 style="font-size:1em;color:#e8e8ff;margin-bottom:12px">测试用例 <button onclick="toggleAllDetail()" style="background:#2a2a4e;color:#aaa;border:1px solid #3a3a5e;border-radius:4px;padding:2px 10px;font-size:0.8em;cursor:pointer;margin-left:8px">全部展开/折叠</button></h2>';
     h += '<div class="test-list">';
     for (var ri = 0; ri < data.results.length; ri++) {
         if (data.resSection[ri] !== sectionIdx) continue;
@@ -365,15 +405,28 @@ function renderCommandDetail(sectionIdx, data) {
         }
         h += '</div>';
 
-        // Detail toggle for FAIL
-        if (r.type === 'FAIL' && data.failCmd[ri]) {
+        // Look up DETAIL data for this test
+        var detailText = '';
+        var allDetails = data.details || [];
+        for (var di = 0; di < allDetails.length; di++) {
+            if (allDetails[di].cmd === cmdName && allDetails[di].name === r.desc) {
+                detailText = allDetails[di].text;
+                break;
+            }
+        }
+
+        if (detailText || (r.type === 'FAIL' && data.failCmd[ri])) {
             var detailId = 'detail-' + sectionIdx + '-' + ri;
             h += '<button class="test-detail-toggle" onclick="toggleDetail(\'' + detailId + '\')">详情</button>';
             h += '</div>';  // close test-row
             h += '<div id="' + detailId + '" class="test-detail">';
-            h += '<div class="fail-cmd"><strong>命令:</strong><code>' + escHtml(data.failCmd[ri]) + '</code></div>';
-            if (data.failDiff[ri]) {
-                h += '<pre class="fail-diff">' + escHtml(data.failDiff[ri]) + '</pre>';
+            if (detailText) {
+                h += '<pre class="detail-log">' + escHtml(detailText) + '</pre>';
+            } else if (r.type === 'FAIL' && data.failCmd[ri]) {
+                h += '<div class="fail-cmd"><strong>命令:</strong><code>' + escHtml(data.failCmd[ri]) + '</code></div>';
+                if (data.failDiff[ri]) {
+                    h += '<pre class="fail-diff">' + escHtml(data.failDiff[ri]) + '</pre>';
+                }
             }
             h += '</div>';
         } else {
@@ -426,6 +479,18 @@ function showCommand(sectionIdx) {
 function toggleDetail(id) {
     var el = document.getElementById(id);
     if (el) el.classList.toggle('open');
+}
+
+function toggleAllDetail() {
+    var details = document.querySelectorAll('.test-detail');
+    var anyClosed = false;
+    for (var i = 0; i < details.length; i++) {
+        if (!details[i].classList.contains('open')) { anyClosed = true; break; }
+    }
+    for (var i = 0; i < details.length; i++) {
+        if (anyClosed) details[i].classList.add('open');
+        else details[i].classList.remove('open');
+    }
 }
 
 // --- Main entry ---
@@ -503,7 +568,14 @@ function loadSample() {
 'PASS: bunzip2 removes input\n' +
 'PASS: bunzip2 -c to stdout\n' +
 '\n' +
-'==========================================\n' +
+'===== DETAIL: bunzip2 =====\n' +
+'[15:30:04] PASS bunzip2 -k keeps input | cmd=/data/toybox-test/toybox bunzip2 -k exit=0\n' +
+'[15:30:04] PASS bunzip2 -k produces output | cmd=/data/toybox-test/toybox bunzip2 -k exit=0\n' +
+'[15:30:04] PASS bunzip2 removes input | cmd=/data/toybox-test/toybox bunzip2 exit=0\n' +
+'[15:30:04] PASS bunzip2 -c to stdout | cmd=/data/toybox-test/toybox bunzip2 -c exit=0\n' +
+'\n' +
+'==========================================' +
+'\n' +
 '  测试: dmesg\n' +
 '==========================================\n' +
 'PASS: dmesg basic output\n' +
@@ -516,7 +588,16 @@ function loadSample() {
 '@@ -1 +0,0 @@\n' +
 '-ok\n' +
 '\n' +
-'==========================================\n' +
+'===== DETAIL: dmesg =====\n' +
+'[15:30:05] PASS dmesg basic output | cmd=/data/toybox-test/toybox dmesg exit=0\n' +
+'[15:30:05] PASS dmesg -T | cmd=/data/toybox-test/toybox dmesg -T exit=0\n' +
+'[15:30:05] PASS dmesg -c | cmd=/data/toybox-test/toybox dmesg -c exit=0\n' +
+'[15:30:05] FAIL dmesg -r | cmd=/data/toybox-test/toybox dmesg -r exit=1\n' +
+'  expected: ok\n' +
+'  actual: \n' +
+'\n' +
+'==========================================' +
+'\n' +
 '  测试: killall\n' +
 '==========================================\n' +
 'PASS: killall help\n' +
@@ -524,7 +605,14 @@ function loadSample() {
 'SKIP: killall kill -l lists HUP\n' +
 'PASS: killall basic\n' +
 '\n' +
-'==========================================\n' +
+'===== DETAIL: killall =====\n' +
+'[15:30:10] PASS killall help | cmd=/data/toybox-test/toybox killall --help exit=0\n' +
+'[15:30:10] PASS killall -l lists signals | cmd=/data/toybox-test/toybox killall -l exit=0\n' +
+'[15:30:10] SKIP killall kill -l lists HUP | reason: optional\n' +
+'[15:30:10] PASS killall basic | cmd=/data/toybox-test/toybox killall exit=0\n' +
+'\n' +
+'==========================================' +
+'\n' +
 '  测试: ls\n' +
 '==========================================\n' +
 'PASS: ls basic\n' +
@@ -538,7 +626,16 @@ function loadSample() {
 '-1\n' +
 '+2\n' +
 '\n' +
-'==========================================\n' +
+'===== DETAIL: ls =====\n' +
+'[15:30:14] PASS ls basic | cmd=/data/toybox-test/toybox ls exit=0\n' +
+'[15:30:14] PASS ls -a | cmd=/data/toybox-test/toybox ls -a exit=0\n' +
+'[15:30:14] PASS ls -l | cmd=/data/toybox-test/toybox ls -l exit=0\n' +
+'[15:30:14] FAIL ls -C | cmd=/data/toybox-test/toybox ls -C exit=1\n' +
+'  expected: 1\n' +
+'  actual: 2\n' +
+'\n' +
+'==========================================' +
+'\n' +
 '  全部通过!\n' +
 '==========================================\n';
     parseAndRender();
