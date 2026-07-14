@@ -18,6 +18,12 @@
 CMDNAME="$1"
 [ -n "$CMDNAME" ] || { echo "board-run: 缺少命令名参数" >&2; exit 127; }
 
+# 详细日志
+LOG_DIR=/data/toybox-test/logs
+mkdir -p "$LOG_DIR"
+TEST_LOG="$LOG_DIR/${CMDNAME}.log"
+rm -f "$TEST_LOG"
+
 # 被测命令：板端 toybox + 子命令
 : "${TOYBOX:=/data/toybox-test/toybox}"
 : "${OHOS_TEST:=1}"
@@ -49,7 +55,7 @@ for _cmd in cmp stat readlink dd wc md5sum sha1sum sha256sum od hexdump \
 done
 unset _cmd _p _st
 
-export CMDNAME OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT
+export CMDNAME OHOS_TEST TOYBOX TESTDIR VERBOSE FAILCOUNT TEST_LOG
 
 # 每条命令在独立干净工作目录执行，避免相互污染
 WORKDIR=/data/toybox-test/work
@@ -70,7 +76,21 @@ export C
 TEST_FILE="/data/toybox-test/test-oh/${CMDNAME}.test"
 [ -f "$TEST_FILE" ] || { echo "board-run: 未找到测试文件 ${TEST_FILE}" >&2; exit 127; }
 
+# 写入日志头
+if [ -n "$TEST_LOG" ]; then
+  {
+    printf '# Command: %s\n' "$CMDNAME"
+    printf '# Date: %s\n' "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null)"
+    printf '# Toybox: %s\n' "$TOYBOX"
+    printf '# Kernel: %s\n' "$(uname -r 2>/dev/null)"
+    printf '\n'
+  } > "$TEST_LOG"
+fi
+
 # VERBOSE=all 使首条失败后继续执行剩余用例
 . "$TEST_FILE"
+
+# 写入汇总
+_log_summary
 
 exit "${FAILCOUNT:-0}"

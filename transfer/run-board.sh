@@ -277,6 +277,18 @@ for testfile in "$@"; do
     2>&1 | tr -d '\r' | tee "$TMP_OUT"
   fc=$(grep -c '^FAIL:' "$TMP_OUT" 2>/dev/null || true)
   TOTAL_FAIL=$((TOTAL_FAIL + ${fc:-0}))
+
+  # 拉取板端详细日志
+  DETAILED_LOG="$REPORT_DIR/detail-${CMDNAME}.log"
+  "$HDC" shell "cat $REMOTE_ROOT_ARG/logs/${CMDNAME}.log 2>/dev/null" 2>/dev/null | tr -d '\r' > "$DETAILED_LOG"
+  if [ -s "$DETAILED_LOG" ]; then
+    echo ""
+    echo "===== 详细日志: $CMDNAME ====="
+    cat "$DETAILED_LOG"
+    # 追加到主报告日志
+    printf '\n===== DETAIL: %s =====\n' "$CMDNAME" >> "$REPORT_LOG"
+    cat "$DETAILED_LOG" >> "$REPORT_LOG"
+  fi
 done
 rm -f "$TMP_OUT"
 

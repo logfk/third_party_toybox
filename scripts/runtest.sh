@@ -34,6 +34,10 @@
 # Function "optional" enables/disables tests based on configuration options.
 
 export FAILCOUNT=0 SKIP=0
+: ${TEST_LOG:=}
+: ${SKIP_REASON:=}
+PASSCOUNT=0
+SKIPCOUNT=0
 : ${SHOWPASS:=PASS} ${SHOWFAIL:=FAIL} ${SHOWSKIP:=SKIP}
 if tty -s <&1
 then
@@ -48,6 +52,26 @@ fi
 verbose_has()
 {
   [ "${VERBOSE/$1/}" != "$VERBOSE" ]
+}
+
+_ts() { date '+%H:%M:%S' 2>/dev/null; }
+
+_log() {
+  [ -z "$TEST_LOG" ] && return
+  printf '%s\n' "$@" >> "$TEST_LOG"
+}
+
+_log_summary() {
+  [ -z "$TEST_LOG" ] && return
+  local total=$((${PASSCOUNT:-0} + ${FAILCOUNT:-0} + ${SKIPCOUNT:-0}))
+  {
+    printf '\n=== SUMMARY ===\n'
+    printf 'total: %d\n' "$total"
+    printf 'pass: %d\n' "${PASSCOUNT:-0}"
+    printf 'fail: %d\n' "${FAILCOUNT:-0}"
+    printf 'skip: %d\n' "${SKIPCOUNT:-0}"
+    [ "$total" -gt 0 ] && printf 'pass-rate: %d%%\n' $(( ${PASSCOUNT:-0} * 100 / $total ))
+  } >> "$TEST_LOG"
 }
 
 wrong_args()
@@ -83,8 +107,12 @@ do_fail()
 # Set SKIP high if option not enabled in $OPTIONFLAGS (unless OPTIONFLAGS blank)
 optional()
 {
-  [ -n "$OPTIONFLAGS" ] && [ "$OPTIONFLAGS" == "${OPTIONFLAGS/:$1:/}" ] &&
-    SKIP=99999 || SKIP=0
+  if [ -n "$OPTIONFLAGS" ] && [ "$OPTIONFLAGS" == "${OPTIONFLAGS/:$1:/}" ]; then
+    SKIP_REASON="optional:$1"
+    SKIP=99999
+  else
+    SKIP=0
+  fi
 }
 
 # Evalute command line and skip next test when false
@@ -96,13 +124,13 @@ skipnot()
   else
     eval "$@"
   fi
-  [ $? -eq 0 ] || { ((++SKIP)); return 1; }
+  [ $? -eq 0 ] || { SKIP_REASON="skipnot"; ((++SKIP)); return 1; }
 }
 
 # Skip this test (rest of command line) when not running OHOS-adapted build.
 ohosonly()
 {
-  [ -n "$OHOS_TEST" ] || ((++SKIP))
+  [ -n "$OHOS_TEST" ] || { SKIP_REASON="ohosonly"; ((++SKIP)); }
   "$@"
 }
 
@@ -117,7 +145,7 @@ toyonly()
   case "$IS_TOYBOX" in
     toybox*) ;;
     This\ is\ not\ GNU*) ;;
-    *) [ $SKIP -eq 0 ] && ((++SKIP)) ;;
+    *) [ $SKIP -eq 0 ] && { SKIP_REASON="toyonly"; ((++SKIP)); } ;;
   esac
 
   "$@"
@@ -136,6 +164,11 @@ testing()
   if [ "$SKIP" -gt 0 ]
   then
     verbose_has quiet || printf "%s\n" "$SHOWSKIP: $NAME"
+    _log "[$(_ts)] SKIP $NAME | reason: ${SKIP_REASON:-manual}"
+    if [ "${SKIP_REASON%%:*}" != "optional" ]; then
+      SKIP_REASON=""
+    fi
+    SKIPCOUNT=$((${SKIPCOUNT:-0} + 1))
     ((--SKIP))
 
     return 0
@@ -150,7 +183,18 @@ testing()
   [ $RETVAL -gt 128 ] &&
     echo "exited with signal (or returned $RETVAL)" >> actual
   DIFF="$(cd "$TESTDIR"; diff -au${NOSPACE:+w} expected actual 2>&1)"
-  [ -z "$DIFF" ] && do_pass || VERBOSE=all do_fail
+  if [ -z "$DIFF" ]; then
+    do_pass
+    PASSCOUNT=$((${PASSCOUNT:-0} + 1))
+    _log "[$(_ts)] PASS $NAME | cmd=$2 exit=$RETVAL"
+  else
+    VERBOSE=all do_fail
+    _log "[$(_ts)] FAIL $NAME | cmd=$2 exit=$RETVAL"
+    [ $RETVAL -gt 128 ] && _log "  signal: $(kill -l $RETVAL 2>/dev/null || echo "signal $((RETVAL-128))")"
+    _log "  expected: $(echo -ne "$3" | head -c 500)"
+    _log "  actual: $(cat "$TESTDIR"/actual | head -c 500)"
+    echo "$DIFF" | head -20 | sed 's/^/  diff: /' >> "$TEST_LOG"
+  fi
   if ! verbose_has quiet && { [ -n "$DIFF" ] || verbose_has spam; }
   then
     [ ! -z "$4" ] && printf "%s\n" "echo -ne \"$4\" > input"

@@ -102,6 +102,46 @@ for ((i=0; i<${#INPUT[@]}; i++)); do
     fi
 done
 
+# ---- Parse DETAIL sections (appended by run-board.sh) ----
+declare -a DTL_CMD DTL_NAME DTL_RESULT DTL_TEXT
+_IN_DTL=false
+_DTL_CMD=""
+_DTL_BUF=""
+_DTL_NAME=""
+_DTL_RES=""
+for ((_i=0; _i<${#INPUT[@]}; _i++)); do
+    _line="${INPUT[$_i]}"
+    if [[ "$_line" == "===== DETAIL:"*"=====" ]]; then
+        if [ -n "$_DTL_BUF" ] && [ -n "$_DTL_NAME" ]; then
+            DTL_CMD+=("$_DTL_CMD"); DTL_NAME+=("$_DTL_NAME")
+            DTL_RESULT+=("$_DTL_RES"); DTL_TEXT+=("$_DTL_BUF")
+        fi
+        _IN_DTL=true
+        _DTL_CMD="${_line#===== DETAIL: }"; _DTL_CMD="${_DTL_CMD%=====}"
+        _DTL_BUF=""; _DTL_NAME=""; _DTL_RES=""
+        continue
+    fi
+    if [ "$_IN_DTL" = true ]; then
+        if [[ "$_line" == "["*"]"* ]]; then
+            [ -n "$_DTL_BUF" ] && [ -n "$_DTL_NAME" ] && {
+                DTL_CMD+=("$_DTL_CMD"); DTL_NAME+=("$_DTL_NAME")
+                DTL_RESULT+=("$_DTL_RES"); DTL_TEXT+=("$_DTL_BUF")
+            }
+            _rest="${_line#*[...] }"
+            _DTL_RES="${_rest%% *}"
+            _name_rest="${_rest#* }"
+            _DTL_NAME="${_name_rest%%|*}"; _DTL_NAME="${_DTL_NAME% }"
+            _DTL_BUF="${_line}"$'\n'
+        elif [[ "$_line" == "  "* ]]; then
+            _DTL_BUF="${_DTL_BUF}${_line}"$'\n'
+        fi
+    fi
+done
+[ -n "$_DTL_BUF" ] && [ -n "$_DTL_NAME" ] && {
+    DTL_CMD+=("$_DTL_CMD"); DTL_NAME+=("$_DTL_NAME")
+    DTL_RESULT+=("$_DTL_RES"); DTL_TEXT+=("$_DTL_BUF")
+}
+
 # ---- Count ----
 P=0; F=0; S=0
 for r in "${RESULTS[@]}"; do
@@ -192,6 +232,14 @@ for fd in "${FAIL_DIFF[@]}"; do
 done
 JSON_FAIL_DIFF="${JSON_FAIL_DIFF}]"
 
+JSON_DETAIL="["
+sep=""
+for ((_di=0; _di<${#DTL_CMD[@]}; _di++)); do
+    JSON_DETAIL="${JSON_DETAIL}${sep}{\"cmd\":\"$(json_escape "${DTL_CMD[$_di]}")\",\"name\":\"$(json_escape "${DTL_NAME[$_di]}")\",\"result\":\"$(json_escape "${DTL_RESULT[$_di]}")\",\"text\":\"$(json_escape "${DTL_TEXT[$_di]}")\"}"
+    sep=","
+done
+JSON_DETAIL="${JSON_DETAIL}]"
+
 # ===== Output HTML =====
 cat << HTMLEND
 <!DOCTYPE html>
@@ -263,8 +311,8 @@ header .sub{color:#888;font-size:0.9em}
 .cmd-header .cmd-summary-stats .stat.pass{background:#0d2b1a;color:#4caf50}
 .cmd-header .cmd-summary-stats .stat.fail{background:#2b0d0d;color:#f44336}
 .cmd-header .cmd-summary-stats .stat.skip{background:#2b2b0d;color:#ff9800}
-.test-list{display:flex;flex-direction:column;gap:8px}
-.test-row{background:#161638;border-radius:10px;padding:14px 18px;font-size:0.9em;display:flex;align-items:flex-start;gap:12px;border-left:3px solid transparent;transition:background .2s}
+.test-list{display:flex;flex-direction:column;gap:4px}
+.test-row{background:#161638;border-radius:8px;padding:10px 14px;font-size:0.88em;display:flex;align-items:center;gap:10px;border-left:3px solid transparent;transition:background .2s}
 .test-row:hover{background:#1a1a3e}
 .test-row.pass{border-left-color:#4caf50}
 .test-row.fail{border-left-color:#f44336;background:#1e1010}
@@ -277,13 +325,18 @@ header .sub{color:#888;font-size:0.9em}
 .test-row .badge-skip{background:#ff9800;color:#000}
 .test-row .test-desc{flex:1;padding-top:2px}
 .test-row .test-desc .test-purpose{color:#aaa;font-size:0.85em;margin-top:3px;display:block}
-.test-row .test-detail-toggle{background:none;border:none;color:#888;cursor:pointer;font-size:0.85em;padding:2px 8px;border-radius:4px;transition:color .2s;flex-shrink:0}
-.test-row .test-detail-toggle:hover{color:#e0e0e0;background:#2a2a4e}
+.test-row .test-detail-toggle{background:none;border:1px solid #3a3a5e;color:#888;cursor:pointer;font-size:0.78em;padding:2px 8px;border-radius:4px;transition:color .2s,background .2s;flex-shrink:0;white-space:nowrap}
+.test-row .test-detail-toggle:hover{color:#e0e0e0;background:#2a2a4e;border-color:#5a5a8e}
 .test-row .test-detail{width:100%;margin-top:8px;padding:12px;background:#0a0a1e;border-radius:6px;overflow-x:auto;display:none;order:5}
 .test-row .test-detail.open{display:block}
 .test-row .fail-cmd{margin-bottom:8px}
 .test-row .fail-cmd code{display:block;padding:8px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#e0e0e0;word-break:break-all;white-space:pre-wrap;margin-top:4px}
 .test-row .fail-diff{padding:10px;background:#12122a;border-radius:4px;font-family:'Consolas','Courier New',monospace;font-size:0.85em;color:#d0d0d0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;margin-top:4px}
+.detail-log{background:#0a0a1e;border:1px solid #1a1a3e;border-radius:6px;padding:12px;font-family:'Consolas','Courier New',monospace;font-size:0.82em;color:#c0c0c0;overflow-x:auto;white-space:pre-wrap;line-height:1.5;max-height:360px;overflow-y:auto;margin-top:6px}
+.detail-log .hl-skip{color:#ff9800}
+.detail-log .hl-pass{color:#4caf50}
+.detail-log .hl-fail{color:#f44336}
+.detail-log .hl-dim{color:#666}
 footer{text-align:center;padding:20px;color:#555;font-size:0.85em}
 .hidden{display:none!important}
 </style>
@@ -307,7 +360,8 @@ var REPORT_DATA = {
     results: $JSON_RESULTS,
     resSection: $JSON_RES_SECTION,
     failCmd: $JSON_FAIL_CMD,
-    failDiff: $JSON_FAIL_DIFF
+    failDiff: $JSON_FAIL_DIFF,
+    detail: $JSON_DETAIL
 };
 
 function escHtml(s) {
@@ -334,6 +388,14 @@ function getCmdStats(sidx) {
         if (REPORT_DATA.resSection[i] === sidx) c.push(REPORT_DATA.results[i]);
     }
     return countResults(c);
+}
+
+function getDetail(cmd, name) {
+    for (var i = 0; i < REPORT_DATA.detail.length; i++) {
+        var d = REPORT_DATA.detail[i];
+        if (d.cmd === cmd && d.name === name) return d.text;
+    }
+    return '';
 }
 
 function inferPurpose(cmd, desc) {
@@ -435,7 +497,7 @@ function showCommand(sidx) {
     if (cs.skip > 0) h += '<span class="stat skip">跳过: ' + cs.skip + '</span>';
     h += '</div></div>';
 
-    h += '<h2 style="font-size:1em;color:#e8e8ff;margin-bottom:12px">测试用例</h2>';
+    h += '<h2 style="font-size:1em;color:#e8e8ff;margin-bottom:12px">测试用例 <button onclick="toggleAllDetail()" style="background:#2a2a4e;color:#aaa;border:1px solid #3a3a5e;border-radius:4px;padding:2px 10px;font-size:0.8em;cursor:pointer;margin-left:8px">全部展开/折叠</button></h2>';
     h += '<div class="test-list">';
     for (var ri = 0; ri < REPORT_DATA.results.length; ri++) {
         if (REPORT_DATA.resSection[ri] !== sidx) continue;
@@ -452,14 +514,19 @@ function showCommand(sidx) {
         }
         h += '</div>';
 
-        if (r.type === 'FAIL' && REPORT_DATA.failCmd[ri]) {
+        var detail = getDetail(cmdName, r.desc);
+        if (detail || (r.type === 'FAIL' && REPORT_DATA.failCmd[ri])) {
             var did = 'd-' + sidx + '-' + ri;
             h += '<button class="test-detail-toggle" onclick="toggleDetail(\'' + did + '\')">详情</button>';
             h += '</div>';
             h += '<div id="' + did + '" class="test-detail">';
-            h += '<div class="fail-cmd"><strong>命令:</strong><code>' + escHtml(REPORT_DATA.failCmd[ri]) + '</code></div>';
-            if (REPORT_DATA.failDiff[ri]) {
-                h += '<pre class="fail-diff">' + escHtml(REPORT_DATA.failDiff[ri]) + '</pre>';
+            if (detail) {
+                h += '<pre class="detail-log">' + escHtml(detail) + '</pre>';
+            } else if (REPORT_DATA.failCmd[ri]) {
+                h += '<div class="fail-cmd"><strong>命令:</strong><code>' + escHtml(REPORT_DATA.failCmd[ri]) + '</code></div>';
+                if (REPORT_DATA.failDiff[ri]) {
+                    h += '<pre class="fail-diff">' + escHtml(REPORT_DATA.failDiff[ri]) + '</pre>';
+                }
             }
             h += '</div>';
         } else {
@@ -476,6 +543,18 @@ function showCommand(sidx) {
 function toggleDetail(id) {
     var el = document.getElementById(id);
     if (el) el.classList.toggle('open');
+}
+
+function toggleAllDetail() {
+    var details = document.querySelectorAll('.test-detail');
+    var anyClosed = false;
+    for (var i = 0; i < details.length; i++) {
+        if (!details[i].classList.contains('open')) { anyClosed = true; break; }
+    }
+    for (var i = 0; i < details.length; i++) {
+        if (anyClosed) details[i].classList.add('open');
+        else details[i].classList.remove('open');
+    }
 }
 
 renderDashboard();
