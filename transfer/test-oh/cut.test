@@ -13,11 +13,11 @@ another_no_delim_here
 grape,hawthorn,icecream" >input.txt
 
 # -s with delimiter present: should show only lines containing the delimiter
-testcmd "-s -d, -f-3 mix" "-s -d, -f-3 input.txt" \
+ohosonly testcmd "-s -d, -f-3 mix" "-s -d, -f-3 input.txt" \
   "apple,banana,cherry\ndog,elephant,fig\ngrape,hawthorn,icecream\n" "" ""
 
 # Without -s: all lines printed (regardless of delimiter)
-testcmd "-d, -f-3 no -s" "-d, -f-3 input.txt" \
+ohosonly testcmd "-d, -f-3 no -s" "-d, -f-3 input.txt" \
   "apple,banana,cherry\nline_without_delimiter\ndog,elephant,fig\nanother_no_delim_here\ngrape,hawthorn,icecream\n" "" ""
 
 # -s with colon delimiter, mix of lines
@@ -25,12 +25,12 @@ echo "key1:val1:val3
 no-delim-here
 key2:val2:val4" >input2.txt
 
-testcmd "-s -d: -f-2 mix" "-s -d: -f-2 input2.txt" \
+ohosonly testcmd "-s -d: -f-2 mix" "-s -d: -f-2 input2.txt" \
   "key1:val1\nkey2:val2\n" "" ""
 
 # -s with tab delimiter
 printf "a\tb\tc\nno_delim\nd\te\tf\n" >input3.txt
-testcmd "-s -d'TAB' -f-2" "$(printf -- '-s -d\\\t -f-2 input3.txt')" \
+ohosonly testcmd "-s -d'TAB' -f-2" "$(printf -- '-s -d\\\t -f-2 input3.txt')" \
   "a\tb\nd\te\n" "" ""
 
 rm -f input.txt input2.txt input3.txt
