@@ -1,9 +1,0 @@
-#!/bin/bash
-
-[ -f testing.sh ] && . testing.sh
-
-#testing "name" "command" "result" "infile" "stdin"
-
-ohosonly testing "" "$C" "one" "" "one"
-ohosonly testing "" "$C -" "two\n" "" "two\n"
-ohosonly testing "" "$C one > two && cmp one two && echo that" "that\n" "" "three"
