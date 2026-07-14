@@ -53,7 +53,9 @@ header .sub{color:#888;font-size:0.9em}
 /* Board support */
 .section{background:#161638;border-radius:12px;padding:24px;margin-bottom:20px}
 .section-title{font-size:1.15em;color:#e8e8ff;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #2a2a4e}
-.board-list{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.board-list{list-style:none;display:flex;flex-wrap:wrap;gap:8px;max-height:110px;overflow-y:auto;padding-right:4px}
+.board-list::-webkit-scrollbar{width:6px}
+.board-list::-webkit-scrollbar-thumb{background:#3a3a5e;border-radius:3px}
 .board-list li{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:4px;font-size:0.85em;font-family:'Consolas','Courier New',monospace}
 .board-list li.ok{background:#0d2b1a;color:#4caf50;border:1px solid #1a5a2a}
 .board-list li.no{background:#2b0d0d;color:#f44336;border:1px solid #5a1a1a}
