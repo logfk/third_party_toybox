@@ -515,7 +515,7 @@ function showCommand(sidx) {
         h += '</div>';
 
         var detail = getDetail(cmdName, r.desc);
-        if (detail || (r.type === 'FAIL' && REPORT_DATA.failCmd[ri])) {
+        if (detail || REPORT_DATA.failCmd[ri]) {
             var did = 'd-' + sidx + '-' + ri;
             h += '<button class="test-detail-toggle" onclick="toggleDetail(\'' + did + '\')">详情</button>';
             h += '</div>';
