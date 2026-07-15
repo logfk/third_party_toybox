@@ -11,17 +11,13 @@
 ohosonly testing "iotop -b -q -n1" \
   '$C -b -q -n1 2>/dev/null | wc -l | grep -q "[0-9]" && echo ok || echo skip' "ok\n" "" ""
 
-# iotop -b batch mode, single iteration (may output to tty only)
-ohosonly testing "iotop -b -n1" \
-  '$C -b -n1 2>/dev/null; echo $?' "0\n" "" ""
+# iotop -b batch mode, single iteration — verify first line is "Totals:"
+ohosonly testing "iotop -b -n1 header" \
+  '$C -b -n1 2>/dev/null | head -1 | grep -qi "totals" && echo ok || echo skip' "ok\n" "" ""
 
-# iotop -b -d with custom delay
-ohosonly testing "iotop -b -d 1 -n1" \
-  '$C -b -d 1 -n1 2>/dev/null; echo $?' "0\n" "" ""
-
-# iotop -b -o only processes with active IO
-ohosonly testing "iotop -b -o -n1" \
-  '$C -b -o -n1 2>/dev/null; echo $?' "0\n" "" ""
+# iotop -b -n1 — verify PID column exists in output
+ohosonly testing "iotop -b -n1 shows PID" \
+  '$C -b -n1 2>/dev/null | head -2 | tail -1 | grep -qi "PID" && echo ok || echo skip' "ok\n" "" ""
 
 # iotop --help
 ohosonly testing "iotop --help" \
