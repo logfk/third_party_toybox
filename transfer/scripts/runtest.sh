@@ -66,11 +66,13 @@ _log_summary() {
   local total=$((${PASSCOUNT:-0} + ${FAILCOUNT:-0} + ${SKIPCOUNT:-0}))
   {
     printf '\n=== SUMMARY ===\n'
+    printf 'command: %s\n' "${CMDNAME:-unknown}"
     printf 'total: %d\n' "$total"
     printf 'pass: %d\n' "${PASSCOUNT:-0}"
     printf 'fail: %d\n' "${FAILCOUNT:-0}"
     printf 'skip: %d\n' "${SKIPCOUNT:-0}"
     [ "$total" -gt 0 ] && printf 'pass-rate: %d%%\n' $(( ${PASSCOUNT:-0} * 100 / $total ))
+    printf 'end: %s\n' "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null)"
   } >> "$TEST_LOG"
 }
 
@@ -198,7 +200,7 @@ testing()
   if [ "$SKIP" -gt 0 ]
   then
     verbose_has quiet || printf "%s\n" "$SHOWSKIP: $NAME"
-    _log "[$(_ts)] SKIP $NAME | reason: ${SKIP_REASON:-manual}"
+    _log "[$(_ts)] SKIP $NAME | cmd=$2 reason: ${SKIP_REASON:-manual}"
     if [ "${SKIP_REASON%%:*}" != "optional" ]; then
       SKIP_REASON=""
     fi
@@ -210,24 +212,37 @@ testing()
 
   echo -ne "$3" > "$TESTDIR"/expected
   [ ! -z "$4" ] && echo -ne "$4" > input || rm -f input
-  echo -ne "$5" | ${EVAL:-eval --} "$2" > "$TESTDIR"/actual
+  echo -ne "$5" | ${EVAL:-eval --} "$2" > "$TESTDIR"/actual 2> "$TESTDIR"/actual.err
   RETVAL=$?
 
   # Catch segfaults
   [ $RETVAL -gt 128 ] &&
     echo "exited with signal (or returned $RETVAL)" >> actual
+
+  # Capture stderr separately for detailed logging
+  ACTUAL_STDERR=""
+  if [ -f "$TESTDIR"/actual.err ] 2>/dev/null; then
+    ACTUAL_STDERR="$(cat "$TESTDIR"/actual.err 2>/dev/null)"
+  fi
+
   DIFF="$(cd "$TESTDIR" && _shdiff expected actual)"
   if [ -z "$DIFF" ]; then
     do_pass
     PASSCOUNT=$((${PASSCOUNT:-0} + 1))
     _log "[$(_ts)] PASS $NAME | cmd=$2 exit=$RETVAL"
+    # 详细日志：实际输出、stderr、耗时
+    _log "  cmd: $2"
+    _log "  stdout: $(cat "$TESTDIR"/actual | head -c 1000)"
+    [ -n "$ACTUAL_STDERR" ] && _log "  stderr: $(echo "$ACTUAL_STDERR" | head -c 500)"
   else
     VERBOSE=all do_fail
     _log "[$(_ts)] FAIL $NAME | cmd=$2 exit=$RETVAL"
+    _log "  cmd: $2"
     [ $RETVAL -gt 128 ] && _log "  signal: $(kill -l $RETVAL 2>/dev/null || echo "signal $((RETVAL-128))")"
-    _log "  expected: $(echo -ne "$3" | head -c 500)"
-    _log "  actual: $(cat "$TESTDIR"/actual | head -c 500)"
-    echo "$DIFF" | head -20 | sed 's/^/  diff: /' >> "$TEST_LOG"
+    _log "  expected: $(echo -ne "$3" | head -c 1000)"
+    _log "  actual: $(cat "$TESTDIR"/actual | head -c 1000)"
+    [ -n "$ACTUAL_STDERR" ] && _log "  stderr: $(echo "$ACTUAL_STDERR" | head -c 500)"
+    echo "$DIFF" | head -30 | sed 's/^/  diff: /' >> "$TEST_LOG"
   fi
   if ! verbose_has quiet && { [ -n "$DIFF" ] || verbose_has spam; }
   then

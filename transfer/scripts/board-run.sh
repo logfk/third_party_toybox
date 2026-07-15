@@ -82,7 +82,17 @@ if [ -n "$TEST_LOG" ]; then
     printf '# Command: %s\n' "$CMDNAME"
     printf '# Date: %s\n' "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null)"
     printf '# Toybox: %s\n' "$TOYBOX"
+    printf '# Toybox version: %s\n' "$("$TOYBOX" --version 2>/dev/null | head -1)"
     printf '# Kernel: %s\n' "$(uname -r 2>/dev/null)"
+    printf '# Arch: %s\n' "$(uname -m 2>/dev/null)"
+    printf '# OS: %s\n' "$(uname -o 2>/dev/null)"
+    printf '# User: %s\n' "$(id 2>/dev/null)"
+    printf '# Shell: %s\n' "$(readlink /proc/$$/exe 2>/dev/null || echo sh)"
+    printf '# Hostname: %s\n' "$(hostname 2>/dev/null)"
+    printf '# PATH: %s\n' "$PATH"
+    printf '# TOYBOX path: %s\n' "$(readlink -f "$TOYBOX" 2>/dev/null || echo "$TOYBOX")"
+    printf '# C (test cmd): %s\n' "$C"
+    printf '# Workdir: %s\n' "$(pwd)"
     printf '\n'
   } > "$TEST_LOG"
 fi
