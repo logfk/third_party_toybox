@@ -394,8 +394,7 @@ var RD = {
   results: $JSON_RESULTS,
   resSection: $JSON_RES_SECTION,
   failCmd: $JSON_FAIL_CMD,
-  failDiff: $JSON_FAIL_DIFF,
-  detail: $JSON_DETAIL
+  failDiff: $JSON_FAIL_DIFF
 };
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function cnt(r){var p=0,f=0,s=0;for(var i=0;i<r.length;i++){if(r[i].type==='PASS')p++;else if(r[i].type==='FAIL')f++;else if(r[i].type==='SKIP')s++}return{pass:p,fail:f,skip:s,total:p+f+s}}
@@ -430,8 +429,14 @@ DASHEOF
         CMDNAME="${SECTIONS[$si]}"
         SAFE_CMDNAME=$(printf '%s' "$CMDNAME" | sed 's/[^a-zA-Z0-9_-]/_/g')
         CMD_FILE="$OUTPUT_DIR/commands/${SAFE_CMDNAME}.html"
-        # Compute command stats as shell variables
+
+        # Build filtered arrays for THIS command only
         C_PASS=0; C_FAIL=0; C_SKIP=0; C_TOTAL=0
+        CMD_RESULTS=""
+        CMD_FAIL_CMD=""
+        CMD_FAIL_DIFF=""
+        CMD_DETAIL=""
+        _cr_sep=""; _cf_sep=""; _cd_sep=""; _dt_sep=""
         for ((ri=0; ri<${#RESULTS[@]}; ri++)); do
             [ "${RES_SECTION[$ri]}" -eq "$si" ] || continue
             C_TOTAL=$((C_TOTAL+1))
@@ -440,7 +445,28 @@ DASHEOF
                 FAIL) C_FAIL=$((C_FAIL+1)) ;;
                 SKIP) C_SKIP=$((C_SKIP+1)) ;;
             esac
+            _type="${RESULTS[$ri]%%:*}"
+            _rest="${RESULTS[$ri]#*: }"
+            [ "$_rest" = "${RESULTS[$ri]}" ] && _rest="${RESULTS[$ri]#*:}"
+            CMD_RESULTS="${CMD_RESULTS}${_cr_sep}{\"type\":\"$(json_escape "$_type")\",\"desc\":\"$(json_escape "$_rest")\"}"
+            _cr_sep=","
+            CMD_FAIL_CMD="${CMD_FAIL_CMD}${_cf_sep}\"$(json_escape "${FAIL_CMD[$ri]}")\""
+            _cf_sep=","
+            CMD_FAIL_DIFF="${CMD_FAIL_DIFF}${_cd_sep}\"$(json_escape "${FAIL_DIFF[$ri]}")\""
+            _cd_sep=","
         done
+        CMD_RESULTS="[${CMD_RESULTS}]"
+        CMD_FAIL_CMD="[${CMD_FAIL_CMD}]"
+        CMD_FAIL_DIFF="[${CMD_FAIL_DIFF}]"
+
+        # Build filtered detail entries for THIS command
+        for ((_di=0; _di<${#DTL_CMD[@]}; _di++)); do
+            [ "${DTL_CMD[$_di]}" = "$CMDNAME" ] || continue
+            CMD_DETAIL="${CMD_DETAIL}${_dt_sep}{\"name\":\"$(json_escape "${DTL_NAME[$_di]}")\",\"result\":\"$(json_escape "${DTL_RESULT[$_di]}")\",\"text\":\"$(json_escape "${DTL_TEXT[$_di]}")\"}"
+            _dt_sep=","
+        done
+        CMD_DETAIL="[${CMD_DETAIL}]"
+
         SAFE_CMDNAME_JSON=$(json_escape "$CMDNAME")
 
         cat > "$CMD_FILE" << CMDEOF
@@ -462,18 +488,16 @@ DASHEOF
   <footer>Generated: $TIMESTAMP</footer>
 </div>
 <script>
-var RD={boardOk:$JSON_BOARD_OK,boardNo:$JSON_BOARD_NO,sections:$JSON_SECTIONS,results:$JSON_RESULTS,resSection:$JSON_RES_SECTION,failCmd:$JSON_FAIL_CMD,failDiff:$JSON_FAIL_DIFF,detail:$JSON_DETAIL};
-var CMD_IDX=$si;
+var RD={results:$CMD_RESULTS,failCmd:$CMD_FAIL_CMD,failDiff:$CMD_FAIL_DIFF,detail:$CMD_DETAIL};
 var CMD_NAME="$SAFE_CMDNAME_JSON";
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function cnt(r){var p=0,f=0,s=0;for(var i=0;i<r.length;i++){if(r[i].type==='PASS')p++;else if(r[i].type==='FAIL')f++;else if(r[i].type==='SKIP')s++}return{pass:p,fail:f,skip:s,total:p+f+s}}
-function cmdSt(si){var c=[];for(var i=0;i<RD.results.length;i++){if(RD.resSection[i]===si)c.push(RD.results[i])}return cnt(c)}
-function getDet(cmd,name){for(var i=0;i<RD.detail.length;i++){var d=RD.detail[i];if(d.cmd===cmd&&d.name===name)return d.text}return ''}
+function getDet(name){for(var i=0;i<RD.detail.length;i++){if(RD.detail[i].name===name)return RD.detail[i].text}return ''}
 function inferP(cmd,d){var k={'help':'验证 --help 参数能正常输出用法说明','no args':'验证无参数时输出错误信息并返回非零退出码','bad flag':'验证无效参数被正确拒绝','invalid':'验证无效输入被正确拒绝','usage':'验证命令用法说明','basic':'验证命令基本功能正常','empty':'验证空输入场景处理','stdin':'验证从标准输入读取数据'};var lo=d.toLowerCase();for(var x in k){if(lo.indexOf(x)!==-1)return k[x]}var m=d.match(/^(-[a-z]|--[a-z][a-z-]+)/);if(m)return '测试 '+esc(m[1])+' 参数功能';return ''}
 function toggleDetail(id){var el=document.getElementById(id);if(el)el.classList.toggle('open')}
 function toggleAll(){var ds=document.querySelectorAll('.test-detail');var any=false;for(var i=0;i<ds.length;i++){if(!ds[i].classList.contains('open')){any=true;break}}for(var i=0;i<ds.length;i++){if(any)ds[i].classList.add('open');else ds[i].classList.remove('open')}}
 function render(){
-  var cs=cmdSt(CMD_IDX);var h='';
+  var cs=cnt(RD.results);var h='';
   h+='<div class="nav-bar"><a href="../index.html" class="back-btn">&larr; 返回总览</a>';
   h+='<div class="breadcrumb"><a href="../index.html">测试总览</a><span class="sep">/</span><span>'+esc(CMD_NAME)+'</span></div></div>';
   h+='<div class="cmd-header"><div class="cmd-title">'+esc(CMD_NAME)+'</div>';
@@ -487,7 +511,6 @@ function render(){
   h+='<h2 style="font-size:1em;color:#e8e8ff;margin-bottom:12px">测试用例 <button class="toggle-all-btn" onclick="toggleAll()">全部展开/折叠</button></h2>';
   h+='<div class="test-list">';
   for(var ri=0;ri<RD.results.length;ri++){
-    if(RD.resSection[ri]!==CMD_IDX)continue;
     var r=RD.results[ri];var rl=r.type.toLowerCase();
     h+='<div class="test-row '+rl+'">';
     h+='<span class="badge badge-'+rl+'">'+r.type+'</span>';
@@ -495,7 +518,7 @@ function render(){
     h+='<div class="test-desc"><span class="test-purpose">'+esc(r.desc)+'</span>';
     if(purp)h+='<span class="test-purpose" style="color:#777;font-size:0.8em;margin-top:2px">'+purp+'</span>';
     h+='</div>';
-    var dt=getDet(CMD_NAME,r.desc);
+    var dt=getDet(r.desc);
     if(dt||(r.type==='FAIL'&&RD.failCmd[ri])){
       var did='d-'+ri;
       h+='<button class="test-detail-toggle" onclick="toggleDetail(\''+did+'\')">详情</button>';
