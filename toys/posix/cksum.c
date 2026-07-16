@@ -72,5 +72,6 @@ void cksum_main(void)
 void crc32_main(void)
 {
   toys.optflags |= FLAG_H|FLAG_N|FLAG_P|FLAG_L;
+  if (toys.optc) toys.optc--;
   cksum_main();
 }

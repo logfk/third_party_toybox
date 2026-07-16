@@ -53,9 +53,6 @@ static void cut_line(char **pline, long len)
   unsigned *pairs = (void *)toybuf, wc;
   char *line;
   int i, j, k;
-#ifdef TOYBOX_OH_ADAPT
-  int wrote = 0;
-#endif
 
   if (!pline) return;
   line = *pline;
@@ -166,17 +163,12 @@ write_line:
     /* fix "cut -s -d, -f-3 A.txt" not filter problem*/
     if (!FLAG(s) || strchr(s, *TT.d)) {
       fwrite(s, count, 1, stdout);
-      wrote = 1;
     }
 #else
     fwrite(s, count, 1, stdout);
 #endif
   }
-#ifdef TOYBOX_OH_ADAPT
-  if (wrote) xputc('\n');
-#else
   xputc('\n');
-#endif
 }
 
 static int compar(unsigned *a, unsigned *b)
